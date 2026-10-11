@@ -1,0 +1,39 @@
+# Build outputs / images
+*.img
+*.img.xz
+*.iso
+*.qcow2
+*.raw
+*.deb
+*.udeb
+*.dsc
+*.changes
+*.buildinfo
+deploy/
+work/
+out/
+build/
+
+# aptly / reprepro published trees & keys
+apt-repo/published/
+apt-repo/db/
+apt-repo/*.gpg
+*.key
+*.asc
+
+# Secrets — never commit
+.env
+*.pem
+secrets/
+!tests/**/*.env.example
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.idea/
+.vscode/
+__pycache__/
+*.pyc
+node_modules/

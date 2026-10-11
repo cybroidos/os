@@ -87,6 +87,8 @@ jobs:
             tools/preflight.sh \
             tools/render-brand.py \
             tools/build-package.sh \
+            tools/fatread.py \
+            tests/qemu/rpi-gui-test.sh \
             targets/rpi/config \
             targets/rpi/build.sh \
             targets/rpi/stage-citos/EXPORT_IMAGE \

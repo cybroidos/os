@@ -16,10 +16,10 @@ permissions:
 jobs:
   validate-repo:
     name: Validate repo & branding (Debian 13 / Trixie)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     container: debian:13-slim
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install tooling
         run: |
@@ -60,10 +60,10 @@ jobs:
 
   shellcheck:
     name: Shellcheck (Debian 13 / Trixie)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     container: debian:13-slim
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install shellcheck
         run: |

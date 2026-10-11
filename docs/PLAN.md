@@ -188,8 +188,12 @@ branding; Docker images pass smoke tests on both architectures.
 **Exit criteria:** qcow2 + ISO boot in KVM and pass the server smoke test.
 
 ### Phase 6 — Desktop ISO
-- [ ] `live-build` installable hybrid ISO, x86_64 (arm64 optional)
-- [ ] Branded boot (GRUB/isolinux), installer, desktop, greeter, wallpaper
+- [ ] `live-build` installable hybrid ISO, x86_64 (arm64 optional); **Calamares** installer
+- [ ] Desktop environment: **KDE Plasma 6.3** (default) with a **"Lite" Xfce 4.20**
+      variant for low-spec hardware — see `docs/research/desktop-environment.md`
+      (ADR-0003 pending)
+- [ ] Branded boot (GRUB/isolinux), installer, Plasma **global theme**, **SDDM**
+      greeter, wallpaper; **KDE Kiosk** profiles for school machines
 - [ ] QEMU/KVM boot + smoke tests
 **Exit criteria:** ISO installs and boots to a branded desktop; smoke test passes.
 
@@ -251,10 +255,11 @@ QEMU-only workarounds are confined to a **test profile**. Emulation success is
 | 2 | Palette confirmation (true primary; monochrome variant; wallpapers) | derived from logo SVG | **confirm with brand owner** |
 | 3 | Pi builder: pi-gen vs rpi-image-gen | decide Phase 3 | open |
 | 4 | APT repo tool: aptly vs reprepro | decide Phase 4 | open |
-| 5 | Desktop installer: Calamares vs debian-installer | Phase 6 | open |
+| 5 | Desktop installer: Calamares vs debian-installer | **Calamares** (Debian Live default) | leaning Calamares |
 | 6 | Engineers' exact runtimes + path/package dependencies | Debian-compatible | re-confirm before Phase 6 |
 | 7 | arm64 desktop ISO needed? | x86_64 first | open |
 | 8 | Kiosk system-UI runtime | Flutter via `flutter-pi` (Pi) + GTK embedder (desktop) | **decision pending → ADR-0002** (see `docs/research/kiosk-runtime.md`) |
+| 9 | Desktop environment | **KDE Plasma 6.3** (default) + Xfce 4.20 "Lite" variant | **decision pending → ADR-0003** (see `docs/research/desktop-environment.md`) |
 
 ---
 
@@ -275,3 +280,4 @@ QEMU-only workarounds are confined to a **test profile**. Emulation success is
 | 2026-10-11 | Initial plan; ADR-0001 accepted (Debian 13 Trixie; Pi dev/test on Pi 3, target Pi 4). |
 | 2026-10-11 | Imported CIT logo assets from `novaoneltd/cit` into `common/branding/`; added `brand.toml` (derived palette); started GitHub Actions (`ci.yml`, `nightly.yml`); CI platform confirmed = GitHub Actions. |
 | 2026-10-11 | Fixed CI/base-OS mismatch: jobs now run inside a **`debian:13-slim` container** (was the Ubuntu runner host). Added `docs/research/kiosk-runtime.md` (flutter-pi feasibility: Pi 2/3/4 + Zero 2 supported, Pi 5 not; plugin caveats) and opened the kiosk-runtime decision (→ ADR-0002). |
+| 2026-10-11 | Added `docs/research/desktop-environment.md`: recommends **KDE Plasma 6.3** for the desktop target (best branding hooks + KDE Kiosk lockdown), with an **Xfce 4.20 "Lite"** variant; Calamares installer. Opened the desktop-environment decision (→ ADR-0003); updated Phase 6. |

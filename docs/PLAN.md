@@ -205,7 +205,8 @@ validation deferred to the Phase 7 checklist.*
       **reprepro** repo)
 - [x] `citos-base` package skeleton (`common/packages/citos-base/`) + build tool
       (`tools/build-package.sh`) + CI job that builds, installs on a clean Trixie
-      root and asserts branding — *in progress, verified in CI*
+      root and asserts branding — **verified in CI** (base-files conffiles
+      `/etc/issue`, `/etc/motd` and `/usr/lib/os-release` handled via `dpkg-divert`)
 - [ ] Per-target meta-packages `<brand>-rpi`, `<brand>-desktop`, `<brand>-server`
 - [ ] Signed APT repo (**reprepro**) + CI signing key (secrets only)
 - [ ] Refactor the Pi image to consume the repo / install `<brand>-base`

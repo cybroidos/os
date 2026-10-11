@@ -42,7 +42,9 @@ with Phase 2 — see `docs/PLAN.md`.
 This repository may be developed on a machine that can become read-only at any
 time: **commit and push small, reviewable changes often.**
 
-## Brand placeholders
+## Branding
 
 Name `CIT-OS`, id `citos`, hostname `citos`, support `https://cybroid.com`.
-Logo and colours are placeholders in `common/branding/` pending final assets.
+Logo assets and palette live in [`common/branding/`](common/branding/) (imported
+from the CIT web repo). Palette is derived from the logo and awaits brand-owner
+confirmation — see `common/branding/README.md`.

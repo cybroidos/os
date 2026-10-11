@@ -226,8 +226,17 @@ CIT-OS image once it is ready. Decisions taken:
 and primary/secondary hex colours. *Until provided:* a placeholder logo and a
 deep-navy/blue palette live in `common/branding/`.
 
-**Q4 — CI/CD.** *Default kept:* **GitHub Actions** (repo is on GitHub under the
-`cybroidinstitute` org). Can migrate/duplicate to GitLab later if desired.
+**Q4 — CI/CD. — ANSWERED.** **GitHub Actions** (repo is on GitHub under the
+`cybroidinstitute` org). Pipeline started in `.github/workflows/` (`ci.yml`
+validation now; build jobs added per phase; `nightly.yml` scheduled).
+
+**Q3 (assets) — PARTIALLY ANSWERED.** Logo assets were taken from the existing
+**`novaoneltd/cit`** web repository and placed in `common/branding/logo/`
+(`cit-logo.svg`, `cit-logo.png`, `cit-mark.png`, `cit-icon-64.png`,
+`cit-favicon.png`). Palette in `common/branding/brand.toml` is derived from the
+logo SVG gradients (`#557fc0` → `#69cce1` over navy `#112649` / `#0e2044`) and is
+a **v0 default pending brand-owner confirmation** (monochrome variant, true
+primary, wallpaper art).
 
 **Q5 — Pi scope. — ANSWERED.** Develop and test on **Pi 3** (the reliable QEMU
 model, `raspi3b`), but ship **one arm64 image that also runs on Pi 4**. Raspberry

@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-repo:
+    name: Validate repo & branding
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate brand.toml
+        run: |
+          python3 - <<'PY'
+          import pathlib, tomllib
+          data = tomllib.loads(pathlib.Path("common/branding/brand.toml").read_text())
+          for section in ("identity", "colors", "assets"):
+              assert section in data, f"missing [{section}] in brand.toml"
+          ident = data["identity"]
+          print(f"brand.toml OK: {ident['name']} (id={ident['id']})")
+          PY
+
+      - name: Validate logo SVG is well-formed
+        run: |
+          python3 - <<'PY'
+          import pathlib, xml.dom.minidom
+          f = pathlib.Path("common/branding/logo/cit-logo.svg")
+          xml.dom.minidom.parse(str(f))
+          print(f"SVG OK: {f}")
+          PY
+
+      - name: Check required files exist
+        run: |
+          for f in \
+            README.md \
+            docs/PLAN.md \
+            docs/adr/ADR-0001-base-distribution.md \
+            common/branding/brand.toml \
+            common/branding/logo/cit-logo.svg ; do
+            test -f "$f" || { echo "missing: $f"; exit 1; }
+          done
+          echo "all required files present"
+
+  shellcheck:
+    name: Shellcheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Shellcheck all shell scripts
+        run: |
+          mapfile -t files < <(find tools ci tests -name '*.sh' 2>/dev/null || true)
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "no shell scripts yet"
+            exit 0
+          fi
+          shellcheck -x "${files[@]}"
+
+  # Build jobs (Pi, desktop, server, docker) are added in later phases.
+  # See docs/PLAN.md — Phase 3 onwards.

@@ -46,7 +46,10 @@ Still needed: **logo (SVG+PNG)** and **hex colours**. Placeholders live in
 | **4** | `<brand>-base` package + signed APT repo + Docker target | TODO |
 | **5** | Server image (minimal + cloud-init + qcow2) | TODO |
 | **6** | Desktop installable ISO | TODO |
-| **7** | CI/CD pipeline + documentation + hardware release checklist | TODO |
+| **7** | CI/CD pipeline + documentation + hardware release checklist | IN PROGRESS |
+
+Done so far: repo + ADR + plan; **brand assets imported** from `novaoneltd/cit`
+into `common/branding/`; **GitHub Actions** started (`ci.yml`, `nightly.yml`).
 
 **Milestone A (fast path):** the engineer is ready to flash an SD card now, and
 will flash the stock Raspberry Pi OS image **today**, then switch to CIT-OS when
@@ -241,12 +244,13 @@ QEMU-only workarounds are confined to a **test profile**. Emulation success is
 
 | # | Item | Default | Status |
 |---|---|---|---|
-| 1 | Logo (SVG+PNG) + hex colours | placeholder palette | **NEEDED** |
-| 2 | Pi builder: pi-gen vs rpi-image-gen | decide Phase 3 | open |
-| 3 | APT repo tool: aptly vs reprepro | decide Phase 4 | open |
-| 4 | Desktop installer: Calamares vs debian-installer | Phase 6 | open |
-| 5 | Engineers' exact runtimes + path/package dependencies | Debian-compatible | re-confirm before Phase 6 |
-| 6 | arm64 desktop ISO needed? | x86_64 first | open |
+| 1 | Logo assets | imported from `novaoneltd/cit` | **done** |
+| 2 | Palette confirmation (true primary; monochrome variant; wallpapers) | derived from logo SVG | **confirm with brand owner** |
+| 3 | Pi builder: pi-gen vs rpi-image-gen | decide Phase 3 | open |
+| 4 | APT repo tool: aptly vs reprepro | decide Phase 4 | open |
+| 5 | Desktop installer: Calamares vs debian-installer | Phase 6 | open |
+| 6 | Engineers' exact runtimes + path/package dependencies | Debian-compatible | re-confirm before Phase 6 |
+| 7 | arm64 desktop ISO needed? | x86_64 first | open |
 
 ---
 
@@ -265,3 +269,4 @@ QEMU-only workarounds are confined to a **test profile**. Emulation success is
 | Date | Change |
 |---|---|
 | 2026-10-11 | Initial plan; ADR-0001 accepted (Debian 13 Trixie; Pi dev/test on Pi 3, target Pi 4). |
+| 2026-10-11 | Imported CIT logo assets from `novaoneltd/cit` into `common/branding/`; added `brand.toml` (derived palette); started GitHub Actions (`ci.yml`, `nightly.yml`); CI platform confirmed = GitHub Actions. |

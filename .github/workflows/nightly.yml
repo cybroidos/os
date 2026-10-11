@@ -1,0 +1,17 @@
+name: Nightly
+
+on:
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Nightly validation
+    uses: ./.github/workflows/ci.yml
+
+  # Nightly image builds + APT repo refresh are added in Phase 3/4.
+  # See docs/PLAN.md.

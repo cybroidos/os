@@ -1,0 +1,40 @@
+# CIT-OS brand identity
+#
+# Single source of truth for branding values. Builders and packages read this
+# file (or values rendered from it) so branding is defined exactly once.
+#
+# Palette is DERIVED from the official CIT logo gradient found in
+# novaoneltd/cit -> extension/media/cit-logo.svg (stop-colors #557fc0 -> #69cce1
+# over navy #112649 / #0e2044). Confirm/adjust with the brand owner before a
+# release; treat these as v0 defaults.
+
+[identity]
+name            = "CIT-OS"
+id              = "citos"                 # os-release ID, hostname, package prefix
+vendor          = "Cybroid Institute of Technology"
+vendor_short    = "CIT"
+pretty_name     = "CIT-OS"
+version         = "0.1.0"
+default_hostname = "citos"
+support_url     = "https://cybroid.com"
+home_url        = "https://cybroid.com"
+documentation   = "https://github.com/cybroidinstitute/cit-os"
+bug_report_url  = "https://github.com/cybroidinstitute/cit-os/issues"
+
+[colors]
+# Roles. Derived from the CIT logo SVG; see header note.
+primary        = "#112649"   # deep navy — primary brand / dark surfaces
+primary_deep   = "#0e2044"   # darker navy — deepest background
+accent         = "#69cce1"   # cyan — primary accent / highlights
+accent_alt     = "#557fc0"   # blue — secondary accent (logo gradient start)
+background     = "#0e2044"
+foreground     = "#ffffff"
+on_accent      = "#0e2044"
+
+[assets]
+# Paths are relative to common/branding/
+logo_svg       = "logo/cit-logo.svg"     # primary vector lockup
+logo_png       = "logo/cit-logo.png"     # 1254x1254 transparent PNG
+mark_png       = "logo/cit-mark.png"     # 256x256 square mark/icon
+icon_64_png    = "logo/cit-icon-64.png"  # 64x64
+favicon_png    = "logo/cit-favicon.png"  # 225x225

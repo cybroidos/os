@@ -178,19 +178,22 @@ hacks; `docs/` and `adr/` keep decisions discoverable.
 - [x] Scaffold `targets/rpi/` (`config`, `build.sh`, `stage-citos`) + branding
       rendered from `brand.toml` (`tools/render-brand.py`) + GitHub Actions
       workflow (`.github/workflows/pi-image.yml`, manual/tag)
-- [ ] Build the arm64 **Lite + branding** image (os-release, motd, issue,
-      hostname) and verify it boots — *current step*
+- [x] Build the arm64 **Lite + branding** image (os-release, motd, issue,
+      hostname) and verify — **first image built in CI** (run `38150371735`);
+      rootfs verified via `debugfs`: `ID=citos`, banner motd/issue, hostname
+      `citos`, branding assets present
 - [ ] Quiet boot + **Plymouth** splash + CIT wallpaper
 - [ ] **kiosk**: systemd service launching one fullscreen app, auto-restart on
       crash; **runtime swappable** — (a) Flutter via **flutter-pi** (default) or
       (b) `cage` + Chromium (native `.deb`) web app (ADR-0002)
 - [ ] Minimal "hello world" bundle per kiosk mode (Flutter bundle + web page)
 - [ ] QEMU test scripts:
-  - [x] headless boot: `qemu-system-aarch64`, **feature-detected** machine
-        (`raspi3b`), **power-of-two padded copy**, SD boot + serial console,
-        assert kernel + branding → `tests/qemu/rpi-boot-test.sh` (+
-        `tools/fetch-image.sh` to pull the CI artifact). *Validation pending the
-        first image.*
+  - [x] verify a built image: parse MBR (FAT32 boot + ext4 root), check rootfs
+        branding with `debugfs`, and an **optional best-effort** QEMU boot →
+        `tests/qemu/rpi-boot-test.sh` (+ `tools/fetch-image.sh` to pull the CI
+        artifact). *Reliable checks pass on the first image.*
+        **QEMU cannot run the VideoCore firmware bootloader**, so a raw SD image
+        cannot be booted; the boot step extracts `kernel8.img` and is non-fatal.
   - [ ] graphical: `-M virt` + virtio-gpu + generic arm64 kernel/initramfs
         **injected into a COPY of the image** (never the release image),
         `WLR_RENDERER=pixman` (cage) + Chromium `--disable-gpu`, GTK/VNC display;
@@ -348,4 +351,5 @@ QEMU-only workarounds are confined to a **test profile**. Emulation success is
 | 2026-10-11 | **Phase 2 done**: added the canonical **`.devcontainer`** (Debian 13 Trixie build image + Docker socket mount), `docs/dev-environments.md` (devcontainer/WSL2/GCP x86+GCP arm64/Deepin-QEMU), and `tools/preflight.sh` (toolchain check, shellchecked in CI). CI now validates `devcontainer.json` and requires the new files. |
 | 2026-10-11 | **ADR-0002 accepted** (kiosk runtime = **Flutter via `flutter-pi`**, `cage`+Chromium fallback) and **ADR-0006 accepted** (**pi-gen**, `arm64` branch, buildable in GitHub Actions). **Phase 3 started**: scaffolded `targets/rpi/` (`config`, `build.sh`, `stage-citos`), branding rendered from `brand.toml` via `tools/render-brand.py`, and `.github/workflows/pi-image.yml` (manual/`pi-*` tag). Resolved open items #3 and #8. |
 | 2026-10-11 | Dispatched the first **Pi image build in GitHub Actions**. Added the QEMU harness `tests/qemu/rpi-boot-test.sh` (feature-detected machine, power-of-two padded copy, serial boot + branding assertions) and `tools/fetch-image.sh` (download the CI artifact). |
+| 2026-10-11 | **First Pi image built successfully** (CI run `38150371735`, `cit-os.img.xz`). Downloaded and verified: rootfs has `ID=citos`, banner `/etc/motd`+`/etc/issue`, hostname `citos`, branding assets. **Finding:** QEMU's `raspi*` machines cannot run the VideoCore firmware bootloader, so a raw SD image never boots — reworked the harness to reliable offline structure+branding checks (`debugfs`, direct MBR parse, no mount/root) with an optional non-fatal best-effort kernel boot. |
 | 2026-10-11 | **Phase 4 started (ADR-0007)**: shared layer = Debian packages (`citos-base` + per-target meta-packages), `os-release` via `dpkg-divert`, APT repo = **reprepro** (open item #4 resolved). Added `common/packages/citos-base/`, `tools/build-package.sh`, and a CI job that builds, installs on a clean Trixie root and asserts branding. |

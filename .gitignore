@@ -13,6 +13,7 @@ deploy/
 work/
 out/
 build/
+dist/
 
 # aptly / reprepro published trees & keys
 apt-repo/published/

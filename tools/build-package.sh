@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# Build a CIT-OS .deb from common/packages/<name>.
+#
+# Renders branding from common/branding/brand.toml into the package source tree,
+# keeps the changelog version in sync, and runs dpkg-buildpackage. Output lands
+# in dist/.
+#
+# Requirements: dpkg-dev, debhelper, fakeroot, python3.
+set -euo pipefail
+
+name="${1:-citos-base}"
+here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+repo_root="$(cd "${here}/.." && pwd)"
+src="${repo_root}/common/packages/${name}"
+brand="${repo_root}/common/branding/brand.toml"
+release="${RELEASE:-trixie}"
+out="${repo_root}/dist"
+
+[ -d "${src}/debian" ] || { echo "error: no package '${name}' in common/packages/" >&2; exit 1; }
+[ -f "${brand}" ] || { echo "error: missing ${brand}" >&2; exit 1; }
+
+version="$(python3 -c 'import tomllib,sys; print(tomllib.load(open(sys.argv[1],"rb"))["identity"]["version"])' "${brand}")"
+echo "building ${name} ${version}"
+
+work="$(mktemp -d)"
+srcdir="${work}/${name}-${version}"
+mkdir -p "${srcdir}"
+cp -a "${src}/debian" "${srcdir}/debian"
+
+# Render identity + assets (paths must match debian/install).
+python3 "${repo_root}/tools/render-brand.py" \
+	--brand "${brand}" --release "${release}" --out "${srcdir}"
+install -d "${srcdir}/usr/share/citos/branding"
+cp -a "${repo_root}/common/branding/logo/." "${srcdir}/usr/share/citos/branding/"
+
+# Keep the changelog version in sync with brand.toml.
+cat > "${srcdir}/debian/changelog" <<EOF
+${name} (${version}) ${release}; urgency=medium
+
+  * Built from common/branding/brand.toml.
+
+ -- CIT-OS maintainers <citos@cybroid.com>  $(date -R)
+EOF
+
+mkdir -p "${out}"
+( cd "${srcdir}" && dpkg-buildpackage -us -uc -b )
+find "${work}" -maxdepth 1 -name '*.deb' -exec mv -t "${out}" {} +
+echo "built:"
+ls -lh "${out}"/*.deb

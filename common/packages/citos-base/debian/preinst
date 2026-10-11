@@ -1,0 +1,14 @@
+#!/bin/sh
+set -e
+
+# Brand /etc/os-release through base-files' file: divert base-files'
+# /usr/lib/os-release so our shipped file takes effect (the standard
+# /etc/os-release symlink then resolves to CIT-OS content).
+if [ "$1" = "install" ]; then
+	dpkg-divert --package citos-base --add --rename \
+		--divert /usr/lib/os-release.base-files /usr/lib/os-release
+fi
+
+#DEBHELPER#
+
+exit 0

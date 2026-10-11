@@ -53,7 +53,7 @@ Still needed: **logo (SVG+PNG)** and **hex colours**. Placeholders live in
 | **1** | ADR: base distribution + repo/plan | **DONE** |
 | **2** | Repo skeleton + Docker/WSL2/GCP dev environments | **DONE** |
 | **3** | Working Pi image (arm64, Lite + Flutter/flutter-pi kiosk + Plymouth) + QEMU tests | **IN PROGRESS** |
-| **4** | `<brand>-base` package + signed APT repo + Docker/pod images (headless dev spaces + Xfce remote-desktop pods) | TODO |
+| **4** | `<brand>-base` package + signed APT repo + Docker/pod images (headless dev spaces + Xfce remote-desktop pods) | **IN PROGRESS** |
 | **5** | Server/pods image (Xfce DE + cloud-init + qcow2 + RDP/VNC) | TODO |
 | **6** | Desktop installable ISO (KDE Plasma default + Xfce "Lite") | TODO |
 | **7** | CI/CD pipeline + documentation + hardware release checklist | IN PROGRESS |
@@ -200,9 +200,14 @@ the branded kiosk; flashable image available for the engineer. *Real-hardware
 validation deferred to the Phase 7 checklist.*
 
 ### Phase 4 — Shared package + APT repo + Docker/pods
-- [ ] Build `<brand>-base` `.deb` (branding assets, config, systemd units, defaults)
+- [x] Package/APT design → `docs/adr/ADR-0007-shared-packages-and-apt-repo.md`
+      (`citos-base` + per-target meta-packages; `os-release` via `dpkg-divert`;
+      **reprepro** repo)
+- [x] `citos-base` package skeleton (`common/packages/citos-base/`) + build tool
+      (`tools/build-package.sh`) + CI job that builds, installs on a clean Trixie
+      root and asserts branding — *in progress, verified in CI*
 - [ ] Per-target meta-packages `<brand>-rpi`, `<brand>-desktop`, `<brand>-server`
-- [ ] Signed APT repo (aptly or reprepro) + CI signing key (secrets only)
+- [ ] Signed APT repo (**reprepro**) + CI signing key (secrets only)
 - [ ] Refactor the Pi image to consume the repo / install `<brand>-base`
 - [ ] **Pod images (ADR-0005)** from `debian:trixie-slim`, amd64 + arm64:
   - [ ] `citos-pod-base` (branding + `kcd` + SSH + tooling, no desktop)
@@ -304,7 +309,7 @@ QEMU-only workarounds are confined to a **test profile**. Emulation success is
 | 1 | Logo assets | imported from `novaoneltd/cit` | **done** |
 | 2 | Palette confirmation (true primary; monochrome variant; wallpapers) | derived from logo SVG | **confirm with brand owner** |
 | 3 | Pi builder: pi-gen vs rpi-image-gen | **pi-gen** (`arm64` branch) | **DONE → ADR-0006** |
-| 4 | APT repo tool: aptly vs reprepro | decide Phase 4 | open |
+| 4 | APT repo tool: aptly vs reprepro | **reprepro** | **DONE → ADR-0007** |
 | 5 | Desktop installer: Calamares vs debian-installer | **Calamares** (Debian Live default) | leaning Calamares |
 | 6 | Engineers' exact runtimes + path/package dependencies | Debian-compatible | re-confirm before Phase 6 |
 | 7 | arm64 desktop ISO needed? | x86_64 first | open |
@@ -342,3 +347,4 @@ QEMU-only workarounds are confined to a **test profile**. Emulation success is
 | 2026-10-11 | **Phase 2 done**: added the canonical **`.devcontainer`** (Debian 13 Trixie build image + Docker socket mount), `docs/dev-environments.md` (devcontainer/WSL2/GCP x86+GCP arm64/Deepin-QEMU), and `tools/preflight.sh` (toolchain check, shellchecked in CI). CI now validates `devcontainer.json` and requires the new files. |
 | 2026-10-11 | **ADR-0002 accepted** (kiosk runtime = **Flutter via `flutter-pi`**, `cage`+Chromium fallback) and **ADR-0006 accepted** (**pi-gen**, `arm64` branch, buildable in GitHub Actions). **Phase 3 started**: scaffolded `targets/rpi/` (`config`, `build.sh`, `stage-citos`), branding rendered from `brand.toml` via `tools/render-brand.py`, and `.github/workflows/pi-image.yml` (manual/`pi-*` tag). Resolved open items #3 and #8. |
 | 2026-10-11 | Dispatched the first **Pi image build in GitHub Actions**. Added the QEMU harness `tests/qemu/rpi-boot-test.sh` (feature-detected machine, power-of-two padded copy, serial boot + branding assertions) and `tools/fetch-image.sh` (download the CI artifact). |
+| 2026-10-11 | **Phase 4 started (ADR-0007)**: shared layer = Debian packages (`citos-base` + per-target meta-packages), `os-release` via `dpkg-divert`, APT repo = **reprepro** (open item #4 resolved). Added `common/packages/citos-base/`, `tools/build-package.sh`, and a CI job that builds, installs on a clean Trixie root and asserts branding. |

@@ -1,0 +1,18 @@
+Source: citos-base
+Section: admin
+Priority: optional
+Maintainer: CIT-OS maintainers <citos@cybroid.com>
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.6.2
+Rules-Requires-Root: no
+Homepage: https://github.com/cybroidinstitute/cit-os
+
+Package: citos-base
+Architecture: all
+Depends: ${misc:Depends},
+         base-files
+Description: CIT-OS base identity, branding and configuration
+ Shared branding and configuration for every CIT-OS target (Raspberry Pi,
+ desktop, server/pods, containers). Provides the CIT-OS identity (os-release),
+ the MOTD/issue banners and the brand assets, so branding is defined once and
+ flows to all targets.

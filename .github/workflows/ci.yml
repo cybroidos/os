@@ -78,6 +78,7 @@ jobs:
             docs/adr/ADR-0004-mobile-client.md \
             docs/adr/ADR-0005-pod-image-variants.md \
             docs/adr/ADR-0006-pi-image-builder.md \
+            docs/adr/ADR-0007-shared-packages-and-apt-repo.md \
             docs/research/kiosk-runtime.md \
             docs/research/desktop-environment.md \
             docs/research/desktop-mobile-control.md \
@@ -85,14 +86,49 @@ jobs:
             .devcontainer/devcontainer.json \
             tools/preflight.sh \
             tools/render-brand.py \
+            tools/build-package.sh \
             targets/rpi/config \
             targets/rpi/build.sh \
             targets/rpi/stage-citos/EXPORT_IMAGE \
+            common/packages/citos-base/debian/control \
+            common/packages/citos-base/debian/rules \
             common/branding/brand.toml \
             common/branding/logo/cit-logo.svg ; do
             test -f "$f" || { echo "missing: $f"; exit 1; }
           done
           echo "all required files present"
+
+  build-base-package:
+    name: Build & verify citos-base (Debian 13 / Trixie)
+    runs-on: ubuntu-24.04
+    container: debian:13-slim
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install build deps
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            ca-certificates git python3 dpkg-dev debhelper fakeroot lintian
+
+      - name: Build .deb
+        run: tools/build-package.sh citos-base
+
+      - name: Inspect .deb
+        run: |
+          dpkg-deb -I dist/*.deb
+          dpkg-deb -c dist/*.deb
+
+      - name: Install and verify branding
+        run: |
+          dpkg -i dist/*.deb
+          grep -q '^ID=citos' /etc/os-release
+          grep -q 'CIT-OS' /etc/motd
+          test -f /etc/issue
+          echo "citos-base installs and applies branding"
+
+      - name: Lintian (non-fatal)
+        run: lintian dist/*.deb || true
 
   shellcheck:
     name: Shellcheck (Debian 13 / Trixie)

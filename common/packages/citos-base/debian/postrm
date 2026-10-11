@@ -1,0 +1,12 @@
+#!/bin/sh
+set -e
+
+#DEBHELPER#
+
+# Undo the os-release diversion set up in preinst.
+if [ "$1" = "remove" ] || [ "$1" = "purge" ]; then
+	dpkg-divert --package citos-base --remove --rename \
+		--divert /usr/lib/os-release.base-files /usr/lib/os-release || true
+fi
+
+exit 0

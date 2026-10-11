@@ -1,4 +1,4 @@
-etc/motd etc/
 usr/lib/os-release usr/lib/
 usr/share/citos/branding usr/share/citos/
 usr/share/citos/issue usr/share/citos/
+usr/share/citos/motd usr/share/citos/

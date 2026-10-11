@@ -3,11 +3,14 @@ set -e
 
 #DEBHELPER#
 
-# /etc/issue is a conffile owned by base-files and is not shipped as a package
-# file (that would trigger a conffile prompt). preinst divers base-files' copy
-# aside; here we install our branded one in its place.
+# /etc/issue and /etc/motd are conffiles owned by base-files and are not shipped
+# as package files (that would trigger a conffile prompt). preinst divers
+# base-files' copies aside; here we install our branded ones in their place.
 if [ -f /usr/share/citos/issue ]; then
 	cp /usr/share/citos/issue /etc/issue
+fi
+if [ -f /usr/share/citos/motd ]; then
+	cp /usr/share/citos/motd /etc/motd
 fi
 
 exit 0

@@ -2,11 +2,11 @@
 set -e
 
 # Brand system identity files owned by base-files by diverting them aside, so
-# our shipped versions in /etc/issue and /usr/lib/os-release take effect.
-# Redirecting /etc/issue and /usr/lib/os-release means we do not have to
-# Conflict/Replaces base-files (which is Essential).
+# our versions in /etc/issue, /etc/motd and /usr/lib/os-release take effect.
+# Diverting avoids Conflicts/Replaces on base-files (which is Essential) and
+# avoids dpkg conffile prompts.
 if [ "$1" = "install" ]; then
-	for f in /usr/lib/os-release /etc/issue; do
+	for f in /usr/lib/os-release /etc/issue /etc/motd; do
 		dpkg-divert --package citos-base --add --rename \
 			--divert "${f}.base-files" "$f"
 	done

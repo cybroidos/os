@@ -1,0 +1,13 @@
+#!/bin/sh
+set -e
+
+#DEBHELPER#
+
+# /etc/issue is a conffile owned by base-files and is not shipped as a package
+# file (that would trigger a conffile prompt). preinst divers base-files' copy
+# aside; here we install our branded one in its place.
+if [ -f /usr/share/citos/issue ]; then
+	cp /usr/share/citos/issue /etc/issue
+fi
+
+exit 0

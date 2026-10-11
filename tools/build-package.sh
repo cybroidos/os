@@ -31,6 +31,9 @@ cp -a "${src}/debian" "${srcdir}/debian"
 python3 "${repo_root}/tools/render-brand.py" \
 	--brand "${brand}" --release "${release}" --out "${srcdir}"
 install -d "${srcdir}/usr/share/citos/branding"
+# /etc/issue is a base-files conffile; ship it aside and place it in postinst.
+install -d "${srcdir}/usr/share/citos"
+cp "${srcdir}/etc/issue" "${srcdir}/usr/share/citos/issue"
 cp -a "${repo_root}/common/branding/logo/." "${srcdir}/usr/share/citos/branding/"
 
 # Keep the changelog version in sync with brand.toml.

@@ -52,6 +52,10 @@ jobs:
             README.md \
             docs/PLAN.md \
             docs/adr/ADR-0001-base-distribution.md \
+            docs/adr/ADR-0003-desktop-environment.md \
+            docs/research/kiosk-runtime.md \
+            docs/research/desktop-environment.md \
+            docs/research/desktop-mobile-control.md \
             common/branding/brand.toml \
             common/branding/logo/cit-logo.svg ; do
             test -f "$f" || { echo "missing: $f"; exit 1; }

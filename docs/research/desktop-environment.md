@@ -1,11 +1,13 @@
 # Research: Desktop environment for the CIT-OS desktop target
 
-- **Status:** research complete, **decision pending** (→ ADR-0003)
+- **Status:** **decided — see [ADR-0003](../adr/ADR-0003-desktop-environment.md)**
+  (KDE Plasma default desktop; Xfce for the server/pods target; Calamares).
 - **Date:** 2026-10-11
-- **Related:** [PLAN §6 Phase 6](../PLAN.md), ADR-0001 (Debian 13 Trixie)
+- **Related:** [PLAN §6 Phase 6](../PLAN.md), ADR-0001 (Debian 13 Trixie),
+  ADR-0003 (desktop environment), `desktop-mobile-control.md`
 - **Question:** which desktop environment should the CIT-OS **desktop** target
   ship? The owner asked to evaluate **KDE Plasma** specifically, "or anything
-  better than it".
+  better than it". The server/pods target also needs a DE → **Xfce**.
 
 ## TL;DR recommendation
 

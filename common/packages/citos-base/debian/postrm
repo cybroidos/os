@@ -3,10 +3,12 @@ set -e
 
 #DEBHELPER#
 
-# Undo the os-release diversion set up in preinst.
+# Undo the diversions set up in preinst (restores base-files' originals).
 if [ "$1" = "remove" ] || [ "$1" = "purge" ]; then
-	dpkg-divert --package citos-base --remove --rename \
-		--divert /usr/lib/os-release.base-files /usr/lib/os-release || true
+	for f in /usr/lib/os-release /etc/issue; do
+		dpkg-divert --package citos-base --remove --rename \
+			--divert "${f}.base-files" "$f" || true
+	done
 fi
 
 exit 0

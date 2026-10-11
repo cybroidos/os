@@ -109,7 +109,8 @@ jobs:
         run: |
           apt-get update
           apt-get install -y --no-install-recommends \
-            ca-certificates git python3 dpkg-dev debhelper fakeroot lintian
+            ca-certificates git python3 build-essential dpkg-dev \
+            debhelper fakeroot lintian
 
       - name: Build .deb
         run: tools/build-package.sh citos-base

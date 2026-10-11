@@ -186,8 +186,11 @@ hacks; `docs/` and `adr/` keep decisions discoverable.
       (b) `cage` + Chromium (native `.deb`) web app (ADR-0002)
 - [ ] Minimal "hello world" bundle per kiosk mode (Flutter bundle + web page)
 - [ ] QEMU test scripts:
-  - [ ] headless boot: `qemu-system-aarch64 -M raspi3b`, **resized power-of-two
-        copy**, kernel+DTB extracted from the built image, serial console
+  - [x] headless boot: `qemu-system-aarch64`, **feature-detected** machine
+        (`raspi3b`), **power-of-two padded copy**, SD boot + serial console,
+        assert kernel + branding → `tests/qemu/rpi-boot-test.sh` (+
+        `tools/fetch-image.sh` to pull the CI artifact). *Validation pending the
+        first image.*
   - [ ] graphical: `-M virt` + virtio-gpu + generic arm64 kernel/initramfs
         **injected into a COPY of the image** (never the release image),
         `WLR_RENDERER=pixman` (cage) + Chromium `--disable-gpu`, GTK/VNC display;
@@ -338,3 +341,4 @@ QEMU-only workarounds are confined to a **test profile**. Emulation success is
 | 2026-10-11 | **ADR-0004 accepted**: mobile client is a **Flutter (Android)** app with the **KDE Connect protocol (v8)** as transport (Dart `citos_connect`; `citos-control` on desktop; headless `kcd` on pods); **LAN + internet** (self-hosted relay); **actions + full screen**; parity target = **Phone Link**; fork/rebrand KDE Connect **later**. **ADR-0005 accepted**: pods ship as **headless dev spaces** (devcontainers) **and** **Xfce remote-desktop pods** (xrdp primary, noVNC fallback); remote-access choice resolved to RDP+VNC. Updated Phases 4/5/8, architecture, layout, and open items (added #14 relay, #15 dev stacks). |
 | 2026-10-11 | **Phase 2 done**: added the canonical **`.devcontainer`** (Debian 13 Trixie build image + Docker socket mount), `docs/dev-environments.md` (devcontainer/WSL2/GCP x86+GCP arm64/Deepin-QEMU), and `tools/preflight.sh` (toolchain check, shellchecked in CI). CI now validates `devcontainer.json` and requires the new files. |
 | 2026-10-11 | **ADR-0002 accepted** (kiosk runtime = **Flutter via `flutter-pi`**, `cage`+Chromium fallback) and **ADR-0006 accepted** (**pi-gen**, `arm64` branch, buildable in GitHub Actions). **Phase 3 started**: scaffolded `targets/rpi/` (`config`, `build.sh`, `stage-citos`), branding rendered from `brand.toml` via `tools/render-brand.py`, and `.github/workflows/pi-image.yml` (manual/`pi-*` tag). Resolved open items #3 and #8. |
+| 2026-10-11 | Dispatched the first **Pi image build in GitHub Actions**. Added the QEMU harness `tests/qemu/rpi-boot-test.sh` (feature-detected machine, power-of-two padded copy, serial boot + branding assertions) and `tools/fetch-image.sh` (download the CI artifact). |

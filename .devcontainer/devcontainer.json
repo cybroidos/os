@@ -1,0 +1,22 @@
+{
+  "name": "CIT-OS build (Debian 13 Trixie)",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "mounts": [
+    "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
+  ],
+  "postCreateCommand": "bash tools/preflight.sh || true",
+  "remoteEnv": {
+    "DEBIAN_FRONTEND": "noninteractive"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "timonwong.shellcheck",
+        "ms-azuretools.vscode-docker",
+        "redhat.vscode-yaml"
+      ]
+    }
+  }
+}

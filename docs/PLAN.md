@@ -51,7 +51,7 @@ Still needed: **logo (SVG+PNG)** and **hex colours**. Placeholders live in
 | Phase | Deliverable | Status |
 |---|---|---|
 | **1** | ADR: base distribution + repo/plan | **DONE** |
-| **2** | Repo skeleton + Docker/WSL2/GCP dev environments | **IN PROGRESS** |
+| **2** | Repo skeleton + Docker/WSL2/GCP dev environments | **DONE** |
 | **3** | Working Pi image (arm64, Lite + Cage kiosk + Plymouth) + QEMU tests | TODO |
 | **4** | `<brand>-base` package + signed APT repo + Docker/pod images (headless dev spaces + Xfce remote-desktop pods) | TODO |
 | **5** | Server/pods image (Xfce DE + cloud-init + qcow2 + RDP/VNC) | TODO |
@@ -157,14 +157,15 @@ hacks; `docs/` and `adr/` keep decisions discoverable.
 - [x] This development plan
 **Exit criteria:** decision recorded; plan agreed.
 
-### Phase 2 — Repo skeleton + dev environments ⬅ IN PROGRESS
-- [ ] `git init`, `.gitignore`, `README.md`, this plan, `docs/adr/`
-- [ ] `/.devcontainer` (Debian Trixie) = canonical build environment
-- [ ] `tools/` baseline helpers
-- [ ] Document WSL2 setup and the GCP x86 VM (8 vCPU / 32 GB) setup; mention
-      **arm64 GCP VM** as the fast native path for Pi builds
-- [ ] Make test tooling work with the Deepin box's **QEMU 8.2** (feature-detect
-      which `-M` machines exist; never hard-code `raspi4b`)
+### Phase 2 — Repo skeleton + dev environments ✅ DONE
+- [x] `git init`, `.gitignore`, `README.md`, this plan, `docs/adr/`
+- [x] `/.devcontainer` (Debian Trixie) = canonical build environment
+- [x] `tools/` baseline helper (`tools/preflight.sh` toolchain check)
+- [x] Document WSL2 setup and the GCP x86 VM (8 vCPU / 32 GB) setup; mention
+      **arm64 GCP VM** as the fast native path for Pi builds → `docs/dev-environments.md`
+- [x] Make test tooling work with the Deepin box's **QEMU 8.2** (feature-detect
+      which `-M` machines exist; never hard-code `raspi4b`) → documented in
+      `docs/dev-environments.md` §6 (scripts land in Phase 3)
 **Exit criteria:** any teammate can build inside the devcontainer; docs written.
 
 ### Phase 3 — Pi image v0 (Milestone A) 
@@ -328,3 +329,4 @@ QEMU-only workarounds are confined to a **test profile**. Emulation success is
 | 2026-10-11 | Added `docs/research/desktop-environment.md`: recommends **KDE Plasma 6.3** for the desktop target (best branding hooks + KDE Kiosk lockdown), with an **Xfce 4.20 "Lite"** variant; Calamares installer. Opened the desktop-environment decision (→ ADR-0003); updated Phase 6. |
 | 2026-10-11 | Owner decisions recorded in **ADR-0003 (accepted)**: KDE Plasma = default desktop; **Xfce for the server/pods target**; Calamares installer. Server/pods now ships a GUI (Phase 5). Added **`docs/research/desktop-mobile-control.md`** for a **customized KDE phone app** to control the desktop (KDE Connect + `krdp` + `citos-control`) and a new **Phase 8** (→ ADR-0004). Recorded `krdp 6.3.5` in Debian 13. |
 | 2026-10-11 | **ADR-0004 accepted**: mobile client is a **Flutter (Android)** app with the **KDE Connect protocol (v8)** as transport (Dart `citos_connect`; `citos-control` on desktop; headless `kcd` on pods); **LAN + internet** (self-hosted relay); **actions + full screen**; parity target = **Phone Link**; fork/rebrand KDE Connect **later**. **ADR-0005 accepted**: pods ship as **headless dev spaces** (devcontainers) **and** **Xfce remote-desktop pods** (xrdp primary, noVNC fallback); remote-access choice resolved to RDP+VNC. Updated Phases 4/5/8, architecture, layout, and open items (added #14 relay, #15 dev stacks). |
+| 2026-10-11 | **Phase 2 done**: added the canonical **`.devcontainer`** (Debian 13 Trixie build image + Docker socket mount), `docs/dev-environments.md` (devcontainer/WSL2/GCP x86+GCP arm64/Deepin-QEMU), and `tools/preflight.sh` (toolchain check, shellchecked in CI). CI now validates `devcontainer.json` and requires the new files. |

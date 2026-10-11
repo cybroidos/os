@@ -46,11 +46,22 @@ jobs:
           print(f"SVG OK: {f}")
           PY
 
+      - name: Validate devcontainer.json
+        run: |
+          python3 - <<'PY'
+          import json, pathlib
+          f = pathlib.Path(".devcontainer/devcontainer.json")
+          cfg = json.loads(f.read_text())
+          assert "build" in cfg, "devcontainer.json missing 'build'"
+          print(f"devcontainer.json OK: {cfg.get('name', '?')}")
+          PY
+
       - name: Check required files exist
         run: |
           for f in \
             README.md \
             docs/PLAN.md \
+            docs/dev-environments.md \
             docs/adr/ADR-0001-base-distribution.md \
             docs/adr/ADR-0003-desktop-environment.md \
             docs/adr/ADR-0004-mobile-client.md \
@@ -58,6 +69,9 @@ jobs:
             docs/research/kiosk-runtime.md \
             docs/research/desktop-environment.md \
             docs/research/desktop-mobile-control.md \
+            .devcontainer/Dockerfile \
+            .devcontainer/devcontainer.json \
+            tools/preflight.sh \
             common/branding/brand.toml \
             common/branding/logo/cit-logo.svg ; do
             test -f "$f" || { echo "missing: $f"; exit 1; }

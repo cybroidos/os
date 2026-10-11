@@ -53,6 +53,8 @@ jobs:
             docs/PLAN.md \
             docs/adr/ADR-0001-base-distribution.md \
             docs/adr/ADR-0003-desktop-environment.md \
+            docs/adr/ADR-0004-mobile-client.md \
+            docs/adr/ADR-0005-pod-image-variants.md \
             docs/research/kiosk-runtime.md \
             docs/research/desktop-environment.md \
             docs/research/desktop-mobile-control.md \

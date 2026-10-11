@@ -22,7 +22,7 @@ images** for four targets, sharing as much configuration as possible.
 | 1 | **Raspberry Pi** | flashable `.img` → branded kiosk | CIT labs / customers |
 | 2 | **Desktop** | bootable, installable ISO (x86_64; arm64 optional) | **CIT school computers** (+ a few customers who choose CIT-OS over Windows) |
 | 3 | **Server / pods** | image/ISO (cloud-init capable) + `qcow2` VM image; **now includes an Xfce desktop** (pods run on servers and need a GUI) | CIT + **customers (shipped)** |
-| 4 | **Docker** | base container images (amd64 + arm64) | CIT + customers |
+| 4 | **Docker / pods** | container images (amd64 + arm64): headless **dev spaces** (devcontainers) **and** Xfce **remote-desktop** pods — see ADR-0005 | CIT + customers |
 
 **Goal:** every visible surface is branded — bootloader/firmware where possible,
 quiet boot, Plymouth splash, greeter/login, wallpaper, installer, MOTD/issue,
@@ -32,9 +32,12 @@ defined once.
 **Desktop environment (ADR-0003):** **KDE Plasma** is the default desktop;
 **Xfce** is used on the **server/pods** target.
 
-**Mobile control (new component):** a **customized KDE app to control the CIT-OS
-desktop from a mobile phone** — scoped in
-`docs/research/desktop-mobile-control.md` (ADR-0004 pending).
+**Mobile control (ADR-0004, accepted):** a **Flutter (Android)** app to control the
+CIT-OS desktop/pods from a phone, using the **KDE Connect protocol (v8)** as the
+transport (Dart `citos_connect` library; `citos-control` D-Bus service on the
+desktop; headless `kcd` on pods); **LAN + internet**; **actions + full screen**;
+parity target = **Microsoft Phone Link**. Fork/rebrand KDE Connect is **planned,
+later**. Scoped in `docs/research/desktop-mobile-control.md`.
 
 **Brand placeholders** (see ADR §7 Q3):
 `Name = CIT-OS`, `id = citos`, `hostname = citos`, `support = https://cybroid.com`.
@@ -50,11 +53,11 @@ Still needed: **logo (SVG+PNG)** and **hex colours**. Placeholders live in
 | **1** | ADR: base distribution + repo/plan | **DONE** |
 | **2** | Repo skeleton + Docker/WSL2/GCP dev environments | **IN PROGRESS** |
 | **3** | Working Pi image (arm64, Lite + Cage kiosk + Plymouth) + QEMU tests | TODO |
-| **4** | `<brand>-base` package + signed APT repo + Docker target | TODO |
-| **5** | Server/pods image (Xfce DE + cloud-init + qcow2) | TODO |
+| **4** | `<brand>-base` package + signed APT repo + Docker/pod images (headless dev spaces + Xfce remote-desktop pods) | TODO |
+| **5** | Server/pods image (Xfce DE + cloud-init + qcow2 + RDP/VNC) | TODO |
 | **6** | Desktop installable ISO (KDE Plasma default + Xfce "Lite") | TODO |
 | **7** | CI/CD pipeline + documentation + hardware release checklist | IN PROGRESS |
-| **8** | Mobile desktop-control app (customized KDE app) | TODO |
+| **8** | Mobile desktop-control app (Flutter + KDE Connect transport) | TODO |
 
 Done so far: repo + ADR + plan; **brand assets imported** from `novaoneltd/cit`
 into `common/branding/`; **GitHub Actions** started (`ci.yml`, `nightly.yml`) and
@@ -102,8 +105,9 @@ as early as possible, even before the shared package/APT repo work.
                     <brand>-base, <brand>-rpi, <brand>-desktop, <brand>-server,
                     <brand>-kiosk, cit tooling
 
-    phone (customized KDE app) ── LAN ──▶ desktop/pods: KDE Connect + KRDP
-                                          + `citos-control` D-Bus service
+    phone (Flutter app, ADR-0004) ── LAN + internet ──▶ desktop/pods:
+        KDE Connect protocol (kdeconnect-kde / headless `kcd`)
+        + KRDP (full screen) + `citos-control` D-Bus service
 ```
 
 Images **only install packages and apply thin per-target overlays**. The
@@ -124,7 +128,9 @@ config flows to every target through one package.
   rpi/             pi-gen / rpi-image-gen stages + overlays
   desktop/         live-build config (branded boot + installer + desktop)
   server/          cloud-image customization, qcow2 build
-  docker/          Dockerfiles (amd64 + arm64)
+  docker/          Dockerfiles for pod families (ADR-0005):
+                     pod-base, pod-dev-<stack> (headless devcontainers),
+                     pod-desktop (Xfce + xrdp/noVNC)
 /apt-repo          aptly/reprepro config + signing + publish tooling
 /tests
   qemu/            headless Pi boot test + graphical virt test
@@ -182,21 +188,27 @@ hacks; `docs/` and `adr/` keep decisions discoverable.
 the branded kiosk; flashable image available for the engineer. *Real-hardware
 validation deferred to the Phase 7 checklist.*
 
-### Phase 4 — Shared package + APT repo + Docker
+### Phase 4 — Shared package + APT repo + Docker/pods
 - [ ] Build `<brand>-base` `.deb` (branding assets, config, systemd units, defaults)
 - [ ] Per-target meta-packages `<brand>-rpi`, `<brand>-desktop`, `<brand>-server`
 - [ ] Signed APT repo (aptly or reprepro) + CI signing key (secrets only)
 - [ ] Refactor the Pi image to consume the repo / install `<brand>-base`
-- [ ] Docker target from `debian:trixie-slim` (amd64 + arm64) with the same packages
+- [ ] **Pod images (ADR-0005)** from `debian:trixie-slim`, amd64 + arm64:
+  - [ ] `citos-pod-base` (branding + `kcd` + SSH + tooling, no desktop)
+  - [ ] `citos-pod-dev-<stack>` headless **devcontainers** (`.devcontainer/devcontainer.json`
+        + `devcontainer.metadata` label) — generic/Python/Node first
+  - [ ] `citos-pod-desktop` (Xfce 4.20 + **xrdp** primary, **noVNC** fallback + `kcd`)
 - [ ] Container smoke tests (docker/podman, buildx + QEMU binfmt)
 **Exit criteria:** `<brand>-base` installs on a clean Trixie container and applies
-branding; Docker images pass smoke tests on both architectures.
+branding; pod images (headless + desktop) pass smoke tests on both architectures.
 
 ### Phase 5 — Server / pods image
 - [ ] Server image/ISO, **cloud-init capable**, **including an Xfce 4.20 desktop**
       (pods run on servers and need a GUI — ADR-0003)
 - [ ] `qcow2` VM image
-- [ ] Network remote-access path for the Xfce session (VNC/RDP) + branding
+- [ ] Network remote-access path for the Xfce session: **RDP (xrdp) primary** with
+      **VNC/noVNC fallback** — same config as `citos-pod-desktop` (ADR-0005) + branding
+- [ ] Ship headless **`kcd`** for phone control on servers/pods (ADR-0004)
 - [ ] x86_64 QEMU/KVM boot + smoke tests (session up, branding, os-release)
 **Exit criteria:** qcow2 + ISO boot in KVM, show a branded Xfce session, and pass
 the server smoke test.
@@ -221,14 +233,17 @@ the server smoke test.
       display, touch, GPIO, boot from SD/SSD) — **release points only**
 **Exit criteria:** green pipeline producing versioned, published artefacts.
 
-### Phase 8 — Mobile desktop-control app (customized KDE app)
-- [ ] Decide in **ADR-0004**: build (Kirigami Android app) vs rebrand KDE Connect
-      vs Flutter client; Android-only vs iOS too — see
-      `docs/research/desktop-mobile-control.md`
-- [ ] Desktop: ship `citos-control` D-Bus service + KDE Connect commands; enable `krdp`
-- [ ] Phone app: branded CIT client; pairing/security over LAN; signed release
-- [ ] Pods (Xfce): decide whether they need phone control too (ADR-0003 open item 1)
-**Exit criteria:** a phone can control a CIT-OS desktop (actions + optional screen).
+### Phase 8 — Mobile desktop-control app (Flutter + KDE Connect)
+- [x] **ADR-0004 accepted**: Flutter (Android) client + **KDE Connect protocol v8**
+      as transport; LAN + internet; actions + full screen; Phone Link parity;
+      fork/rebrand KDE Connect later — see `docs/research/desktop-mobile-control.md`
+- [ ] Desktop: ship `citos-control` D-Bus service + KDE Connect plugins; enable `krdp`
+- [ ] Dart **`citos_connect`** package (discovery + TLS + pairing + packet/plugin layer)
+- [ ] Phone app: branded CIT Flutter client; pairing/security over LAN; signed release
+- [ ] Internet path: self-hosted relay/tunnel (WireGuard first) — ADR-0004 open item 1
+- [ ] Pods: expose `kcd` (headless KDE Connect) so pods are controllable too (ADR-0005)
+**Exit criteria:** a phone can control a CIT-OS desktop and a pod (actions +
+optional full screen), on LAN and (with the relay) over the internet.
 
 ---
 
@@ -285,9 +300,11 @@ QEMU-only workarounds are confined to a **test profile**. Emulation success is
 | 8 | Kiosk system-UI runtime | Flutter via `flutter-pi` (Pi) + GTK embedder (desktop) | **decision pending → ADR-0002** (see `docs/research/kiosk-runtime.md`) |
 | 9 | Desktop environment | **KDE Plasma 6.3** (default) + Xfce 4.20 "Lite" variant | **DONE → ADR-0003** |
 | 10 | Server/pods DE | **Xfce 4.20** | **DONE → ADR-0003** |
-| 11 | Do container/pod images get a DE, or only server VM/ISO? | server VM/ISO gets Xfce | **confirm** |
-| 12 | Mobile app: phone OS (Android only vs iOS too), control scope (screen vs actions), network (LAN vs internet), build vs rebrand KDE Connect | Android + actions + LAN first | **decision pending → ADR-0004** (see `docs/research/desktop-mobile-control.md`) |
-| 13 | Remote-access protocol for server/pods Xfce (VNC vs RDP) | decide Phase 5 | open |
+| 11 | Pod image variants (with/without desktop; dev space vs remote desktop) | base + per-stack headless devcontainers + Xfce remote-desktop pod | **DONE → ADR-0005** |
+| 12 | Mobile app: phone OS (Android only vs iOS too), control scope (screen vs actions), network (LAN vs internet), build vs rebrand KDE Connect | **Flutter/Android + KDE Connect transport; LAN+internet; actions+full screen; Phone Link parity; rebrand later** | **DONE → ADR-0004** (see `docs/research/desktop-mobile-control.md`) |
+| 13 | Remote-access protocol for server/pods Xfce (VNC vs RDP) | **RDP (xrdp) primary + VNC/noVNC fallback** | **DONE → ADR-0005** |
+| 14 | Internet path for mobile control (relay/tunnel design) | WireGuard first | open → ADR-0004 follow-up |
+| 15 | Which pod dev stacks to ship first | generic + Python + Node | open → ADR-0005 |
 
 ---
 
@@ -310,3 +327,4 @@ QEMU-only workarounds are confined to a **test profile**. Emulation success is
 | 2026-10-11 | Fixed CI/base-OS mismatch: jobs now run inside a **`debian:13-slim` container** (was the Ubuntu runner host). Added `docs/research/kiosk-runtime.md` (flutter-pi feasibility: Pi 2/3/4 + Zero 2 supported, Pi 5 not; plugin caveats) and opened the kiosk-runtime decision (→ ADR-0002). |
 | 2026-10-11 | Added `docs/research/desktop-environment.md`: recommends **KDE Plasma 6.3** for the desktop target (best branding hooks + KDE Kiosk lockdown), with an **Xfce 4.20 "Lite"** variant; Calamares installer. Opened the desktop-environment decision (→ ADR-0003); updated Phase 6. |
 | 2026-10-11 | Owner decisions recorded in **ADR-0003 (accepted)**: KDE Plasma = default desktop; **Xfce for the server/pods target**; Calamares installer. Server/pods now ships a GUI (Phase 5). Added **`docs/research/desktop-mobile-control.md`** for a **customized KDE phone app** to control the desktop (KDE Connect + `krdp` + `citos-control`) and a new **Phase 8** (→ ADR-0004). Recorded `krdp 6.3.5` in Debian 13. |
+| 2026-10-11 | **ADR-0004 accepted**: mobile client is a **Flutter (Android)** app with the **KDE Connect protocol (v8)** as transport (Dart `citos_connect`; `citos-control` on desktop; headless `kcd` on pods); **LAN + internet** (self-hosted relay); **actions + full screen**; parity target = **Phone Link**; fork/rebrand KDE Connect **later**. **ADR-0005 accepted**: pods ship as **headless dev spaces** (devcontainers) **and** **Xfce remote-desktop pods** (xrdp primary, noVNC fallback); remote-access choice resolved to RDP+VNC. Updated Phases 4/5/8, architecture, layout, and open items (added #14 relay, #15 dev stacks). |

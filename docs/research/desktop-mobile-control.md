@@ -1,8 +1,10 @@
 # Research: Mobile app to control the CIT-OS desktop from a phone
 
-- **Status:** scoping, **decision pending** (will get its own ADR, ADR-0004)
+- **Status:** **decided — see [ADR-0004 (accepted)](../adr/ADR-0004-mobile-client.md)**
+  (Flutter/Android client + KDE Connect transport; LAN + internet; actions + full
+  screen; Phone Link parity; rebrand later). This doc remains the option survey.
 - **Date:** 2026-10-11
-- **Related:** [PLAN](../PLAN.md), ADR-0003 (desktop environment)
+- **Related:** [PLAN](../PLAN.md), ADR-0003 (desktop environment), ADR-0004
 - **Ask:** a **customized KDE app** that lets a phone **control the CIT-OS
   desktop** remotely (owner's requirement).
 

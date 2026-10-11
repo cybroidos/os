@@ -1,8 +1,10 @@
 # Research: Kiosk / system-UI runtime
 
-- **Status:** research complete, **decision pending** (will be recorded as ADR-0002)
+- **Status:** **decided — see [ADR-0002 (accepted)](../adr/ADR-0002-kiosk-runtime.md)**
+  (Flutter via `flutter-pi` primary; `cage`+Chromium swappable fallback;
+  official GTK embedder on desktop). This doc remains the feasibility research.
 - **Date:** 2026-10-11
-- **Related:** [PLAN §6 Phase 3](../PLAN.md), ADR-0001 (Debian 13 Trixie)
+- **Related:** [PLAN §6 Phase 3](../PLAN.md), ADR-0001 (Debian 13 Trixie), ADR-0002
 - **Question:** which runtime renders the CIT-OS kiosk / system UI on the Pi and
   desktop targets? The owner prefers **Flutter**; confirm feasibility and pick the
   embedder.

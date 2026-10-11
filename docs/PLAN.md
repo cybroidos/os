@@ -52,7 +52,7 @@ Still needed: **logo (SVG+PNG)** and **hex colours**. Placeholders live in
 |---|---|---|
 | **1** | ADR: base distribution + repo/plan | **DONE** |
 | **2** | Repo skeleton + Docker/WSL2/GCP dev environments | **DONE** |
-| **3** | Working Pi image (arm64, Lite + Cage kiosk + Plymouth) + QEMU tests | TODO |
+| **3** | Working Pi image (arm64, Lite + Flutter/flutter-pi kiosk + Plymouth) + QEMU tests | **IN PROGRESS** |
 | **4** | `<brand>-base` package + signed APT repo + Docker/pod images (headless dev spaces + Xfce remote-desktop pods) | TODO |
 | **5** | Server/pods image (Xfce DE + cloud-init + qcow2 + RDP/VNC) | TODO |
 | **6** | Desktop installable ISO (KDE Plasma default + Xfce "Lite") | TODO |
@@ -61,7 +61,9 @@ Still needed: **logo (SVG+PNG)** and **hex colours**. Placeholders live in
 
 Done so far: repo + ADR + plan; **brand assets imported** from `novaoneltd/cit`
 into `common/branding/`; **GitHub Actions** started (`ci.yml`, `nightly.yml`) and
-running **inside a Debian 13 container** (matches the shipping base OS).
+running **inside a Debian 13 container** (matches the shipping base OS);
+**devcontainer** build environment (`docs/dev-environments.md`); **Pi build
+scaffold** (`targets/rpi/`, pi-gen) with a manual GitHub Actions workflow.
 
 **Milestone A (fast path):** the engineer is ready to flash an SD card now, and
 will flash the stock Raspberry Pi OS image **today**, then switch to CIT-OS when
@@ -168,15 +170,20 @@ hacks; `docs/` and `adr/` keep decisions discoverable.
       `docs/dev-environments.md` §6 (scripts land in Phase 3)
 **Exit criteria:** any teammate can build inside the devcontainer; docs written.
 
-### Phase 3 — Pi image v0 (Milestone A) 
-- [ ] Choose Pi builder (follow-up ADR): `pi-gen` (x86-host friendly) vs
-      `rpi-image-gen` (arm64 native, preferred if an arm64 host is available)
-- [ ] arm64 **Lite** base + CIT branding (os-release, motd, issue, hostname)
+### Phase 3 — Pi image v0 (Milestone A) ⬅ IN PROGRESS
+- [x] Choose Pi builder → **`pi-gen`** (official; `arm64` branch). See
+      `docs/adr/ADR-0006-pi-image-builder.md`
+- [x] Kiosk runtime → **Flutter via `flutter-pi`** (primary), `cage` + Chromium
+      (swappable web fallback). See `docs/adr/ADR-0002-kiosk-runtime.md`
+- [x] Scaffold `targets/rpi/` (`config`, `build.sh`, `stage-citos`) + branding
+      rendered from `brand.toml` (`tools/render-brand.py`) + GitHub Actions
+      workflow (`.github/workflows/pi-image.yml`, manual/tag)
+- [ ] Build the arm64 **Lite + branding** image (os-release, motd, issue,
+      hostname) and verify it boots — *current step*
 - [ ] Quiet boot + **Plymouth** splash + CIT wallpaper
 - [ ] **kiosk**: systemd service launching one fullscreen app, auto-restart on
-      crash; **runtime swappable** — (a) Flutter via **flutter-pi** (direct
-      DRM/KMS, no compositor) or (b) `cage` + Chromium (native `.deb`) web app.
-      See `docs/research/kiosk-runtime.md` (ADR-0002 pending)
+      crash; **runtime swappable** — (a) Flutter via **flutter-pi** (default) or
+      (b) `cage` + Chromium (native `.deb`) web app (ADR-0002)
 - [ ] Minimal "hello world" bundle per kiosk mode (Flutter bundle + web page)
 - [ ] QEMU test scripts:
   - [ ] headless boot: `qemu-system-aarch64 -M raspi3b`, **resized power-of-two
@@ -293,12 +300,12 @@ QEMU-only workarounds are confined to a **test profile**. Emulation success is
 |---|---|---|---|
 | 1 | Logo assets | imported from `novaoneltd/cit` | **done** |
 | 2 | Palette confirmation (true primary; monochrome variant; wallpapers) | derived from logo SVG | **confirm with brand owner** |
-| 3 | Pi builder: pi-gen vs rpi-image-gen | decide Phase 3 | open |
+| 3 | Pi builder: pi-gen vs rpi-image-gen | **pi-gen** (`arm64` branch) | **DONE → ADR-0006** |
 | 4 | APT repo tool: aptly vs reprepro | decide Phase 4 | open |
 | 5 | Desktop installer: Calamares vs debian-installer | **Calamares** (Debian Live default) | leaning Calamares |
 | 6 | Engineers' exact runtimes + path/package dependencies | Debian-compatible | re-confirm before Phase 6 |
 | 7 | arm64 desktop ISO needed? | x86_64 first | open |
-| 8 | Kiosk system-UI runtime | Flutter via `flutter-pi` (Pi) + GTK embedder (desktop) | **decision pending → ADR-0002** (see `docs/research/kiosk-runtime.md`) |
+| 8 | Kiosk system-UI runtime | **Flutter via `flutter-pi`** (primary) + `cage`+Chromium (fallback) | **DONE → ADR-0002** (see `docs/research/kiosk-runtime.md`) |
 | 9 | Desktop environment | **KDE Plasma 6.3** (default) + Xfce 4.20 "Lite" variant | **DONE → ADR-0003** |
 | 10 | Server/pods DE | **Xfce 4.20** | **DONE → ADR-0003** |
 | 11 | Pod image variants (with/without desktop; dev space vs remote desktop) | base + per-stack headless devcontainers + Xfce remote-desktop pod | **DONE → ADR-0005** |
@@ -330,3 +337,4 @@ QEMU-only workarounds are confined to a **test profile**. Emulation success is
 | 2026-10-11 | Owner decisions recorded in **ADR-0003 (accepted)**: KDE Plasma = default desktop; **Xfce for the server/pods target**; Calamares installer. Server/pods now ships a GUI (Phase 5). Added **`docs/research/desktop-mobile-control.md`** for a **customized KDE phone app** to control the desktop (KDE Connect + `krdp` + `citos-control`) and a new **Phase 8** (→ ADR-0004). Recorded `krdp 6.3.5` in Debian 13. |
 | 2026-10-11 | **ADR-0004 accepted**: mobile client is a **Flutter (Android)** app with the **KDE Connect protocol (v8)** as transport (Dart `citos_connect`; `citos-control` on desktop; headless `kcd` on pods); **LAN + internet** (self-hosted relay); **actions + full screen**; parity target = **Phone Link**; fork/rebrand KDE Connect **later**. **ADR-0005 accepted**: pods ship as **headless dev spaces** (devcontainers) **and** **Xfce remote-desktop pods** (xrdp primary, noVNC fallback); remote-access choice resolved to RDP+VNC. Updated Phases 4/5/8, architecture, layout, and open items (added #14 relay, #15 dev stacks). |
 | 2026-10-11 | **Phase 2 done**: added the canonical **`.devcontainer`** (Debian 13 Trixie build image + Docker socket mount), `docs/dev-environments.md` (devcontainer/WSL2/GCP x86+GCP arm64/Deepin-QEMU), and `tools/preflight.sh` (toolchain check, shellchecked in CI). CI now validates `devcontainer.json` and requires the new files. |
+| 2026-10-11 | **ADR-0002 accepted** (kiosk runtime = **Flutter via `flutter-pi`**, `cage`+Chromium fallback) and **ADR-0006 accepted** (**pi-gen**, `arm64` branch, buildable in GitHub Actions). **Phase 3 started**: scaffolded `targets/rpi/` (`config`, `build.sh`, `stage-citos`), branding rendered from `brand.toml` via `tools/render-brand.py`, and `.github/workflows/pi-image.yml` (manual/`pi-*` tag). Resolved open items #3 and #8. |

@@ -56,6 +56,16 @@ jobs:
           print(f"devcontainer.json OK: {cfg.get('name', '?')}")
           PY
 
+      - name: Syntax-check tooling
+        run: |
+          python3 -m py_compile tools/render-brand.py
+          echo "render-brand.py compiles"
+          bash -n targets/rpi/config
+          bash -n targets/rpi/build.sh
+          bash -n targets/rpi/stage-citos/prerun.sh
+          bash -n targets/rpi/stage-citos/00-citos/01-run.sh
+          echo "targets/rpi scripts parse"
+
       - name: Check required files exist
         run: |
           for f in \
@@ -63,15 +73,21 @@ jobs:
             docs/PLAN.md \
             docs/dev-environments.md \
             docs/adr/ADR-0001-base-distribution.md \
+            docs/adr/ADR-0002-kiosk-runtime.md \
             docs/adr/ADR-0003-desktop-environment.md \
             docs/adr/ADR-0004-mobile-client.md \
             docs/adr/ADR-0005-pod-image-variants.md \
+            docs/adr/ADR-0006-pi-image-builder.md \
             docs/research/kiosk-runtime.md \
             docs/research/desktop-environment.md \
             docs/research/desktop-mobile-control.md \
             .devcontainer/Dockerfile \
             .devcontainer/devcontainer.json \
             tools/preflight.sh \
+            tools/render-brand.py \
+            targets/rpi/config \
+            targets/rpi/build.sh \
+            targets/rpi/stage-citos/EXPORT_IMAGE \
             common/branding/brand.toml \
             common/branding/logo/cit-logo.svg ; do
             test -f "$f" || { echo "missing: $f"; exit 1; }
@@ -93,7 +109,7 @@ jobs:
       - name: Shellcheck all shell scripts
         shell: bash
         run: |
-          mapfile -t files < <(find tools ci tests -name '*.sh' 2>/dev/null || true)
+          mapfile -t files < <(find tools ci tests targets -name '*.sh' 2>/dev/null || true)
           if [ "${#files[@]}" -eq 0 ]; then
             echo "no shell scripts yet"
             exit 0

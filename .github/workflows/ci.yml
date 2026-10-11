@@ -92,6 +92,9 @@ jobs:
             targets/rpi/config \
             targets/rpi/build.sh \
             targets/rpi/stage-citos/EXPORT_IMAGE \
+            targets/rpi/stage-citos/00-citos/02-kiosk.sh \
+            targets/rpi/stage-citos/00-citos/files/usr/bin/citos-kiosk \
+            targets/rpi/stage-citos/00-citos/files/etc/citos/kiosk.conf \
             common/packages/citos-base/debian/control \
             common/packages/citos-base/debian/rules \
             common/branding/brand.toml \

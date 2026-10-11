@@ -10,17 +10,21 @@ on:
 permissions:
   contents: read
 
+# All jobs run INSIDE Debian 13 "Trixie" so CI matches the shipping base OS
+# (ADR-0001). The runner host is Ubuntu only because GitHub does not offer a
+# Debian runner image; the `container:` keeps the job environment on Debian.
 jobs:
   validate-repo:
-    name: Validate repo & branding
+    name: Validate repo & branding (Debian 13 / Trixie)
     runs-on: ubuntu-latest
+    container: debian:13-slim
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
+      - name: Install tooling
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends ca-certificates git python3
 
       - name: Validate brand.toml
         run: |
@@ -55,11 +59,19 @@ jobs:
           echo "all required files present"
 
   shellcheck:
-    name: Shellcheck
+    name: Shellcheck (Debian 13 / Trixie)
     runs-on: ubuntu-latest
+    container: debian:13-slim
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install shellcheck
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends ca-certificates git shellcheck
+
       - name: Shellcheck all shell scripts
+        shell: bash
         run: |
           mapfile -t files < <(find tools ci tests -name '*.sh' 2>/dev/null || true)
           if [ "${#files[@]}" -eq 0 ]; then

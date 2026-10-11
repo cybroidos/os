@@ -49,7 +49,8 @@ Still needed: **logo (SVG+PNG)** and **hex colours**. Placeholders live in
 | **7** | CI/CD pipeline + documentation + hardware release checklist | IN PROGRESS |
 
 Done so far: repo + ADR + plan; **brand assets imported** from `novaoneltd/cit`
-into `common/branding/`; **GitHub Actions** started (`ci.yml`, `nightly.yml`).
+into `common/branding/`; **GitHub Actions** started (`ci.yml`, `nightly.yml`) and
+running **inside a Debian 13 container** (matches the shipping base OS).
 
 **Milestone A (fast path):** the engineer is ready to flash an SD card now, and
 will flash the stock Raspberry Pi OS image **today**, then switch to CIT-OS when
@@ -154,9 +155,11 @@ hacks; `docs/` and `adr/` keep decisions discoverable.
       `rpi-image-gen` (arm64 native, preferred if an arm64 host is available)
 - [ ] arm64 **Lite** base + CIT branding (os-release, motd, issue, hostname)
 - [ ] Quiet boot + **Plymouth** splash + CIT wallpaper
-- [ ] **kiosk**: systemd service running a single fullscreen app under **cage**,
-      auto-restart on crash; Chromium (native `.deb`) web app; swappable
-- [ ] Native hello-world (Qt/GTK) as a second, swappable example
+- [ ] **kiosk**: systemd service launching one fullscreen app, auto-restart on
+      crash; **runtime swappable** — (a) Flutter via **flutter-pi** (direct
+      DRM/KMS, no compositor) or (b) `cage` + Chromium (native `.deb`) web app.
+      See `docs/research/kiosk-runtime.md` (ADR-0002 pending)
+- [ ] Minimal "hello world" bundle per kiosk mode (Flutter bundle + web page)
 - [ ] QEMU test scripts:
   - [ ] headless boot: `qemu-system-aarch64 -M raspi3b`, **resized power-of-two
         copy**, kernel+DTB extracted from the built image, serial console
@@ -251,6 +254,7 @@ QEMU-only workarounds are confined to a **test profile**. Emulation success is
 | 5 | Desktop installer: Calamares vs debian-installer | Phase 6 | open |
 | 6 | Engineers' exact runtimes + path/package dependencies | Debian-compatible | re-confirm before Phase 6 |
 | 7 | arm64 desktop ISO needed? | x86_64 first | open |
+| 8 | Kiosk system-UI runtime | Flutter via `flutter-pi` (Pi) + GTK embedder (desktop) | **decision pending → ADR-0002** (see `docs/research/kiosk-runtime.md`) |
 
 ---
 
@@ -270,3 +274,4 @@ QEMU-only workarounds are confined to a **test profile**. Emulation success is
 |---|---|
 | 2026-10-11 | Initial plan; ADR-0001 accepted (Debian 13 Trixie; Pi dev/test on Pi 3, target Pi 4). |
 | 2026-10-11 | Imported CIT logo assets from `novaoneltd/cit` into `common/branding/`; added `brand.toml` (derived palette); started GitHub Actions (`ci.yml`, `nightly.yml`); CI platform confirmed = GitHub Actions. |
+| 2026-10-11 | Fixed CI/base-OS mismatch: jobs now run inside a **`debian:13-slim` container** (was the Ubuntu runner host). Added `docs/research/kiosk-runtime.md` (flutter-pi feasibility: Pi 2/3/4 + Zero 2 supported, Pi 5 not; plugin caveats) and opened the kiosk-runtime decision (→ ADR-0002). |

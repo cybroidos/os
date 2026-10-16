@@ -1,0 +1,4 @@
+#!/bin/sh
+# Icons and wallpapers, rendered from common/branding (needs rsvg-convert).
+set -eu
+python3 "$2/tools/render-brand.py" --target desktop --only icons,wallpaper --out "$1" >/dev/null

@@ -1,54 +1,111 @@
 #!/usr/bin/env bash
-# Build a CIT-OS .deb from common/packages/<name>.
+# Build CIT-OS .deb packages from common/packages/<name>/ (ADR-0007).
 #
-# Renders branding from common/branding/brand.toml into the package source tree,
-# keeps the changelog version in sync, and runs dpkg-buildpackage. Output lands
-# in dist/.
+# A package directory holds:
+#   control          DEBIAN/control; @VERSION@ is replaced with the CIT-OS
+#                    version from common/branding/brand.toml
+#   files/           static files at their install paths (optional)
+#   prepare          executable that stages generated files (optional):
+#                    prepare <package-root> <repo-root>
+#   preinst postinst prerm postrm    maintainer scripts (optional)
 #
-# Requirements: dpkg-dev, debhelper, fakeroot, python3.
+# Files under etc/ become conffiles. Packages are built with plain dpkg-deb,
+# so arm64 packages of prebuilt binaries build on any host with no
+# cross-compiler.
+#
+# Usage: tools/build-package.sh <name>...      build the named packages
+#        tools/build-package.sh --all          every package that can build here
+# Env:   OUT (dist/), VERSION (brand.toml), and inputs some packages need:
+#        KIOSK_BUNDLE (citos-kiosk-app: a flutterpi_tool release bundle).
 set -euo pipefail
 
-name="${1:-citos-base}"
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd "${here}/.." && pwd)"
-src="${repo_root}/common/packages/${name}"
+pkgs_dir="${repo_root}/common/packages"
+out="${OUT:-${repo_root}/dist}"
 brand="${repo_root}/common/branding/brand.toml"
-release="${RELEASE:-trixie}"
-out="${repo_root}/dist"
 
-[ -d "${src}/debian" ] || { echo "error: no package '${name}' in common/packages/" >&2; exit 1; }
-[ -f "${brand}" ] || { echo "error: missing ${brand}" >&2; exit 1; }
+die() { echo "error: $*" >&2; exit 1; }
+command -v dpkg-deb >/dev/null || die "dpkg-deb not found"
 
-version="$(python3 -c 'import tomllib,sys; print(tomllib.load(open(sys.argv[1],"rb"))["identity"]["version"])' "${brand}")"
-echo "building ${name} ${version}"
+version="${VERSION:-$(python3 -c 'import tomllib,sys; print(tomllib.load(open(sys.argv[1],"rb"))["identity"]["version"])' "${brand}")}"
 
-work="$(mktemp -d)"
-srcdir="${work}/${name}-${version}"
-mkdir -p "${srcdir}"
-cp -a "${src}/debian" "${srcdir}/debian"
+build_one() {
+	local name="$1"
+	local src="${pkgs_dir}/${name}"
+	[ -f "${src}/control" ] || die "no package '${name}' (missing ${src}/control)"
 
-# Render identity + assets (paths must match debian/install).
-python3 "${repo_root}/tools/render-brand.py" \
-	--brand "${brand}" --release "${release}" --out "${srcdir}"
-install -d "${srcdir}/usr/share/citos/branding"
-# /etc/issue and /etc/motd are base-files conffiles; ship them aside and place
-# them in postinst.
-install -d "${srcdir}/usr/share/citos"
-cp "${srcdir}/etc/issue" "${srcdir}/usr/share/citos/issue"
-cp "${srcdir}/etc/motd" "${srcdir}/usr/share/citos/motd"
-cp -a "${repo_root}/common/branding/logo/." "${srcdir}/usr/share/citos/branding/"
+	local work root
+	work="$(mktemp -d)"
+	root="${work}/${name}"
+	mkdir -p "${root}"
+	if [ -d "${src}/files" ]; then
+		cp -a "${src}/files/." "${root}/"
+	fi
+	if [ -x "${src}/prepare" ]; then
+		"${src}/prepare" "${root}" "${repo_root}"
+	fi
+	find "${root}" -name '__pycache__' -type d -prune -exec rm -rf {} +
 
-# Keep the changelog version in sync with brand.toml.
-cat > "${srcdir}/debian/changelog" <<EOF
-${name} (${version}) ${release}; urgency=medium
+	# Debian-style docs: copyright and a changelog.
+	local doc="${root}/usr/share/doc/${name}"
+	install -d "${doc}"
+	install -m 0644 "${pkgs_dir}/copyright" "${doc}/copyright"
+	printf '%s (%s) trixie; urgency=medium\n\n  * Built from the cit-os repository.\n\n -- CIT-OS maintainers <citos@cybroid.com>  %s\n' \
+		"${name}" "${version}" "$(date -R)" | gzip -9n > "${doc}/changelog.gz"
 
-  * Built from common/branding/brand.toml.
+	# Normalise permissions: the source tree's umask must not leak in.
+	find "${root}" -type d -exec chmod 0755 {} +
+	find "${root}" -type f -exec chmod u+rw,go+r,go-w {} +
 
- -- CIT-OS maintainers <citos@cybroid.com>  $(date -R)
-EOF
+	install -d "${root}/DEBIAN"
+	local size
+	size="$(du -sk --exclude=DEBIAN "${root}" | cut -f1)"
+	sed -e "s/@VERSION@/${version}/g" "${src}/control" > "${root}/DEBIAN/control"
+	printf 'Installed-Size: %s\n' "${size}" >> "${root}/DEBIAN/control"
 
-mkdir -p "${out}"
-( cd "${srcdir}" && dpkg-buildpackage -us -uc -b )
-find "${work}" -maxdepth 1 -name '*.deb' -exec mv -t "${out}" {} +
-echo "built:"
-ls -lh "${out}"/*.deb
+	for script in preinst postinst prerm postrm; do
+		if [ -f "${src}/${script}" ]; then
+			install -m 0755 "${src}/${script}" "${root}/DEBIAN/${script}"
+		fi
+	done
+	if [ -d "${root}/etc" ]; then
+		(cd "${root}" && find etc -type f | sort | sed 's|^|/|') > "${root}/DEBIAN/conffiles"
+		[ -s "${root}/DEBIAN/conffiles" ] || rm "${root}/DEBIAN/conffiles"
+	fi
+	(cd "${root}" && find . -path ./DEBIAN -prune -o -type f -print0 | sort -z \
+		| xargs -0 -r md5sum | sed 's| \./| |') > "${root}/DEBIAN/md5sums"
+
+	local arch deb
+	arch="$(sed -n 's/^Architecture: *//p' "${root}/DEBIAN/control")"
+	deb="${out}/${name}_${version}_${arch}.deb"
+	mkdir -p "${out}"
+	dpkg-deb --root-owner-group -Zxz --build "${root}" "${deb}" >/dev/null
+	rm -rf "${work}"
+	echo "built ${deb#"${repo_root}"/}"
+}
+
+# Packages whose inputs come from another build (the Flutter bundle).
+needs_input() {
+	case "$1" in
+	citos-kiosk-app) [ -n "${KIOSK_BUNDLE:-}" ] ;;
+	*) true ;;
+	esac
+}
+
+[ "$#" -gt 0 ] || die "usage: $0 <package>... | --all"
+if [ "$1" = "--all" ]; then
+	for dir in "${pkgs_dir}"/*/; do
+		name="$(basename "${dir}")"
+		[ -f "${dir}/control" ] || continue
+		if needs_input "${name}"; then
+			build_one "${name}"
+		else
+			echo "skip ${name} (input not provided)"
+		fi
+	done
+else
+	for name in "$@"; do
+		build_one "${name}"
+	done
+fi

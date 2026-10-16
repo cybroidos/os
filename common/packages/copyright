@@ -1,0 +1,27 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: CIT-OS
+Upstream-Contact: CIT-OS maintainers <citos@cybroid.com>
+Source: https://github.com/cybroidinstitute/cit-os
+
+Files: *
+Copyright: 2026 Cybroid Institute of Technology
+License: Proprietary
+ CIT-OS software, branding assets and configuration. All rights reserved.
+
+Files: usr/share/citos/kiosk/flutter_bundle/flutter_assets/assets/fonts/*
+Copyright: 2017 The Barlow Project Authors (https://github.com/jpt/barlow)
+License: OFL-1.1
+ Shipped only in citos-kiosk-app. Full text in the bundle's OFL.txt and
+ at https://openfontlicense.org.
+
+Files: usr/share/citos/kiosk/flutter_bundle/flutter-pi
+Copyright: 2019-2026 Hannes Winkler (ardera) and contributors
+License: MIT
+ Shipped in citos-kiosk-app (prebuilt by the flutter-pi project,
+ fetched by flutterpi_tool). https://github.com/ardera/flutter-pi
+
+Files: usr/share/citos/kiosk/flutter_bundle/*.so
+Copyright: 2014 The Flutter Authors
+License: BSD-3-Clause
+ Flutter engine, shipped only in citos-kiosk-app.
+ https://github.com/flutter/flutter/blob/main/LICENSE

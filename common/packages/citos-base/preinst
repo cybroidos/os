@@ -12,6 +12,4 @@ if [ "$1" = "install" ]; then
 	done
 fi
 
-#DEBHELPER#
-
 exit 0

@@ -72,8 +72,8 @@ jobs:
           bash -n targets/rpi/build.sh
           bash -n targets/rpi/stage-citos/prerun.sh
           bash -n targets/rpi/stage-citos/00-citos/01-run.sh
-          bash -n targets/rpi/stage-citos/00-citos/02-packages.sh
-          bash -n targets/rpi/stage-citos/00-citos/03-kiosk.sh
+          bash -n targets/rpi/stage-citos/00-citos/02-run.sh
+          bash -n targets/rpi/stage-citos/00-citos/03-run.sh
           echo "targets/rpi scripts parse"
 
       - name: Check required files exist
@@ -102,8 +102,8 @@ jobs:
             targets/rpi/config \
             targets/rpi/build.sh \
             targets/rpi/stage-citos/EXPORT_IMAGE \
-            targets/rpi/stage-citos/00-citos/02-packages.sh \
-            targets/rpi/stage-citos/00-citos/03-kiosk.sh \
+            targets/rpi/stage-citos/00-citos/02-run.sh \
+            targets/rpi/stage-citos/00-citos/03-run.sh \
             common/packages/copyright \
             common/packages/citos-base/control \
             common/packages/citos-kiosk/files/usr/bin/citos-kiosk \

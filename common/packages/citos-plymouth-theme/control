@@ -1,0 +1,12 @@
+Package: citos-plymouth-theme
+Version: @VERSION@
+Architecture: all
+Maintainer: CIT-OS maintainers <citos@cybroid.com>
+Homepage: https://github.com/cybroidinstitute/cit-os
+Section: misc
+Priority: optional
+Depends: plymouth
+Description: CIT-OS boot splash
+ Plymouth theme that plays the CIT-OS logo's draw-in animation on the brand
+ background, then holds the logo until the next program draws. Installing
+ it makes it the default theme and rebuilds the initramfs.

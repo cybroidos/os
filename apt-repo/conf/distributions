@@ -1,0 +1,8 @@
+Origin: CIT-OS
+Label: CIT-OS
+Suite: stable
+Codename: trixie
+Architectures: arm64 amd64
+Components: main
+Description: CIT-OS packages (Cybroid Institute of Technology)
+SignWith: default

@@ -63,3 +63,27 @@ Debian packaging conventions (debhelper-compat 13, `Rules-Requires-Root: no`,
 `reprepro` signing behaviour are standard, documented Debian mechanisms. The
 `citos-base` package is verified in CI (build, `dpkg-deb -I/-c`, install on a
 clean Trixie root, assert `/etc/os-release` `ID=citos`, lintian).
+
+## 5. Amendment (2026-10-15): package set and build tool
+
+- **Build tool:** packages are built with plain `dpkg-deb` by
+  `tools/build-package.sh` instead of `dpkg-buildpackage`/debhelper. Each
+  package is a directory with `control`, `files/`, an optional `prepare`
+  script and maintainer scripts (see `common/packages/README.md`). Reason: the
+  arm64 package (`citos-kiosk-app`) is prebuilt binaries, and
+  `dpkg-deb` packages them on any host with no cross toolchain; the same
+  builder also works on a developer machine without debhelper installed.
+  Conffiles and md5sums are generated; systemd units are enabled with
+  `deb-systemd-helper` in `postinst`.
+- **Package set:** `citos-base`, `citos-artwork`, `citos-plymouth-theme`,
+  `python3-citos-robot`, `citos-system`, `citos-kiosk`, `citos-kiosk-app`
+  (arm64), `flutter-pi` (arm64), `citos-robot-hw`, and the `citos-robot`
+  metapackage. The `citos-rpi`/`citos-desktop`/`citos-server` metapackages
+  from §2 come with their targets.
+- **Plymouth:** `citos-plymouth-theme` does not ship
+  `/etc/plymouth/plymouthd.conf` (owned by `plymouth`); its `postinst` sets
+  the theme and checks it took, because an image once silently fell back to
+  the text theme.
+- **Repository:** `apt-repo/conf` + `tools/publish-apt-repo.sh` (reprepro,
+  `SignWith: default`); verified locally: arch-all packages appear in both
+  arm64 and amd64 indexes and `InRelease` verifies with `gpgv`.

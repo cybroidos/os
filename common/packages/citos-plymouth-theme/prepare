@@ -1,0 +1,6 @@
+#!/bin/sh
+# The Plymouth theme, rendered from common/branding (needs rsvg-convert).
+# plymouthd.conf belongs to the plymouth package; postinst sets the theme.
+set -eu
+python3 "$2/tools/render-brand.py" --target rpi --only plymouth --out "$1" >/dev/null
+rm -rf "${1:?}/etc"

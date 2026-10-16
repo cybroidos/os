@@ -1,8 +1,6 @@
 #!/bin/sh
 set -e
 
-#DEBHELPER#
-
 # /etc/issue and /etc/motd are conffiles owned by base-files and are not shipped
 # as package files (that would trigger a conffile prompt). preinst divers
 # base-files' copies aside; here we install our branded ones in their place.

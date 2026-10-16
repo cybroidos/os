@@ -21,8 +21,10 @@ repo="$(cd "${here}/../apt-repo" && pwd)"
 
 [ "$#" -gt 0 ] || { echo "usage: $0 <deb>..." >&2; exit 2; }
 command -v reprepro >/dev/null || { echo "error: reprepro not installed" >&2; exit 1; }
-gpg --list-secret-keys >/dev/null 2>&1 && [ -n "$(gpg --list-secret-keys 2>/dev/null)" ] \
-	|| { echo "error: no GnuPG secret key to sign with" >&2; exit 1; }
+if [ -z "$(gpg --list-secret-keys 2>/dev/null)" ]; then
+	echo "error: no GnuPG secret key to sign with" >&2
+	exit 1
+fi
 
 for deb in "$@"; do
 	# Replace an existing version of the same package and architecture.

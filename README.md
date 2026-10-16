@@ -7,7 +7,7 @@ Four targets, one shared base and branding layer:
 
 | Target | Artefact |
 |---|---|
-| Raspberry Pi | flashable `.img` → branded kiosk (develop/test on Pi 3; runs on Pi 4) |
+| Raspberry Pi | flashable `.img` → branded kiosk (develop, test and run on Pi 4) |
 | Desktop | bootable, installable ISO — CIT school computers |
 | Server | minimal cloud-init image + `qcow2` (ship to customers) |
 | Docker | base container images (amd64 + arm64) |
@@ -45,6 +45,8 @@ time: **commit and push small, reviewable changes often.**
 ## Branding
 
 Name `CIT-OS`, id `citos`, hostname `citos`, support `https://cybroid.com`.
-Logo assets and palette live in [`common/branding/`](common/branding/) (imported
-from the CIT web repo). Palette is derived from the logo and awaits brand-owner
-confirmation — see `common/branding/README.md`.
+Logo, palette and templates live in [`common/branding/`](common/branding/) and
+are rendered per target (`rpi`, `desktop`, `server`, `container`, `base`) by
+`tools/render-brand.py`, so every image is branded from one place. The palette is
+derived from the logo and awaits brand-owner confirmation — see
+[`common/branding/README.md`](common/branding/README.md).

@@ -26,24 +26,32 @@ jobs:
           apt-get update
           apt-get install -y --no-install-recommends ca-certificates git python3
 
-      - name: Validate brand.toml
+      - name: Validate brand.toml and targets.toml
         run: |
           python3 - <<'PY'
           import pathlib, tomllib
-          data = tomllib.loads(pathlib.Path("common/branding/brand.toml").read_text())
+          root = pathlib.Path("common/branding")
+          data = tomllib.loads((root / "brand.toml").read_text())
           for section in ("identity", "colors", "assets"):
               assert section in data, f"missing [{section}] in brand.toml"
+          for role, rel in data["assets"].items():
+              assert (root / rel).is_file(), f"asset {role}: missing {rel}"
+          targets = tomllib.loads((root / "targets.toml").read_text())
+          for name in ("base", "rpi", "desktop", "server", "container"):
+              assert name in targets, f"missing [{name}] in targets.toml"
           ident = data["identity"]
-          print(f"brand.toml OK: {ident['name']} (id={ident['id']})")
+          print(f"brand OK: {ident['name']} (id={ident['id']}), targets: {', '.join(targets)}")
           PY
 
-      - name: Validate logo SVG is well-formed
+      - name: Validate SVGs are well-formed
         run: |
           python3 - <<'PY'
           import pathlib, xml.dom.minidom
-          f = pathlib.Path("common/branding/logo/cit-logo.svg")
-          xml.dom.minidom.parse(str(f))
-          print(f"SVG OK: {f}")
+          for f in sorted(pathlib.Path("common/branding").rglob("*.svg")):
+              if "templates" in f.parts:
+                  continue  # templates hold ${placeholders}; checked after rendering
+              xml.dom.minidom.parse(str(f))
+              print(f"SVG OK: {f}")
           PY
 
       - name: Validate devcontainer.json
@@ -58,12 +66,14 @@ jobs:
 
       - name: Syntax-check tooling
         run: |
-          python3 -m py_compile tools/render-brand.py
+          python3 -m py_compile tools/render-brand.py tools/brand_anim.py common/services/citos_robot/*.py
           echo "render-brand.py compiles"
           bash -n targets/rpi/config
           bash -n targets/rpi/build.sh
           bash -n targets/rpi/stage-citos/prerun.sh
           bash -n targets/rpi/stage-citos/00-citos/01-run.sh
+          bash -n targets/rpi/stage-citos/00-citos/02-packages.sh
+          bash -n targets/rpi/stage-citos/00-citos/03-kiosk.sh
           echo "targets/rpi scripts parse"
 
       - name: Check required files exist
@@ -92,49 +102,161 @@ jobs:
             targets/rpi/config \
             targets/rpi/build.sh \
             targets/rpi/stage-citos/EXPORT_IMAGE \
-            targets/rpi/stage-citos/00-citos/02-kiosk.sh \
-            targets/rpi/stage-citos/00-citos/files/usr/bin/citos-kiosk \
-            targets/rpi/stage-citos/00-citos/files/etc/citos/kiosk.conf \
-            common/packages/citos-base/debian/control \
-            common/packages/citos-base/debian/rules \
+            targets/rpi/stage-citos/00-citos/02-packages.sh \
+            targets/rpi/stage-citos/00-citos/03-kiosk.sh \
+            common/packages/copyright \
+            common/packages/citos-base/control \
+            common/packages/citos-kiosk/files/usr/bin/citos-kiosk \
+            common/packages/citos-kiosk/files/etc/citos/kiosk.conf \
+            common/packages/citos-robot/control \
+            common/services/citos_robot/kioskd.py \
+            apps/kiosk/pubspec.yaml \
+            apps/kiosk/.fvmrc \
             common/branding/brand.toml \
-            common/branding/logo/cit-logo.svg ; do
+            common/branding/targets.toml \
+            tests/qemu/virt-kiosk-test.sh \
+            tests/qemu/apply-source.sh \
+            tools/brand_anim.py ; do
             test -f "$f" || { echo "missing: $f"; exit 1; }
           done
           echo "all required files present"
 
-  build-base-package:
-    name: Build & verify citos-base (Debian 13 / Trixie)
+  render-branding:
+    name: Render branding for every target (Debian 13 / Trixie)
     runs-on: ubuntu-24.04
     container: debian:13-slim
     steps:
       - uses: actions/checkout@v5
 
-      - name: Install build deps
+      - name: Install tooling
         run: |
           apt-get update
+          apt-get install -y --no-install-recommends ca-certificates git python3 librsvg2-bin
+
+      - name: Render all targets
+        run: |
+          for t in $(python3 tools/render-brand.py --list | awk '{print $1}'); do
+            python3 tools/render-brand.py --target "$t" --out "out/branding/$t"
+          done
+
+      - name: Check rendered output
+        run: |
+          python3 - <<'PY'
+          import pathlib, xml.dom.minidom
+          out = pathlib.Path("out/branding")
+          for t in ("base", "rpi", "desktop", "server", "container"):
+              rel = (out / t / "usr/lib/os-release").read_text()
+              assert "ID=citos" in rel, t
+          for f in out.rglob("*.svg"):
+              xml.dom.minidom.parse(str(f))
+          for f in out.rglob("*.png"):
+              assert f.read_bytes()[:8] == b"\x89PNG\r\n\x1a\n" and f.stat().st_size > 100, f
+          for f in out.rglob("*"):
+              if f.suffix in (".html", ".script", ".plymouth", ".svg") or f.name in ("motd", "issue", "os-release"):
+                  assert "${" not in f.read_text(), f"unrendered placeholder in {f}"
+          print("rendered branding OK")
+          PY
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cit-os-branding
+          path: out/branding/
+
+  build-packages:
+    name: Build, install and remove the CIT-OS packages (Debian 13 / Trixie)
+    runs-on: ubuntu-24.04
+    container: debian:13-slim
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install build tools
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends ca-certificates git python3 dpkg-dev librsvg2-bin lintian
+
+      - name: Build packages
+        run: tools/build-package.sh --all
+
+      - name: Inspect packages
+        run: |
+          for deb in dist/*.deb; do echo "== $deb"; dpkg-deb -I "$deb" | sed -n '/Package:/,/Description:/p'; done
+
+      - name: Install on a clean Trixie root
+        run: |
+          # Everything that installs here; the arm64 app/runtime and the
+          # citos-robot metapackage that needs them are built in pi-image.yml.
           apt-get install -y --no-install-recommends \
-            ca-certificates git python3 build-essential dpkg-dev \
-            debhelper fakeroot lintian
+            ./dist/citos-base_*.deb ./dist/citos-artwork_*.deb \
+            ./dist/citos-plymouth-theme_*.deb ./dist/python3-citos-robot_*.deb \
+            ./dist/citos-system_*.deb ./dist/citos-kiosk_*.deb ./dist/citos-robot-hw_*.deb
 
-      - name: Build .deb
-        run: tools/build-package.sh citos-base
-
-      - name: Inspect .deb
+      - name: Verify what the packages did
         run: |
-          dpkg-deb -I dist/*.deb
-          dpkg-deb -c dist/*.deb
-
-      - name: Install and verify branding
-        run: |
-          dpkg -i dist/*.deb
+          set -x
           grep -q '^ID=citos' /etc/os-release
           grep -q 'CIT-OS' /etc/motd
-          test -f /etc/issue
-          echo "citos-base installs and applies branding"
+          grep -q '^Theme=citos$' /etc/plymouth/plymouthd.conf
+          test -f /usr/share/plymouth/themes/citos/anim-000.png
+          test -f /usr/share/icons/hicolor/256x256/apps/citos.png
+          test -f /etc/mosquitto/conf.d/citos.conf
+          test -L /etc/systemd/system/multi-user.target.wants/citos-system.service
+          python3 -c 'import citos_robot.kioskd, citos_robot.system, citos_robot.bus'
+          citos-kiosk --help | grep -q 'kiosk supervisor'
+
+      - name: Remove and check base-files is restored
+        run: |
+          apt-get remove -y citos-base citos-artwork citos-plymouth-theme citos-kiosk citos-system python3-citos-robot citos-robot-hw
+          grep -q '^ID=debian' /etc/os-release
+          ! grep -q '^Theme=citos$' /etc/plymouth/plymouthd.conf
 
       - name: Lintian (non-fatal)
         run: lintian dist/*.deb || true
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: citos-packages-all
+          path: dist/*.deb
+
+  services:
+    name: Robot services unit tests (Debian 13 / Trixie)
+    runs-on: ubuntu-24.04
+    container: debian:13-slim
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install Python
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends python3
+      - name: Run tests
+        run: python3 -m unittest discover -s tests/services -v
+
+  kiosk-app:
+    name: Flutter kiosk app (analyze + test)
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: apps/kiosk
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Read the pinned Flutter version
+        id: fvm
+        run: echo "version=$(python3 -c 'import json; print(json.load(open(".fvmrc"))["flutter"])')" >> "$GITHUB_OUTPUT"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ steps.fvm.outputs.version }}
+          channel: stable
+
+      - name: Generated branding is up to date
+        working-directory: .
+        run: |
+          python3 tools/render-brand.py --emit-dart apps/kiosk/lib/src/brand.g.dart
+          git diff --exit-code apps/kiosk/lib/src/brand.g.dart
+
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
 
   shellcheck:
     name: Shellcheck (Debian 13 / Trixie)
@@ -152,6 +274,10 @@ jobs:
         shell: bash
         run: |
           mapfile -t files < <(find tools ci tests targets -name '*.sh' 2>/dev/null || true)
+          files+=(common/packages/*/prepare common/packages/*/files/usr/bin/citos-kiosk)
+          for f in common/packages/*/{preinst,postinst,prerm,postrm}; do
+            [ -f "$f" ] && files+=("$f")
+          done
           if [ "${#files[@]}" -eq 0 ]; then
             echo "no shell scripts yet"
             exit 0

@@ -1,16 +1,17 @@
 # CIT-OS brand identity
 #
-# Single source of truth for branding values. Builders and packages read this
-# file (or values rendered from it) so branding is defined exactly once.
+# Single source of truth for branding values. tools/render-brand.py reads this
+# file and renders a filesystem overlay per target (see targets.toml), so
+# branding is defined exactly once and flows to every image.
 #
-# Palette is DERIVED from the official CIT logo gradient found in
-# novaoneltd/cit -> extension/media/cit-logo.svg (stop-colors #557fc0 -> #69cce1
-# over navy #112649 / #0e2044). Confirm/adjust with the brand owner before a
-# release; treat these as v0 defaults.
+# Palette is DERIVED from the Cybroid logo art in logo/cybroid-logo.svg
+# (band gradient #3a7cff -> #2c9dff -> #1ccbff, circuit #18d8ff, tile
+# #16224a -> #0d1530). Confirm/adjust with the brand owner before a release;
+# treat these as v0 defaults.
 
 [identity]
 name            = "CIT-OS"
-id              = "citos"                 # os-release ID, hostname, package prefix
+id              = "citos"                 # os-release ID, hostname, package prefix, install paths
 vendor          = "Cybroid Institute of Technology"
 vendor_short    = "CIT"
 pretty_name     = "CIT-OS"
@@ -22,19 +23,20 @@ documentation   = "https://github.com/cybroidinstitute/cit-os"
 bug_report_url  = "https://github.com/cybroidinstitute/cit-os/issues"
 
 [colors]
-# Roles. Derived from the CIT logo SVG; see header note.
-primary        = "#112649"   # deep navy — primary brand / dark surfaces
-primary_deep   = "#0e2044"   # darker navy — deepest background
-accent         = "#69cce1"   # cyan — primary accent / highlights
-accent_alt     = "#557fc0"   # blue — secondary accent (logo gradient start)
-background     = "#0e2044"
+# Roles. Derived from the Cybroid logo SVG; see header note.
+primary        = "#16224a"   # navy — primary brand / dark surfaces
+primary_deep   = "#0d1530"   # deepest navy — background
+accent         = "#1ccbff"   # cyan — primary accent / highlights
+accent_alt     = "#3a7cff"   # blue — secondary accent (band gradient start)
+glow           = "#18d8ff"   # circuit traces / focus glow
+background     = "#0d1530"
 foreground     = "#ffffff"
-on_accent      = "#0e2044"
+on_accent      = "#0d1530"
 
 [assets]
-# Paths are relative to common/branding/
-logo_svg       = "logo/cit-logo.svg"     # primary vector lockup
-logo_png       = "logo/cit-logo.png"     # 1254x1254 transparent PNG
-mark_png       = "logo/cit-mark.png"     # 256x256 square mark/icon
-icon_64_png    = "logo/cit-icon-64.png"  # 64x64
-favicon_png    = "logo/cit-favicon.png"  # 225x225
+# Source art, relative to common/branding/. Renderers install these under
+# role names (logo.svg, mark.svg, ...) so consumers never depend on file names.
+logo           = "logo/cybroid-logo.svg"                       # app-icon tile (navy rounded square)
+logo_animated  = "logo/cybroid-logo-animated.svg"              # tile, CSS-animated (browsers only)
+mark           = "logo/cybroid-mark.svg"                       # transparent mark, static (rasterisable)
+mark_animated  = "logo/cybroid-mark-animated-transparent.svg"  # transparent mark, CSS-animated (browsers only)

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1920 1080" width="1920" height="1080">
+<!-- Generated from common/branding (templates/wallpaper). Rendered to PNG at several sizes. -->
+<defs>
+<radialGradient id="bg" cx=".5" cy=".42" r=".75">
+<stop offset="0" stop-color="${color_primary}"/>
+<stop offset="1" stop-color="${color_background}"/>
+</radialGradient>
+<radialGradient id="halo" cx=".5" cy=".5" r=".5">
+<stop offset="0" stop-color="${color_accent_alt}" stop-opacity=".22"/>
+<stop offset="1" stop-color="${color_accent_alt}" stop-opacity="0"/>
+</radialGradient>
+</defs>
+<rect width="1920" height="1080" fill="url(#bg)"/>
+<circle cx="960" cy="470" r="420" fill="url(#halo)"/>
+<g fill="none" stroke="${color_glow}" stroke-opacity=".08" stroke-width="2">
+<circle cx="960" cy="470" r="520"/>
+<circle cx="960" cy="470" r="680"/>
+<circle cx="960" cy="470" r="860"/>
+</g>
+<image x="760" y="270" width="400" height="400" xlink:href="${mark_data_uri}"/>
+<text x="960" y="770" text-anchor="middle" font-family="DejaVu Sans, sans-serif" font-size="64" font-weight="bold" letter-spacing="6" fill="${color_foreground}">${pretty_name}</text>
+<rect x="870" y="800" width="180" height="5" rx="2.5" fill="${color_accent}"/>
+</svg>

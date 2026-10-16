@@ -1,0 +1,34 @@
+# Generated from common/branding (templates/plymouth) — do not edit in the image.
+# Plays the logo's draw-in (anim-NNN.png, rendered from the animated SVG), then
+# holds the finished mark with a slow breathe until the kiosk takes over.
+Window.SetBackgroundTopColor(${rgb_background});
+Window.SetBackgroundBottomColor(${rgb_background});
+
+frames = ${frames};
+for (i = 0; i < frames; i++) {
+    name = "anim-";
+    if (i < 100) name += "0";
+    if (i < 10) name += "0";
+    anim[i] = Image(name + i + ".png");
+}
+
+logo = Sprite(anim[0]);
+logo.SetX(Window.GetX() + Window.GetWidth() / 2 - anim[0].GetWidth() / 2);
+logo.SetY(Window.GetY() + Window.GetHeight() / 2 - anim[0].GetHeight() / 2);
+
+# Plymouth refreshes at 50 Hz; the frames are 25 fps.
+tick = 0;
+fun refresh_callback() {
+    tick++;
+    i = Math.Int(tick / 2);
+    if (i < frames) {
+        logo.SetImage(anim[i]);
+    } else {
+        logo.SetOpacity(0.8 + 0.2 * Math.Cos((i - frames) / 12));
+    }
+}
+Plymouth.SetRefreshFunction(refresh_callback);
+
+# Quiet boot: do not draw boot messages over the splash.
+fun message_callback(text) { }
+Plymouth.SetMessageFunction(message_callback);

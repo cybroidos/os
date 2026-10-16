@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${pretty_name}</title>
+<style>
+  :root {
+    --primary: ${color_primary};
+    --background: ${color_background};
+    --accent: ${color_accent};
+    --accent-alt: ${color_accent_alt};
+    --foreground: ${color_foreground};
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 2vmin;
+    font-family: system-ui, "DejaVu Sans", sans-serif;
+    color: var(--foreground);
+    background: radial-gradient(circle at 50% 38%,
+                var(--primary) 0%, var(--background) 70%);
+    cursor: none; user-select: none;
+  }
+  /* mark.svg is the CSS-animated mark: it draws itself in, then pulses. */
+  img { width: 34vmin; height: auto; margin-bottom: 1vmin; }
+  h1 { margin: 0; font-size: 7vmin; letter-spacing: .05em; }
+  p { margin: 0; font-size: 2.6vmin; color: var(--accent); }
+  .rule {
+    width: 26vmin; height: .5vmin; border-radius: 1vmin;
+    background: linear-gradient(90deg, var(--accent-alt), var(--accent));
+  }
+  footer {
+    position: fixed; bottom: 3vmin;
+    font-size: 2vmin; opacity: .75;
+  }
+</style>
+</head>
+<body>
+  <img src="mark.svg" alt="${pretty_name}">
+  <h1>${pretty_name}</h1>
+  <div class="rule"></div>
+  <p>version ${version} &middot; ${vendor}</p>
+  <footer>${support_url}</footer>
+</body>
+</html>

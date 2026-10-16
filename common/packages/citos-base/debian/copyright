@@ -1,8 +1,0 @@
-Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: CIT-OS
-Source: https://github.com/cybroidinstitute/cit-os
-
-Files: *
-Copyright: 2026 Cybroid Institute of Technology
-License: Proprietary
- CIT-OS branding assets and configuration. All rights reserved.

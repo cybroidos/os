@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 784 784" role="img" aria-labelledby="cyt">
+<title id="cyt">Cybroid Technologies</title>
+<defs>
+<linearGradient id="cy-band" gradientUnits="userSpaceOnUse" x1="170" y1="640" x2="640" y2="110"><stop offset="0" stop-color="#3a7cff"/><stop offset=".55" stop-color="#2c9dff"/><stop offset="1" stop-color="#1ccbff"/></linearGradient>
+<linearGradient id="cy-low" gradientUnits="userSpaceOnUse" x1="250" y1="0" x2="630" y2="0"><stop offset="0" stop-color="#3d82ff"/><stop offset="1" stop-color="#1fc4ff"/></linearGradient>
+<radialGradient id="cy-bg" cx=".42" cy=".38" r=".8"><stop offset="0" stop-color="#16224a"/><stop offset="1" stop-color="#0d1530"/></radialGradient>
+<filter id="cy-glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5" result="b"/><feComponentTransfer in="b" result="g"><feFuncA type="linear" slope=".55"/></feComponentTransfer><feMerge><feMergeNode in="g"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<style>.cy-mark{transform-origin:392px 392px} .cy-band,.cy-trace{stroke-dasharray:1 1;stroke-dashoffset:1;animation:cy-draw var(--d,.8s) cubic-bezier(.65,0,.35,1) var(--t,0s) forwards} .c-main{--t:.25s;--d:.85s}.c-low{--t:.95s;--d:.55s} .c-tip{stroke-dashoffset:0;opacity:0;transform-origin:420px 378px;animation:cy-tip .6s cubic-bezier(.2,.9,.3,1.25) 1.35s forwards} .r-top{--t:.55s}.r-left{--t:.7s;--d:.45s}.r-lowl{--t:.8s}.r-lowr{--t:1s;--d:.5s}.r-inner{--t:1.25s;--d:.7s} .cy-node{transform-box:fill-box;transform-origin:center;transform:scale(0);animation:cy-pop .45s cubic-bezier(.3,1.6,.5,1) forwards,cy-breathe 3.2s ease-in-out infinite} .n0{animation-delay:.55s,2.6s}.n1{animation-delay:1.3s,3.1s}.n2{animation-delay:.7s,2.9s}.n3{animation-delay:.8s,3.4s}.n4{animation-delay:1.55s,2.7s} .n5{animation-delay:1.2s,3.3s}.n6{animation-delay:1.45s,3s}.n7{animation-delay:1.3s,3.6s}.n8{animation-delay:1.9s,2.8s} .cy-pulse{stroke-dasharray:.07 .93;stroke-dashoffset:1;opacity:0;animation:cy-run 3.6s linear infinite} .cy-star{transform-box:fill-box;transform-origin:center;scale:0;animation:cy-pop2 .5s cubic-bezier(.3,1.6,.5,1) 1.95s forwards,cy-twinkle 4.2s ease-in-out 2.9s infinite} .p-r-top{animation-delay:2.4s}.p-r-lowl{animation-delay:3.3s}.p-r-inner{animation-delay:4.1s}.p-r-lowr{animation-delay:4.8s}.p-r-left{animation-delay:5.4s} @keyframes cy-draw{to{stroke-dashoffset:0}} @keyframes cy-tip{from{opacity:0;transform:rotate(-38deg)}to{opacity:1;transform:rotate(0)}} @keyframes cy-pop{to{transform:scale(1)}} @keyframes cy-pop2{to{scale:1}} @keyframes cy-twinkle{0%,70%,100%{opacity:1;rotate:0deg}80%{opacity:.35;rotate:45deg}88%{opacity:1;rotate:90deg}} @keyframes cy-breathe{0%,100%{opacity:1}50%{opacity:.55}} @keyframes cy-run{0%{stroke-dashoffset:1.07;opacity:0}6%{opacity:.95}40%{opacity:.95}46%{stroke-dashoffset:0;opacity:0}100%{stroke-dashoffset:0;opacity:0}} @media (prefers-reduced-motion:reduce){.cy-band,.cy-trace,.c-tip,.cy-node,.cy-star{animation:none!important;stroke-dashoffset:0;opacity:1;transform:none;scale:1}.cy-pulse{display:none}}</style>
+<g class="cy-mark">
+<path class="cy-band c-main" d="M447.8 151.7 A228 228 0 0 0 253.3 533.5" fill="none" stroke="url(#cy-band)" stroke-width="85" pathLength="1"/>
+<path class="cy-band c-low" d="M264.5 544.7 A228 228 0 0 0 584.0 536.4" fill="none" stroke="url(#cy-low)" stroke-width="85" pathLength="1"/>
+<path class="cy-band c-tip" d="M463.5 154.2 A228 228 0 0 1 589.4 225.4" fill="none" stroke="url(#cy-band)" stroke-width="85" pathLength="1"/>
+<g class="cy-circuit" filter="url(#cy-glow)" fill="#18d8ff" stroke="#18d8ff">
+<path class="cy-trace r-top" d="M215.9 151.3 A305 305 0 0 1 624.1 151.3" fill="none" stroke-width="7" stroke-linecap="round" pathLength="1"/>
+<circle class="cy-node n0" cx="215.9" cy="151.3" r="16" stroke="none"/>
+<circle class="cy-node n1" cx="624.1" cy="151.3" r="16" stroke="none"/>
+<path class="cy-trace r-left" d="M167.1 207.4 A305 305 0 0 0 115.2 367.4" fill="none" stroke-width="7" stroke-linecap="round" pathLength="1"/>
+<circle class="cy-node n2" cx="167.1" cy="207.4" r="16" stroke="none"/>
+<path class="cy-trace r-lowl" d="M120.6 436.2 A305 305 0 0 0 377.6 680.0" fill="none" stroke-width="7" stroke-linecap="round" pathLength="1"/>
+<circle class="cy-node n3" cx="120.6" cy="436.2" r="16" stroke="none"/>
+<circle class="cy-node n4" cx="377.6" cy="680.0" r="16" stroke="none"/>
+<path class="cy-trace r-lowr" d="M446.6 681.8 A305 305 0 0 0 628.0 601.1" fill="none" stroke-width="7" stroke-linecap="round" pathLength="1"/>
+<circle class="cy-node n5" cx="446.6" cy="681.8" r="16" stroke="none"/>
+<circle class="cy-node n6" cx="628.0" cy="601.1" r="16" stroke="none"/>
+<path class="cy-trace r-inner" d="M368.0 235.2 A152 152 0 0 0 363.1 518.9" fill="none" stroke-width="8" stroke-linecap="round" pathLength="1"/>
+<circle class="cy-node n7" cx="368.0" cy="235.2" r="16" stroke="none"/>
+<circle class="cy-node n8" cx="363.1" cy="518.9" r="16" stroke="none"/>
+<path class="cy-star" d="M0.0 -16.0 L3.2 -3.2 L16.0 0.0 L3.2 3.2 L0.0 16.0 L-3.2 3.2 L-16.0 0.0 L-3.2 -3.2 Z" fill="#c9f6ff" stroke="none" filter="url(#cy-glow)" transform="translate(118 128)"/>
+<path class="cy-pulse p-r-top" d="M215.9 151.3 A305 305 0 0 1 624.1 151.3" fill="none" stroke="#e9fbff" stroke-width="8" stroke-linecap="round" pathLength="1"/>
+<path class="cy-pulse p-r-left" d="M167.1 207.4 A305 305 0 0 0 115.2 367.4" fill="none" stroke="#e9fbff" stroke-width="8" stroke-linecap="round" pathLength="1"/>
+<path class="cy-pulse p-r-lowl" d="M120.6 436.2 A305 305 0 0 0 377.6 680.0" fill="none" stroke="#e9fbff" stroke-width="8" stroke-linecap="round" pathLength="1"/>
+<path class="cy-pulse p-r-lowr" d="M446.6 681.8 A305 305 0 0 0 628.0 601.1" fill="none" stroke="#e9fbff" stroke-width="8" stroke-linecap="round" pathLength="1"/>
+<path class="cy-pulse p-r-inner" d="M368.0 235.2 A152 152 0 0 0 363.1 518.9" fill="none" stroke="#e9fbff" stroke-width="9" stroke-linecap="round" pathLength="1"/>
+</g></g></svg>

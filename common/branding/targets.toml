@@ -1,0 +1,49 @@
+# Branding profiles per build target.
+#
+# `tools/render-brand.py --target <name> --out <dir>` renders the listed
+# components into <dir> as a filesystem overlay (paths are final install
+# paths). Every builder consumes that overlay the same way:
+#
+#   rpi        pi-gen stage files/            (targets/rpi/build.sh)
+#   desktop    live-build config/includes.chroot/
+#   server     image build overlay / cloud-init image
+#   container  Dockerfile `COPY overlay/ /`
+#   base       citos-base .deb source tree    (tools/build-package.sh)
+#
+# Components (see tools/render-brand.py):
+#   identity   /usr/lib/os-release, /etc/motd, /etc/issue
+#   assets     /usr/share/<id>/branding/{logo,mark}{,-animated}.svg
+#   icons      PNG icons: hicolor theme + /usr/share/<id>/branding/*.png  (needs rsvg-convert)
+#   plymouth   /usr/share/plymouth/themes/<id>/                           (needs rsvg-convert)
+#   kiosk      /usr/share/<id>/kiosk/ — branded web page for cage+Chromium
+#   wallpaper  /usr/share/backgrounds/<id>/                               (needs rsvg-convert)
+#
+# `variant`/`variant_id` become os-release VARIANT/VARIANT_ID.
+
+[base]
+id_like    = "debian"
+components = ["identity", "assets"]
+
+[rpi]
+id_like    = "debian raspbian"
+variant    = "Raspberry Pi"
+variant_id = "rpi"
+components = ["identity", "assets", "icons", "plymouth", "kiosk", "wallpaper"]
+
+[desktop]
+id_like    = "debian"
+variant    = "Desktop"
+variant_id = "desktop"
+components = ["identity", "assets", "icons", "plymouth", "wallpaper"]
+
+[server]
+id_like    = "debian"
+variant    = "Server"
+variant_id = "server"
+components = ["identity", "assets", "icons", "plymouth", "wallpaper"]
+
+[container]
+id_like    = "debian"
+variant    = "Container"
+variant_id = "container"
+components = ["identity", "assets"]

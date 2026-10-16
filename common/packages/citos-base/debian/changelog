@@ -1,5 +1,0 @@
-citos-base (0.1.0) trixie; urgency=medium
-
-  * Initial release: CIT-OS identity (os-release), MOTD/issue and brand assets.
-
- -- CIT-OS maintainers <citos@cybroid.com>  Sat, 11 Oct 2026 00:00:00 +0000

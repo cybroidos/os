@@ -1,0 +1,83 @@
+name: Server images
+
+# CIT-OS Server as a VM image (qcow2, cloud-init) and as a container template
+# (Proxmox LXC; imports into Docker too), uploaded to the citos-images bucket
+# on Hangar's storage (s3.cybroid.com), where Hangar's Images page prepares
+# them for launching. The desktop variant (Xfce, xrdp) comes later.
+#
+# Secrets: CITOS_IMAGES_KEY_ID, CITOS_IMAGES_SECRET (a Garage key that can
+# write only to the citos-images bucket).
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - 'common/branding/**'
+      - 'common/packages/citos-base/**'
+      - 'targets/lib/**'
+      - 'targets/server/**'
+      - 'targets/container/**'
+      - '.github/workflows/server-images.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: server-images
+  cancel-in-progress: true
+
+env:
+  S3_URL: https://s3.cybroid.com
+  BUCKET: citos-images
+
+jobs:
+  build:
+    name: Build ${{ matrix.image }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        image: [ vm, container ]
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install tools
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends qemu-utils zstd dpkg-dev
+
+      - name: Build the VM image
+        if: matrix.image == 'vm'
+        run: sudo OUT="$PWD/out" targets/server/build.sh
+
+      - name: Build the container template
+        if: matrix.image == 'container'
+        run: sudo OUT="$PWD/out" targets/container/build.sh
+
+      - name: Check the image
+        run: |
+          sudo chown -R "$(id -u)" out
+          ls -lh out/
+          if [ "${{ matrix.image }}" = vm ]; then
+            qemu-img check out/citos-server-*-amd64.qcow2
+          else
+            zstd -dc out/citos-server_*_amd64.tar.zst | tar -xOf - ./usr/lib/os-release | tee /dev/stderr | grep -q '^ID=citos'
+          fi
+
+      - name: Upload to Hangar's storage
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.CITOS_IMAGES_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.CITOS_IMAGES_SECRET }}
+          AWS_DEFAULT_REGION: garage
+        run: |
+          [ -n "$AWS_ACCESS_KEY_ID" ] || { echo "::warning::No CITOS_IMAGES_KEY_ID secret: built but not uploaded"; exit 0; }
+          s3() { aws --endpoint-url "$S3_URL" s3 "$@"; }
+          if [ "${{ matrix.image }}" = vm ]; then
+            f=$(ls out/citos-server-*-amd64.qcow2); key=server/citos-server-amd64.qcow2
+          else
+            f=$(ls out/citos-server_*_amd64.tar.zst); key=server/citos-server_amd64.tar.zst
+          fi
+          sum=$(sha256sum "$f" | cut -d' ' -f1)
+          s3 cp --only-show-errors "$f" "s3://$BUCKET/$key" --metadata "sha256=$sum,commit=$GITHUB_SHA"
+          echo "$sum  $(basename "$key")" > "$f.sha256"
+          s3 cp --only-show-errors "$f.sha256" "s3://$BUCKET/$key.sha256"
+          echo "Uploaded $key ($(du -h "$f" | cut -f1), sha256 $sum)" >> "$GITHUB_STEP_SUMMARY"

@@ -9,8 +9,8 @@ name: Server images
 # write only to the citos-images bucket).
 on:
   workflow_dispatch:
+  # Builds on every branch; only main uploads.
   push:
-    branches: [ main ]
     paths:
       - 'common/branding/**'
       - 'common/packages/citos-base/**'
@@ -64,6 +64,7 @@ jobs:
           fi
 
       - name: Upload to Hangar's storage
+        if: github.ref == 'refs/heads/main'
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.CITOS_IMAGES_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.CITOS_IMAGES_SECRET }}

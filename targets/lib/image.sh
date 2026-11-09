@@ -11,7 +11,7 @@ need() { for c in "$@"; do command -v "$c" >/dev/null || die "$c not found"; don
 build_debs() {
 	local p
 	for p in "$@"; do
-		[ -f "${repo}/dist/${p}_${VERSION}_all.deb" ] || "${repo}/tools/build-package.sh" "$p"
+		[ -f "${repo}/dist/${p}_${VERSION}_all.deb" ] || OUT="${repo}/dist" "${repo}/tools/build-package.sh" "$p"
 	done
 }
 

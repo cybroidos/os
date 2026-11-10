@@ -7,15 +7,17 @@ Section: x11
 Priority: optional
 Depends: citos-base (>= @VERSION@), citos-artwork (>= @VERSION@),
  xserver-xorg-core, xserver-xorg-input-libinput, x11-xserver-utils, xauth,
- lightdm, lightdm-gtk-greeter,
+ lightdm, slick-greeter,
  xfce4-session, xfwm4, xfdesktop4, xfce4-panel, xfce4-settings, xfconf,
  thunar, xfce4-terminal, mousepad, xfce4-whiskermenu-plugin, xfce4-notifyd,
- xfce4-taskmanager, ristretto,
- greybird-gtk-theme, elementary-xfce-icon-theme, fonts-dejavu-core,
+ xfce4-taskmanager, ristretto, xfce4-docklike-plugin,
+ orchis-gtk-theme, papirus-icon-theme, fonts-inter, fonts-jetbrains-mono, fonts-dejavu-core,
  dbus-x11, dbus-user-session, polkitd, at-spi2-core, xdg-user-dirs,
  firefox-esr, xrdp, xorgxrdp
 Description: CIT-OS Desktop Lite: Xfce with the CIT-OS look
- A light desktop for servers and VMs: Xfce with a whisker menu, terminal,
- file manager, text editor, task manager and Firefox ESR; LightDM with the
- CIT-OS wallpaper and logo; and xrdp, so Remote Desktop clients can sign in.
- About 400 MB of memory when idle.
+ A light, modern desktop for servers and VMs: Xfce with a slim top bar
+ (menu, clock, tray) and a dock, the Orchis dark theme, Papirus icons, the
+ Inter and JetBrains Mono fonts, Firefox ESR, a terminal in CIT-OS colours,
+ and slick-greeter's sign-in screen with the CIT-OS wallpaper and logo; xrdp
+ lets Remote Desktop clients sign in. About 400 MB of memory when idle.
+ These are defaults: each person can change them.

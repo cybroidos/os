@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=CIT-OS dock
+Comment=The dock (Plank) with the CIT-OS apps
+Exec=/usr/libexec/citos/dock
+OnlyShowIn=KDE;
+NoDisplay=true
+X-KDE-autostart-phase=2

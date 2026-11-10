@@ -1,0 +1,14 @@
+#!/bin/sh
+# Starts the CIT-OS dock (Plank). The first time, it puts the CIT-OS apps
+# in it; after that the person's own arrangement stands.
+conf="${XDG_CONFIG_HOME:-$HOME/.config}"
+dir="$conf/plank/dock1/launchers"
+if [ ! -f "$conf/citos/dock-set" ]; then
+	mkdir -p "$dir"
+	for a in citos-apps firefox-esr org.kde.dolphin org.kde.konsole org.kde.kwrite systemsettings; do
+		[ -f "/usr/share/applications/$a.desktop" ] || continue
+		printf '[PlankDockItemPreferences]\nLauncher=file:///usr/share/applications/%s.desktop\n' "$a" > "$dir/$a.dockitem"
+	done
+	mkdir -p "$conf/citos" && : > "$conf/citos/dock-set"
+fi
+exec plank

@@ -1,7 +1,9 @@
 #!/bin/sh
 set -e
 if [ "$1" = "configure" ]; then
-	chmod 0755 /usr/libexec/citos/plasma-look
+	chmod 0755 /usr/libexec/citos/plasma-look /usr/libexec/citos/dock
+	command -v glib-compile-schemas >/dev/null && glib-compile-schemas /usr/share/glib-2.0/schemas || true
+	command -v gtk-update-icon-cache >/dev/null && gtk-update-icon-cache -q -f /usr/share/icons/hicolor || true
 	# Remote Desktop and plain X sessions start Plasma.
 	if [ -x /usr/bin/startplasma-x11 ]; then
 		update-alternatives --set x-session-manager /usr/bin/startplasma-x11 >/dev/null 2>&1 || true

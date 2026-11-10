@@ -1,0 +1,13 @@
+Package: citos-sources
+Version: @VERSION@
+Architecture: all
+Maintainer: CIT-OS maintainers <citos@cybroid.com>
+Homepage: https://github.com/cybroidinstitute/cit-os
+Section: admin
+Priority: optional
+Depends: debian-archive-keyring
+Description: CIT-OS package sources (citos.cybroid.com)
+ Points apt at citos.cybroid.com, which serves Debian 13's archive (and its
+ security updates) under the CIT-OS name. Packages are still Debian's and
+ checked against Debian's signing keys. Debian's own source entries are set
+ aside, not deleted, and come back if this package is removed.

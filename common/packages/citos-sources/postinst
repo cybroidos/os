@@ -1,0 +1,23 @@
+#!/bin/sh
+set -e
+# Sets Debian's own source entries aside, so apt uses citos.sources only:
+# the deb822 file Debian's images ship moves to /etc/apt/citos-replaced/,
+# and deb.debian.org / security.debian.org lines in sources.list are
+# commented out with a "#citos-off# " mark. postrm undoes both. Only on
+# Debian 13 (trixie), which citos.sources describes.
+case "$(cat /etc/debian_version 2>/dev/null)" in 13* | trixie*) ;; *)
+	echo "citos-sources: not Debian 13; leaving apt's sources as they are" >&2
+	exit 0
+	;;
+esac
+keep=/etc/apt/citos-replaced
+for f in /etc/apt/sources.list.d/debian.sources; do
+	if [ -f "$f" ] && grep -qE 'deb\.debian\.org|security\.debian\.org|mirror\+file:///etc/apt/mirrors/debian' "$f"; then
+		mkdir -p "$keep"
+		mv "$f" "$keep/"
+	fi
+done
+if [ -f /etc/apt/sources.list ]; then
+	sed -i -E 's@^([[:space:]]*deb(-src)?[[:space:]].*(deb\.debian\.org|security\.debian\.org).*)$@#citos-off# \1@' /etc/apt/sources.list
+fi
+exit 0

@@ -33,7 +33,9 @@ cleanup() {
 }
 trap cleanup EXIT
 
-build_debs citos-base
+# The identity, and apt pointed at citos.cybroid.com (citos-sources).
+export CITOS_PACKAGES="citos-base citos-sources"
+build_debs $CITOS_PACKAGES
 
 # The base: Proxmox's own template, from its cache or its download server.
 base="${BASE:-}"

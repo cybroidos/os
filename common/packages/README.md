@@ -9,6 +9,8 @@ command line).
 | Package | Arch | Contents | Used by |
 |---|---|---|---|
 | `citos-base` | all | `/etc/os-release` identity, login banners, logo SVGs | every target |
+| `citos-sources` | all | apt sources at `citos.cybroid.com` (Debian 13's archive and security updates under the CIT-OS name; Debian's own entries set aside, restored on removal) | server, desktop, container images; the desktop ISO |
+| `citos-desktop` | all | CIT-OS Desktop Lite: Xfce, Firefox ESR, LightDM in the CIT-OS look, xrdp | desktop VM image; the desktop ISO |
 | `citos-artwork` | all | hicolor icons, wallpapers (1080p–2160p) | desktop, server, Pi |
 | `citos-plymouth-theme` | all | animated boot splash; sets itself as the theme | desktop, server, Pi |
 | `python3-citos-robot` | all | `citos_robot` library: bus, config, supervisor, system service | robot services |

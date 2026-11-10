@@ -44,9 +44,9 @@ cleanup() {
 trap cleanup EXIT
 
 if [ "$VARIANT" = desktop ]; then
-	export CITOS_PACKAGES="citos-base citos-artwork citos-desktop"
+	export CITOS_PACKAGES="citos-base citos-sources citos-artwork citos-desktop"
 else
-	export CITOS_PACKAGES=citos-base
+	export CITOS_PACKAGES="citos-base citos-sources"
 fi
 build_debs $CITOS_PACKAGES
 

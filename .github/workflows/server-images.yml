@@ -16,6 +16,7 @@ on:
       - 'common/packages/citos-base/**'
       - 'common/packages/citos-artwork/**'
       - 'common/packages/citos-desktop/**'
+      - 'common/packages/citos-sources/**'
       - 'targets/lib/**'
       - 'targets/server/**'
       - 'targets/container/**'
@@ -69,6 +70,7 @@ jobs:
             qemu-img check out/citos-desktop-*-amd64.qcow2
           else
             zstd -dc out/citos-server_*_amd64.tar.zst | tar -xOf - ./usr/lib/os-release | tee /dev/stderr | grep -q '^ID=citos'
+            zstd -dc out/citos-server_*_amd64.tar.zst | tar -xOf - ./etc/apt/sources.list.d/citos.sources | grep -q 'citos.cybroid.com/debian'
           fi
 
       - name: Upload to Hangar's storage

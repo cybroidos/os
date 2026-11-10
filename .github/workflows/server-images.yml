@@ -78,7 +78,12 @@ jobs:
           AWS_DEFAULT_REGION: garage
         run: |
           [ -n "$AWS_ACCESS_KEY_ID" ] || { echo "::warning::No CITOS_IMAGES_KEY_ID secret: built but not uploaded"; exit 0; }
-          s3() { aws --endpoint-url "$S3_URL" s3 "$@"; }
+          # Hangar's storage sits behind an office line: the classic transfer
+          # engine (no minimum speed), two parts at a time, three tries.
+          aws configure set default.s3.preferred_transfer_client classic
+          aws configure set default.s3.max_concurrent_requests 2
+          aws configure set default.s3.multipart_chunksize 16MB
+          s3() { for try in 1 2 3; do aws --endpoint-url "$S3_URL" --cli-read-timeout 300 s3 "$@" && return 0; echo "upload try $try failed, retrying"; sleep 20; done; return 1; }
           if [ "${{ matrix.image }}" = vm ]; then
             f=$(ls out/citos-server-*-amd64.qcow2); key=server/citos-server-amd64.qcow2
           elif [ "${{ matrix.image }}" = desktop ]; then

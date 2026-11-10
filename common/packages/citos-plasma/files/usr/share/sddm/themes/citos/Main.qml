@@ -66,7 +66,7 @@ Rectangle {
 
     Column {
         anchors.horizontalCenter: parent.horizontalCenter
-        y: root.height * 0.785
+        y: root.height * 0.73
         spacing: 10
 
         TextField {

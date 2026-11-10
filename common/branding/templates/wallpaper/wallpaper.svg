@@ -18,6 +18,4 @@
 <circle cx="960" cy="470" r="860"/>
 </g>
 <image x="760" y="270" width="400" height="400" xlink:href="${mark_data_uri}"/>
-<text x="960" y="770" text-anchor="middle" font-family="DejaVu Sans, sans-serif" font-size="64" font-weight="bold" letter-spacing="6" fill="${color_foreground}">${pretty_name}</text>
-<rect x="870" y="800" width="180" height="5" rx="2.5" fill="${color_accent}"/>
 </svg>

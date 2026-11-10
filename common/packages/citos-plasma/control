@@ -11,7 +11,7 @@ Depends: citos-base (>= @VERSION@), citos-artwork (>= @VERSION@), citos-plymouth
  breeze, breeze-cursor-theme, papirus-icon-theme, fonts-inter, fonts-jetbrains-mono, appmenu-gtk3-module,
  sddm, qml6-module-qtquick, qml6-module-qtquick-controls, qml6-module-qtquick-templates,
  qml6-module-qtquick-layouts, qml6-module-qtquick-window, qml6-module-qtqml-workerscript,
- plasma-widgets-addons, pipewire, wireplumber, upower,
+ plasma-widgets-addons, plank, dbus-bin, breeze-gtk-theme, kde-config-gtk-style, librsvg2-common, pipewire, wireplumber, upower,
  dolphin, konsole, kwrite, ark, gwenview, firefox-esr,
  xrdp, xorgxrdp, dbus-x11, plymouth, plymouth-themes
 Conflicts: citos-desktop

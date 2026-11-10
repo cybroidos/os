@@ -15,8 +15,8 @@ kwin4_effect_shapecornersEnabled=true
 
 # Rounded windows (citos-kwin-effects: KDE Rounded Corners).
 [Round-Corners]
-Size=14
-InactiveCornerRadius=14
+Size=18
+InactiveCornerRadius=18
 UseSquircleShape=true
 OutlineThickness=1
 InactiveOutlineThickness=1

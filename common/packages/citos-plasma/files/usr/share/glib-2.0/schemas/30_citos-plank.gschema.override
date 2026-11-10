@@ -1,0 +1,11 @@
+# The CIT-OS dock (citos-plasma): icons zoom as the pointer passes.
+[net.launchpad.plank.dock.settings]
+theme='CIT-OS'
+zoom-enabled=true
+zoom-percent=160
+icon-size=46
+hide-mode='intelligent'
+position='bottom'
+alignment='center'
+show-dock-item=false
+dock-items=['citos-apps.dockitem', 'firefox-esr.dockitem', 'org.kde.dolphin.dockitem', 'org.kde.konsole.dockitem', 'org.kde.kwrite.dockitem', 'systemsettings.dockitem']

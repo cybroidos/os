@@ -16,6 +16,7 @@ import pathlib
 import sys
 
 NAVY = (14, 24, 58)
+GLASS = (34, 52, 108)  # panels, dock and popups: lighter than the wallpaper's navy
 ACCENT = (28, 203, 255)
 BLUE = (58, 124, 255)
 WHITE = (255, 255, 255)
@@ -95,6 +96,9 @@ class Sheet:
         piece(p + "right", tx, Y + r, right, right_s)
         piece(p + "center", X + r, Y + r, center)
 
+        # Edges stretch rather than tile: tiled translucent pieces show seams.
+        self.add(f'<rect id="{p}hint-stretch-borders" x="{tx + r + 4}" y="{Y + r + w + 2}" width="2" height="2" fill="none"/>')
+
         # Margins: how far content sits from each edge.
         mt, ml, mr, mb = margins
         hx = tx + r + 20
@@ -119,24 +123,24 @@ class Sheet:
 
 
 # alpha by variant: translucent (blur behind), default, opaque (no compositing)
-VARIANTS = {"translucent": 0.62, "": 0.86, "opaque": 1.0}
+VARIANTS = {"translucent": 0.72, "": 0.9, "opaque": 1.0}
 
 
 def panel(alpha):
     s = Sheet()
-    s.frame("", 18, NAVY, alpha, WHITE, 0.14, margins=(4, 8, 8, 4))
+    s.frame("", 18, GLASS, alpha, None, 0, margins=(4, 8, 8, 4))
     return s.svg()
 
 
 def dialog(alpha):
     s = Sheet()
-    s.frame("", 14, NAVY, min(1.0, alpha + 0.08), WHITE, 0.12, margins=(10, 10, 10, 10))
+    s.frame("", 14, GLASS, min(1.0, alpha + 0.12), None, 0, margins=(10, 10, 10, 10))
     return s.svg()
 
 
 def tooltip(alpha):
     s = Sheet()
-    s.frame("", 10, NAVY, min(1.0, alpha + 0.1), WHITE, 0.12, margins=(8, 10, 10, 8))
+    s.frame("", 10, GLASS, min(1.0, alpha + 0.15), None, 0, margins=(8, 10, 10, 8))
     return s.svg()
 
 
@@ -175,11 +179,11 @@ def main(out):
             "Version": "1.0",
             "Website": "https://cybroid.com",
         },
-        "X-Plasma-API-Minimum-Version": "6.0",
+        "X-Plasma-API": "5.0",
     }
     files = {"metadata.json": json.dumps(meta, indent=4) + "\n"}
     files["plasmarc"] = (
-        "[ContrastEffect]\nenabled=true\ncontrast=0.45\nintensity=1.5\nsaturation=1.6\n\n"
+        "[ContrastEffect]\nenabled=false\n\n"
         "[AdaptiveTransparency]\nenabled=true\n"
     )
     for variant, alpha in VARIANTS.items():

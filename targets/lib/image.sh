@@ -71,6 +71,9 @@ install_citos() { # root variant extra-packages...
 	install -m 0644 "${overlay}/usr/lib/os-release" "${r}/usr/lib/os-release"
 	rm -rf "${overlay}"
 
+	# New accounts get no "Debian" full name from cloud-init (desktops show it).
+	[ -f "${r}/etc/cloud/cloud.cfg" ] && sed -i '/^[[:space:]]*gecos:/d' "${r}/etc/cloud/cloud.cfg"
+
 	echo citos > "${r}/etc/hostname"
 	: > "${r}/etc/machine-id"
 	rm -f "${r}/var/lib/dbus/machine-id" "${r}/etc/ssh/ssh_host_"*

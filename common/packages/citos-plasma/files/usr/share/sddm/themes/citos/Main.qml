@@ -194,9 +194,20 @@ Rectangle {
         }
     }
 
+    // Plasma on X11: remote control (RustDesk, Remote Desktop) needs X11.
+    property int x11Session: -1
+    Repeater {
+        model: sessionModel
+        delegate: Item {
+            Component.onCompleted: {
+                if (String(model.file).indexOf("plasmax11") >= 0) root.x11Session = index
+            }
+        }
+    }
+
     function signIn() {
         root.message = ""
-        sddm.login(userField.text, passField.text, sessionModel.lastIndex)
+        sddm.login(userField.text, passField.text, root.x11Session >= 0 ? root.x11Session : sessionModel.lastIndex)
     }
 
     Connections {

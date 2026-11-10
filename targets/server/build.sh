@@ -5,11 +5,13 @@
 #
 #   sudo targets/server/build.sh                    -> out/citos-server-<version>-amd64.qcow2
 #   sudo VARIANT=desktop targets/server/build.sh    -> out/citos-desktop-<version>-amd64.qcow2
+#   sudo VARIANT=lite targets/server/build.sh       -> out/citos-lite-<version>-amd64.qcow2
 #
-# The desktop variant (CIT-OS Desktop Lite) adds citos-desktop: Xfce,
-# LightDM in the CIT-OS look, Firefox ESR and xrdp. It grows the disk to
-# 8 GB for them and swaps Debian's cloud kernel, which has no display
-# drivers, for its standard one.
+# CIT-OS Desktop is KDE Plasma 6 in the CIT-OS Horizon look (citos-plasma,
+# with the CIT-OS boot splash); CIT-OS Lite is Xfce in the CIT-OS colours
+# (citos-desktop), for small machines. Both grow the disk (10 and 8 GB) and
+# swap Debian's cloud kernel, which has no display drivers, for its
+# standard one.
 #
 # Needs root (loop devices, chroot), qemu-img, curl, python3 and dpkg-deb;
 # the desktop also growpart (cloud-guest-utils), e2fsprogs and rsvg-convert.
@@ -24,8 +26,10 @@ repo="$(cd "${here}/../.." && pwd)"
 [ "$(id -u)" = 0 ] || die "run as root"
 need qemu-img losetup curl
 VARIANT=${VARIANT:-server}
-case "$VARIANT" in server | desktop) ;; *) die "VARIANT is server or desktop" ;; esac
-[ "$VARIANT" = desktop ] && need growpart resize2fs e2fsck
+case "$VARIANT" in server | desktop | lite) ;; *) die "VARIANT is server, desktop or lite" ;; esac
+GUI=false
+[ "$VARIANT" != server ] && GUI=true
+$GUI && need growpart resize2fs e2fsck
 
 base_url="https://cloud.debian.org/images/cloud/trixie/latest/debian-13-genericcloud-amd64.qcow2"
 out="${OUT:-${repo}/out}"
@@ -43,11 +47,11 @@ cleanup() {
 }
 trap cleanup EXIT
 
-if [ "$VARIANT" = desktop ]; then
-	export CITOS_PACKAGES="citos-base citos-sources citos-artwork citos-desktop"
-else
-	export CITOS_PACKAGES="citos-base citos-sources"
-fi
+case "$VARIANT" in
+desktop) export CITOS_PACKAGES="citos-base citos-sources citos-artwork citos-plymouth-theme citos-plasma" ;;
+lite) export CITOS_PACKAGES="citos-base citos-sources citos-artwork citos-desktop" ;;
+*) export CITOS_PACKAGES="citos-base citos-sources" ;;
+esac
 build_debs $CITOS_PACKAGES
 
 base="${BASE:-${out}/debian-13-genericcloud-amd64.qcow2}"
@@ -57,14 +61,17 @@ if [ ! -f "${base}" ]; then
 fi
 qemu-img convert -O raw "${base}" "${work}/disk.raw"
 # The desktop needs room: 8 GB, the root partition and filesystem grown to fill it.
-[ "$VARIANT" = desktop ] && qemu-img resize -q -f raw "${work}/disk.raw" 8G
+case "$VARIANT" in
+desktop) qemu-img resize -q -f raw "${work}/disk.raw" 10G ;;
+lite) qemu-img resize -q -f raw "${work}/disk.raw" 8G ;;
+esac
 
 # Attach the disk and mount its root partition (the largest ext4 one).
 loop="$(losetup -fP --show "${work}/disk.raw")"
 udevadm settle 2>/dev/null || sleep 2
 part="$(lsblk -lnbo NAME,FSTYPE,SIZE "${loop}" | awk '$2 == "ext4" {print $3, $1}' | sort -n | tail -1 | cut -d' ' -f2)"
 [ -n "${part}" ] || die "no root partition in the cloud image"
-if [ "$VARIANT" = desktop ]; then
+if $GUI; then
 	growpart "${loop}" "${part##*p}"
 	partx -u "${loop}" 2>/dev/null || true
 	udevadm settle 2>/dev/null || sleep 2
@@ -75,7 +82,7 @@ mkdir -p "${mnt}"
 mount "/dev/${part}" "${mnt}"
 
 mount_chroot "${mnt}"
-if [ "$VARIANT" = desktop ]; then
+if $GUI; then
 	install_citos "${mnt}" desktop qemu-guest-agent linux-image-amd64
 	# The standard kernel only: the cloud one would stay first in the boot menu.
 	chroot "${mnt}" /usr/bin/env DEBIAN_FRONTEND=noninteractive LC_ALL=C.UTF-8 sh -ec '

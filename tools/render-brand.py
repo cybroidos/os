@@ -31,6 +31,7 @@ browser renders them; rasters always come from the static logo/mark.
 
 import argparse
 import base64
+import re
 import os
 import pathlib
 import shutil
@@ -198,6 +199,12 @@ def wallpaper(ctx: Context) -> None:
     src = ctx.write(f"usr/share/backgrounds/{ctx.id}/{ctx.id}.svg", svg)
     for w, h in WALLPAPER_SIZES:
         rasterise(src, src.with_name(f"{ctx.id}-{w}x{h}.png"), w, h)
+    # A plain variant without the logo and wordmark, for the desktop and the
+    # sign-in screen, where windows and the form sit in the middle.
+    plain = re.sub(r"<image\b[^>]*/>|<text\b.*?</text>|<rect x=[^>]*/>", "", svg, flags=re.S)
+    psrc = ctx.write(f"usr/share/backgrounds/{ctx.id}/{ctx.id}-plain.svg", plain)
+    for w, h in WALLPAPER_SIZES:
+        rasterise(psrc, psrc.with_name(f"{ctx.id}-plain-{w}x{h}.png"), w, h)
 
 
 def dart_color(hex_value: str) -> str:

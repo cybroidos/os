@@ -1,0 +1,20 @@
+# CIT-OS window manager defaults (citos-plasma).
+[org.kde.kdecoration2]
+library=org.kde.breeze
+theme=Breeze
+ButtonsOnLeft=
+ButtonsOnRight=IAX
+BorderSize=None
+BorderSizeAuto=false
+
+[Plugins]
+blurEnabled=true
+contrastEnabled=true
+slidingpopupsEnabled=true
+
+[Effect-blur]
+BlurStrength=10
+NoiseStrength=2
+
+[Windows]
+Placement=Centered

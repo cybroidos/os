@@ -8,4 +8,4 @@ repo="$2"
 python3 "${repo}/tools/render-brand.py" --target base --out "${root}" >/dev/null
 mv "${root}/etc/issue" "${root}/usr/share/citos/issue"
 mv "${root}/etc/motd" "${root}/usr/share/citos/motd"
-rmdir "${root}/etc"
+rmdir "${root}/etc" 2>/dev/null || true

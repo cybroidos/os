@@ -41,14 +41,17 @@ unmount_chroot() { # root
 	return 0
 }
 
-# Install citos-base and extra Debian packages, brand the system as the
-# given os-release variant (server, container) and leave it clean for
-# cloning: no machine id, no SSH host keys, no apt lists.
+# Install the CIT-OS packages in CITOS_PACKAGES (citos-base unless set) and
+# extra Debian packages, brand the system as the given os-release variant
+# (server, desktop, container) and leave it clean for cloning: no machine
+# id, no SSH host keys, no apt lists.
 install_citos() { # root variant extra-packages...
-	local r="$1" variant="$2"
+	local r="$1" variant="$2" p
 	shift 2
 	install -d "${r}/tmp/citos-debs"
-	cp "${repo}/dist/citos-base_${VERSION}_all.deb" "${r}/tmp/citos-debs/"
+	for p in ${CITOS_PACKAGES:-citos-base}; do
+		cp "${repo}/dist/${p}_${VERSION}_all.deb" "${r}/tmp/citos-debs/"
+	done
 	chroot "${r}" /usr/bin/env DEBIAN_FRONTEND=noninteractive LC_ALL=C.UTF-8 sh -ec "
 		apt-get update -q
 		apt-get install -y -q --no-install-recommends /tmp/citos-debs/*.deb $*

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=CIT-OS look
+Comment=CIT-OS wallpaper and theme until the person picks their own
+Exec=/usr/libexec/citos/desktop-look
+OnlyShowIn=XFCE;
+NoDisplay=true
+X-XFCE-Autostart-Override=true

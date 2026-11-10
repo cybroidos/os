@@ -1,0 +1,12 @@
+#!/bin/sh
+set -e
+chmod 0755 /usr/libexec/citos/desktop-look
+# xrdp reads its TLS key from ssl-cert's group.
+if getent group ssl-cert >/dev/null && id xrdp >/dev/null 2>&1; then
+	adduser --quiet xrdp ssl-cert || true
+fi
+# Start graphical, on the sign-in screen.
+if [ -d /run/systemd/system ] || [ -d /etc/systemd/system ]; then
+	systemctl set-default graphical.target >/dev/null 2>&1 || true
+fi
+exit 0

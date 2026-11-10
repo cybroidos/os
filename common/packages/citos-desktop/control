@@ -1,0 +1,21 @@
+Package: citos-desktop
+Version: @VERSION@
+Architecture: all
+Maintainer: CIT-OS maintainers <citos@cybroid.com>
+Homepage: https://github.com/cybroidinstitute/cit-os
+Section: x11
+Priority: optional
+Depends: citos-base (>= @VERSION@), citos-artwork (>= @VERSION@),
+ xserver-xorg-core, xserver-xorg-input-libinput, x11-xserver-utils, xauth,
+ lightdm, lightdm-gtk-greeter,
+ xfce4-session, xfwm4, xfdesktop4, xfce4-panel, xfce4-settings, xfconf,
+ thunar, xfce4-terminal, mousepad, xfce4-whiskermenu-plugin, xfce4-notifyd,
+ xfce4-taskmanager, ristretto,
+ greybird-gtk-theme, elementary-xfce-icon-theme, fonts-dejavu-core,
+ dbus-x11, dbus-user-session, polkitd, at-spi2-core, xdg-user-dirs,
+ firefox-esr, xrdp, xorgxrdp
+Description: CIT-OS Desktop Lite: Xfce with the CIT-OS look
+ A light desktop for servers and VMs: Xfce with a whisker menu, terminal,
+ file manager, text editor, task manager and Firefox ESR; LightDM with the
+ CIT-OS wallpaper and logo; and xrdp, so Remote Desktop clients can sign in.
+ About 400 MB of memory when idle.

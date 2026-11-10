@@ -3,7 +3,7 @@ name: Server images
 # CIT-OS Server as a VM image (qcow2, cloud-init) and as a container template
 # (Proxmox LXC; imports into Docker too), uploaded to the citos-images bucket
 # on Hangar's storage (s3.cybroid.com), where Hangar's Images page prepares
-# them for launching. The desktop variant (Xfce, xrdp) comes later.
+# them for launching. The desktop VM is CIT-OS Desktop Lite (Xfce, xrdp).
 #
 # Secrets: CITOS_IMAGES_KEY_ID, CITOS_IMAGES_SECRET (a Garage key that can
 # write only to the citos-images bucket).
@@ -14,6 +14,8 @@ on:
     paths:
       - 'common/branding/**'
       - 'common/packages/citos-base/**'
+      - 'common/packages/citos-artwork/**'
+      - 'common/packages/citos-desktop/**'
       - 'targets/lib/**'
       - 'targets/server/**'
       - 'targets/container/**'
@@ -38,16 +40,20 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: [ vm, container ]
+        image: [ vm, desktop, container ]
     steps:
       - uses: actions/checkout@v5
 
       - name: Install tools
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends qemu-utils zstd dpkg-dev
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends qemu-utils zstd dpkg-dev cloud-guest-utils e2fsprogs librsvg2-bin
 
       - name: Build the VM image
         if: matrix.image == 'vm'
         run: sudo OUT="$PWD/out" targets/server/build.sh
+
+      - name: Build the desktop VM image (CIT-OS Desktop Lite)
+        if: matrix.image == 'desktop'
+        run: sudo VARIANT=desktop OUT="$PWD/out" targets/server/build.sh
 
       - name: Build the container template
         if: matrix.image == 'container'
@@ -59,6 +65,8 @@ jobs:
           ls -lh out/
           if [ "${{ matrix.image }}" = vm ]; then
             qemu-img check out/citos-server-*-amd64.qcow2
+          elif [ "${{ matrix.image }}" = desktop ]; then
+            qemu-img check out/citos-desktop-*-amd64.qcow2
           else
             zstd -dc out/citos-server_*_amd64.tar.zst | tar -xOf - ./usr/lib/os-release | tee /dev/stderr | grep -q '^ID=citos'
           fi
@@ -73,6 +81,8 @@ jobs:
           s3() { aws --endpoint-url "$S3_URL" s3 "$@"; }
           if [ "${{ matrix.image }}" = vm ]; then
             f=$(ls out/citos-server-*-amd64.qcow2); key=server/citos-server-amd64.qcow2
+          elif [ "${{ matrix.image }}" = desktop ]; then
+            f=$(ls out/citos-desktop-*-amd64.qcow2); key=desktop/citos-desktop-amd64.qcow2
           else
             f=$(ls out/citos-server_*_amd64.tar.zst); key=server/citos-server_amd64.tar.zst
           fi

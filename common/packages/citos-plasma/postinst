@@ -1,6 +1,7 @@
 #!/bin/sh
 set -e
 if [ "$1" = "configure" ]; then
+	chmod 0755 /usr/libexec/citos/plasma-look
 	# Remote Desktop and plain X sessions start Plasma.
 	if [ -x /usr/bin/startplasma-x11 ]; then
 		update-alternatives --set x-session-manager /usr/bin/startplasma-x11 >/dev/null 2>&1 || true

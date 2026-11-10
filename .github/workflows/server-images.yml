@@ -37,38 +37,7 @@ env:
   BUCKET: citos-images
 
 jobs:
-  # Rounded windows for CIT-OS Desktop: KDE Rounded Corners (GPL-3.0,
-  # github.com/matinlotfali/KDE-Rounded-Corners), compiled against Debian
-  # 13's own KWin, the way its project builds it for Debian 13.
-  kwin-effects:
-    name: Build the rounded-corners effect
-    runs-on: ubuntu-24.04
-    container:
-      image: debian:trixie
-      options: --user root
-    env:
-      VERSION: v0.11.0
-    steps:
-      - name: Build
-        run: |
-          apt-get update -q
-          apt-get install -y -q --no-install-recommends ca-certificates git cmake g++ gettext extra-cmake-modules \
-            qt6-base-private-dev qt6-base-dev-tools libkf6configwidgets-dev libkf6kcmutils-dev kwin-dev libdrm-dev dpkg-dev file
-          git clone --depth 1 --branch "$VERSION" https://github.com/matinlotfali/KDE-Rounded-Corners src
-          cd src
-          cmake . -DCMAKE_BUILD_TYPE=Release
-          cmake --build . -j"$(nproc)"
-          cpack -G DEB
-          mkdir -p ../out && mv kwin4_effect_shapecorners*.deb ../out/citos-kwin-effects_amd64.deb
-          dpkg-deb -I ../out/citos-kwin-effects_amd64.deb | sed -n '1,20p'
-      - uses: actions/upload-artifact@v4
-        with:
-          name: kwin-effects
-          path: out/*.deb
-          retention-days: 7
-
   build:
-    needs: kwin-effects
     name: Build ${{ matrix.image }}
     runs-on: ubuntu-24.04
     timeout-minutes: 60
@@ -86,11 +55,23 @@ jobs:
         if: matrix.image == 'vm'
         run: sudo OUT="$PWD/out" targets/server/build.sh
 
-      - uses: actions/download-artifact@v4
+      # Rounded windows for CIT-OS Desktop: KDE Rounded Corners (GPL-3.0,
+      # github.com/matinlotfali/KDE-Rounded-Corners), compiled in a Debian 13
+      # container against Debian's own KWin, the way its project builds it.
+      # Built here, not in a job of its own: the account's artifact storage
+      # is full.
+      - name: Build the rounded-corners effect
         if: matrix.image == 'desktop'
-        with:
-          name: kwin-effects
-          path: dist/extra
+        run: |
+          mkdir -p dist/extra
+          docker run --rm -v "$PWD/dist/extra:/out" -e VERSION=v0.11.0 debian:trixie sh -ec '
+            apt-get update -q
+            apt-get install -y -q --no-install-recommends ca-certificates git cmake g++ gettext extra-cmake-modules \
+              qt6-base-private-dev qt6-base-dev-tools libkf6configwidgets-dev libkf6kcmutils-dev kwin-dev libdrm-dev dpkg-dev file >/dev/null
+            git clone -q --depth 1 --branch "$VERSION" https://github.com/matinlotfali/KDE-Rounded-Corners /src
+            cd /src && cmake . -DCMAKE_BUILD_TYPE=Release >/dev/null && cmake --build . -j"$(nproc)" >/dev/null && cpack -G DEB >/dev/null
+            cp kwin4_effect_shapecorners*.deb /out/citos-kwin-effects_amd64.deb'
+          ls -la dist/extra
 
       - name: Build the desktop VM image (CIT-OS Desktop, KDE Plasma)
         if: matrix.image == 'desktop'

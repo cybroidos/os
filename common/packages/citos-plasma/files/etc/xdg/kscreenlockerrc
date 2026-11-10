@@ -1,0 +1,7 @@
+# CIT-OS lock screen (citos-plasma): the CIT-OS wallpaper; locks after 15 idle minutes.
+[Daemon]
+Timeout=15
+
+[Greeter][Wallpaper][org.kde.image][General]
+Image=file:///usr/share/backgrounds/citos/citos-1920x1080.png
+PreviewImage=file:///usr/share/backgrounds/citos/citos-1920x1080.png

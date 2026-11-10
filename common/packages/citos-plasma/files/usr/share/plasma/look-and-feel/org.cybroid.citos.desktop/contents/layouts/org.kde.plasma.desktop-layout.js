@@ -10,6 +10,7 @@ bar.floating = false;
 var menu = bar.addWidget("org.kde.plasma.kickoff");
 menu.currentConfigGroup = ["General"];
 menu.writeConfig("icon", "citos");
+menu.writeConfig("showActionButtonCaptions", "false");
 bar.addWidget("org.kde.plasma.appmenu");
 bar.addWidget("org.kde.plasma.panelspacer");
 bar.addWidget("org.kde.plasma.systemtray");
@@ -22,13 +23,22 @@ clock.writeConfig("customDateFormat", "ddd d MMM");
 
 var dock = new Panel;
 dock.location = "bottom";
-dock.height = 2 * Math.floor(gridUnit * 3.4 / 2);
+dock.height = 2 * Math.floor(gridUnit * 4 / 2);
 dock.alignment = "center";
 dock.lengthMode = "fit";
 dock.hiding = "dodgewindows";
 dock.floating = true;
+// First, the app grid: every app full screen with search on top (also the
+// Meta key and Alt+F1).
+var grid = dock.addWidget("org.kde.plasma.kickerdash");
+grid.currentConfigGroup = ["General"];
+grid.writeConfig("icon", "view-app-grid-symbolic");
+grid.globalShortcut = "Alt+F1";
+dock.addWidget("org.kde.plasma.marginsseparator");
 var tasks = dock.addWidget("org.kde.plasma.icontasks");
 tasks.currentConfigGroup = ["General"];
+tasks.writeConfig("iconSpacing", "2");
+tasks.writeConfig("maxStripes", "1");
 tasks.writeConfig("launchers", [
     "applications:firefox-esr.desktop",
     "applications:org.kde.dolphin.desktop",

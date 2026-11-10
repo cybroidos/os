@@ -37,7 +37,38 @@ env:
   BUCKET: citos-images
 
 jobs:
+  # Rounded windows for CIT-OS Desktop: KDE Rounded Corners (GPL-3.0,
+  # github.com/matinlotfali/KDE-Rounded-Corners), compiled against Debian
+  # 13's own KWin, the way its project builds it for Debian 13.
+  kwin-effects:
+    name: Build the rounded-corners effect
+    runs-on: ubuntu-24.04
+    container:
+      image: debian:trixie
+      options: --user root
+    env:
+      VERSION: v0.11.0
+    steps:
+      - name: Build
+        run: |
+          apt-get update -q
+          apt-get install -y -q --no-install-recommends ca-certificates git cmake g++ gettext extra-cmake-modules \
+            qt6-base-private-dev qt6-base-dev-tools libkf6configwidgets-dev libkf6kcmutils-dev kwin-dev libdrm-dev dpkg-dev file
+          git clone --depth 1 --branch "$VERSION" https://github.com/matinlotfali/KDE-Rounded-Corners src
+          cd src
+          cmake . -DCMAKE_BUILD_TYPE=Release
+          cmake --build . -j"$(nproc)"
+          cpack -G DEB
+          mkdir -p ../out && mv kwin4_effect_shapecorners*.deb ../out/citos-kwin-effects_amd64.deb
+          dpkg-deb -I ../out/citos-kwin-effects_amd64.deb | sed -n '1,20p'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kwin-effects
+          path: out/*.deb
+          retention-days: 7
+
   build:
+    needs: kwin-effects
     name: Build ${{ matrix.image }}
     runs-on: ubuntu-24.04
     timeout-minutes: 60
@@ -55,9 +86,15 @@ jobs:
         if: matrix.image == 'vm'
         run: sudo OUT="$PWD/out" targets/server/build.sh
 
+      - uses: actions/download-artifact@v4
+        if: matrix.image == 'desktop'
+        with:
+          name: kwin-effects
+          path: dist/extra
+
       - name: Build the desktop VM image (CIT-OS Desktop, KDE Plasma)
         if: matrix.image == 'desktop'
-        run: sudo VARIANT=desktop OUT="$PWD/out" targets/server/build.sh
+        run: sudo VARIANT=desktop EXTRA_DEBS="$PWD/dist/extra" OUT="$PWD/out" targets/server/build.sh
 
       - name: Build the light desktop VM image (CIT-OS Lite, Xfce)
         if: matrix.image == 'lite'

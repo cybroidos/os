@@ -52,6 +52,11 @@ install_citos() { # root variant extra-packages...
 	for p in ${CITOS_PACKAGES:-citos-base}; do
 		cp "${repo}/dist/${p}_${VERSION}_all.deb" "${r}/tmp/citos-debs/"
 	done
+	# Other packages built for the image (EXTRA_DEBS: a folder of .debs, such
+	# as the rounded-corners effect).
+	if [ -n "${EXTRA_DEBS:-}" ] && ls "${EXTRA_DEBS}"/*.deb >/dev/null 2>&1; then
+		cp "${EXTRA_DEBS}"/*.deb "${r}/tmp/citos-debs/"
+	fi
 	chroot "${r}" /usr/bin/env DEBIAN_FRONTEND=noninteractive LC_ALL=C.UTF-8 sh -ec "
 		apt-get update -q
 		apt-get install -y -q --no-install-recommends /tmp/citos-debs/*.deb $*

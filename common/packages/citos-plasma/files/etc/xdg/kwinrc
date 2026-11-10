@@ -11,6 +11,21 @@ BorderSizeAuto=false
 blurEnabled=true
 contrastEnabled=true
 slidingpopupsEnabled=true
+kwin4_effect_shapecornersEnabled=true
+
+# Rounded windows (citos-kwin-effects: KDE Rounded Corners).
+[Round-Corners]
+Size=14
+InactiveCornerRadius=14
+UseSquircleShape=true
+OutlineThickness=1
+InactiveOutlineThickness=1
+ActiveOutlineAlpha=60
+InactiveOutlineAlpha=40
+
+# The Meta key opens the app grid (the dock's first button).
+[ModifierOnlyShortcuts]
+Meta=org.kde.plasmashell,/PlasmaShell,org.kde.PlasmaShell,activateLauncherMenu
 
 [Effect-blur]
 BlurStrength=10

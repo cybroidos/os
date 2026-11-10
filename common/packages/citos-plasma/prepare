@@ -1,0 +1,4 @@
+#!/bin/sh
+# The CIT-OS Horizon Plasma Style, generated (tools/plasma-style.py).
+set -eu
+python3 "$2/tools/plasma-style.py" "$1" >/dev/null

@@ -1,0 +1,22 @@
+#!/bin/sh
+set -e
+if [ "$1" = "configure" ]; then
+	# Remote Desktop and plain X sessions start Plasma.
+	if [ -x /usr/bin/startplasma-x11 ]; then
+		update-alternatives --set x-session-manager /usr/bin/startplasma-x11 >/dev/null 2>&1 || true
+	fi
+	# xrdp reads its TLS key from ssl-cert's group.
+	if getent group ssl-cert >/dev/null && id xrdp >/dev/null 2>&1; then
+		adduser --quiet xrdp ssl-cert >/dev/null 2>&1 || true
+	fi
+	# Start graphical, on the CIT-OS sign-in screen.
+	systemctl set-default graphical.target >/dev/null 2>&1 || true
+	if [ -f /etc/X11/default-display-manager ]; then
+		echo /usr/bin/sddm > /etc/X11/default-display-manager
+	fi
+	# A quiet boot behind the splash.
+	if command -v update-grub >/dev/null 2>&1 && [ -f /boot/grub/grub.cfg ]; then
+		update-grub >/dev/null 2>&1 || true
+	fi
+fi
+exit 0

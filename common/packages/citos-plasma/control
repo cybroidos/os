@@ -1,0 +1,23 @@
+Package: citos-plasma
+Version: @VERSION@
+Architecture: all
+Maintainer: CIT-OS maintainers <citos@cybroid.com>
+Homepage: https://github.com/cybroidinstitute/cit-os
+Section: kde
+Priority: optional
+Depends: citos-base (>= @VERSION@), citos-artwork (>= @VERSION@), citos-plymouth-theme (>= @VERSION@),
+ plasma-desktop, plasma-workspace, kwin-x11, plasma-integration, kde-cli-tools, kscreen, powerdevil,
+ polkit-kde-agent-1, kactivitymanagerd, milou, kinfocenter, systemsettings, xdg-desktop-portal-kde,
+ breeze, breeze-cursor-theme, papirus-icon-theme, fonts-inter, fonts-jetbrains-mono, appmenu-gtk3-module,
+ sddm, qml6-module-qtquick, qml6-module-qtquick-controls, qml6-module-qtquick-templates,
+ qml6-module-qtquick-layouts, qml6-module-qtquick-window, qml6-module-qtqml-workerscript,
+ dolphin, konsole, kwrite, ark, gwenview, firefox-esr,
+ xrdp, xorgxrdp, dbus-x11, plymouth, plymouth-themes
+Conflicts: citos-desktop
+Description: CIT-OS Desktop: KDE Plasma 6 in the CIT-OS Horizon look
+ A modern desktop for CIT-OS: KDE Plasma 6 on X11 with a slim top bar (menu,
+ the app's own menu, tray, clock) and a floating dock, the CIT-OS Horizon
+ colours (navy, cyan and blue), Papirus icons, Inter and JetBrains Mono,
+ a CIT-OS sign-in screen (SDDM) and splash, the CIT-OS boot splash
+ (Plymouth), Firefox ESR with CIT-OS's home page and bookmarks, and xrdp
+ for Remote Desktop. Defaults only: each person can change them.

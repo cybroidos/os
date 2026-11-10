@@ -1,0 +1,14 @@
+{
+    "KPackageStructure": "Plasma/LookAndFeel",
+    "KPlugin": {
+        "Authors": [{ "Name": "Cybroid Institute of Technology", "Email": "citos@cybroid.com" }],
+        "Category": "",
+        "Description": "CIT-OS Horizon: navy and cyan, a slim top bar and a floating dock",
+        "Id": "org.cybroid.citos.desktop",
+        "License": "GPL-2.0-or-later",
+        "Name": "CIT-OS Horizon",
+        "Version": "1.0",
+        "Website": "https://cybroid.com"
+    },
+    "X-Plasma-APIVersion": "2"
+}

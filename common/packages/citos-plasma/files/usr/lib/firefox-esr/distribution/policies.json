@@ -1,0 +1,16 @@
+{
+  "policies": {
+    "Homepage": { "URL": "https://cybroid.com", "StartPage": "homepage" },
+    "NoDefaultBookmarks": true,
+    "DisplayBookmarksToolbar": "always",
+    "Bookmarks": [
+      { "Title": "Cybroid", "URL": "https://cybroid.com", "Placement": "toolbar" },
+      { "Title": "CIT Hub", "URL": "https://hub.cybroid.com", "Placement": "toolbar" }
+    ],
+    "DisableTelemetry": true,
+    "DisableFirefoxStudies": true,
+    "OverrideFirstRunPage": "",
+    "OverridePostUpdatePage": "",
+    "UserMessaging": { "WhatsNew": false, "ExtensionRecommendations": false, "SkipOnboarding": true }
+  }
+}

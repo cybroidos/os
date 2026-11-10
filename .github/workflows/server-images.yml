@@ -17,6 +17,9 @@ on:
       - 'common/packages/citos-artwork/**'
       - 'common/packages/citos-desktop/**'
       - 'common/packages/citos-sources/**'
+      - 'common/packages/citos-plasma/**'
+      - 'common/packages/citos-plymouth-theme/**'
+      - 'tools/render-brand.py'
       - 'targets/lib/**'
       - 'targets/server/**'
       - 'targets/container/**'
@@ -41,7 +44,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: [ vm, desktop, container ]
+        image: [ vm, desktop, lite, container ]
     steps:
       - uses: actions/checkout@v5
 
@@ -52,9 +55,13 @@ jobs:
         if: matrix.image == 'vm'
         run: sudo OUT="$PWD/out" targets/server/build.sh
 
-      - name: Build the desktop VM image (CIT-OS Desktop Lite)
+      - name: Build the desktop VM image (CIT-OS Desktop, KDE Plasma)
         if: matrix.image == 'desktop'
         run: sudo VARIANT=desktop OUT="$PWD/out" targets/server/build.sh
+
+      - name: Build the light desktop VM image (CIT-OS Lite, Xfce)
+        if: matrix.image == 'lite'
+        run: sudo VARIANT=lite OUT="$PWD/out" targets/server/build.sh
 
       - name: Build the container template
         if: matrix.image == 'container'
@@ -66,8 +73,8 @@ jobs:
           ls -lh out/
           if [ "${{ matrix.image }}" = vm ]; then
             qemu-img check out/citos-server-*-amd64.qcow2
-          elif [ "${{ matrix.image }}" = desktop ]; then
-            qemu-img check out/citos-desktop-*-amd64.qcow2
+          elif [ "${{ matrix.image }}" = desktop ] || [ "${{ matrix.image }}" = lite ]; then
+            qemu-img check out/citos-${{ matrix.image }}-*-amd64.qcow2
           else
             zstd -dc out/citos-server_*_amd64.tar.zst | tar -xOf - ./usr/lib/os-release | tee /dev/stderr | grep -q '^ID=citos'
             zstd -dc out/citos-server_*_amd64.tar.zst | tar -xOf - ./etc/apt/sources.list.d/citos.sources | grep -q 'citos.cybroid.com/debian'
@@ -88,8 +95,8 @@ jobs:
           s3() { for try in 1 2 3; do aws --endpoint-url "$S3_URL" --cli-read-timeout 300 s3 "$@" && return 0; echo "upload try $try failed, retrying"; sleep 20; done; return 1; }
           if [ "${{ matrix.image }}" = vm ]; then
             f=$(ls out/citos-server-*-amd64.qcow2); key=server/citos-server-amd64.qcow2
-          elif [ "${{ matrix.image }}" = desktop ]; then
-            f=$(ls out/citos-desktop-*-amd64.qcow2); key=desktop/citos-desktop-amd64.qcow2
+          elif [ "${{ matrix.image }}" = desktop ] || [ "${{ matrix.image }}" = lite ]; then
+            f=$(ls out/citos-${{ matrix.image }}-*-amd64.qcow2); key=desktop/citos-${{ matrix.image }}-amd64.qcow2
           else
             f=$(ls out/citos-server_*_amd64.tar.zst); key=server/citos-server_amd64.tar.zst
           fi

@@ -16,7 +16,8 @@ import pathlib
 import sys
 
 NAVY = (14, 24, 58)
-GLASS = (34, 52, 108)  # panels, dock and popups: lighter than the wallpaper's navy
+GLASS = (34, 52, 108)
+POPUP = (20, 30, 64)  # menus and popups: a dark surface a step above the wallpaper
 ACCENT = (28, 203, 255)
 BLUE = (58, 124, 255)
 WHITE = (255, 255, 255)
@@ -126,21 +127,29 @@ class Sheet:
 VARIANTS = {"translucent": 0.72, "": 0.9, "opaque": 1.0}
 
 
-def panel(alpha):
+def panel(variant):
+    """The top bar: nearly clear over the wallpaper (macOS's menu bar), solid
+    navy when a window is maximised (Plasma's opaque variant)."""
     s = Sheet()
-    s.frame("", 18, GLASS, alpha, None, 0, margins=(4, 8, 8, 4))
+    if variant == "opaque":
+        s.frame("", 1, NAVY, 1.0, None, 0, margins=(4, 8, 8, 4))
+    elif variant == "translucent":
+        s.frame("", 1, WHITE, 0.05, None, 0, margins=(4, 8, 8, 4))
+    else:
+        s.frame("", 1, NAVY, 0.55, None, 0, margins=(4, 8, 8, 4))
     return s.svg()
 
 
 def dialog(alpha):
+    """Menus and popups: near-solid dark, a hairline light edge, readable."""
     s = Sheet()
-    s.frame("", 14, GLASS, min(1.0, alpha + 0.12), None, 0, margins=(10, 10, 10, 10))
+    s.frame("", 14, POPUP, max(0.94, alpha), WHITE, 0.10, margins=(10, 10, 10, 10))
     return s.svg()
 
 
 def tooltip(alpha):
     s = Sheet()
-    s.frame("", 10, GLASS, min(1.0, alpha + 0.15), None, 0, margins=(8, 10, 10, 8))
+    s.frame("", 10, POPUP, 0.96, WHITE, 0.10, margins=(8, 10, 10, 8))
     return s.svg()
 
 
@@ -188,7 +197,7 @@ def main(out):
     )
     for variant, alpha in VARIANTS.items():
         base = f"{variant}/" if variant else ""
-        files[f"{base}widgets/panel-background.svg"] = panel(alpha)
+        files[f"{base}widgets/panel-background.svg"] = panel(variant or "default")
         files[f"{base}dialogs/background.svg"] = dialog(alpha)
         files[f"{base}widgets/tooltip.svg"] = tooltip(alpha)
     files["widgets/tasks.svg"] = tasks()

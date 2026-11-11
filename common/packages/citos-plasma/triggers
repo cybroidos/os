@@ -1,0 +1,2 @@
+# Re-name apps (Files, Terminal...) when any package adds or changes one.
+interest-noawait /usr/share/applications

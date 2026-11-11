@@ -1,9 +1,11 @@
 # CIT-OS window manager defaults (citos-plasma).
+# The CIT-OS decoration (tools/aurorae-theme.py): round buttons on the left
+# (close, minimise, zoom), the title centred.
 [org.kde.kdecoration2]
-library=org.kde.breeze
-theme=Breeze
-ButtonsOnLeft=
-ButtonsOnRight=IAX
+library=org.kde.kwin.aurorae
+theme=__aurorae__svg__CIT-OS
+ButtonsOnLeft=XIA
+ButtonsOnRight=
 BorderSize=None
 BorderSizeAuto=false
 

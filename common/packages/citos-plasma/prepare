@@ -1,4 +1,6 @@
 #!/bin/sh
-# The CIT-OS Horizon Plasma Style, generated (tools/plasma-style.py).
+# Generated parts of citos-plasma: the CIT-OS Horizon Plasma Style
+# (tools/plasma-style.py) and the CIT-OS window decoration (tools/aurorae-theme.py).
 set -eu
 python3 "$2/tools/plasma-style.py" "$1" >/dev/null
+python3 "$2/tools/aurorae-theme.py" "$1" >/dev/null

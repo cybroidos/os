@@ -8,4 +8,4 @@ hide-mode='intelligent'
 position='bottom'
 alignment='center'
 show-dock-item=false
-dock-items=['citos-apps.dockitem', 'firefox-esr.dockitem', 'org.kde.dolphin.dockitem', 'org.kde.konsole.dockitem', 'org.kde.kwrite.dockitem', 'systemsettings.dockitem']
+dock-items=['citos-apps.dockitem', 'firefox-esr.dockitem', 'org.kde.dolphin.dockitem', 'org.kde.konsole.dockitem', 'org.kde.kwrite.dockitem', 'systemsettings.dockitem', 'citos-trash.dockitem']

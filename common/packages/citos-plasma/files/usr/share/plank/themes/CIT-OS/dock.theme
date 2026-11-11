@@ -1,12 +1,13 @@
-# CIT-OS Horizon dock (citos-plasma): frosted blue glass, round corners.
+# CIT-OS Horizon dock (citos-plasma): a faint frosted strip with a hairline
+# edge over the wallpaper, round corners.
 [PlankTheme]
 TopRoundness=18
 BottomRoundness=18
 LineWidth=1
-OuterStrokeColor=255;;255;;255;;34
-FillStartColor=38;;58;;120;;210
-FillEndColor=26;;40;;88;;220
-InnerStrokeColor=255;;255;;255;;14
+OuterStrokeColor=255;;255;;255;;52
+FillStartColor=255;;255;;255;;30
+FillEndColor=255;;255;;255;;22
+InnerStrokeColor=255;;255;;255;;10
 
 [PlankDockTheme]
 HorizPadding=3

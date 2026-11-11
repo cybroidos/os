@@ -91,6 +91,29 @@ jobs:
             cp ../plank_*+citos*_amd64.deb ../libplank1_*+citos*_amd64.deb ../libplank-common_*+citos*_all.deb /out/'
           ls -la dist/extra
 
+      # App icons: WhiteSur (GPL-3.0, github.com/vinceliuice/WhiteSur-icon-theme)
+      # at a fixed release, installed with -a (its own file-manager and store
+      # icons) as an unprivileged user inside the build container, then
+      # tools/icons-fixups.sh (no Apple Photos flower), packed as citos-icons.
+      - name: Build the icons (citos-icons)
+        if: matrix.image == 'desktop'
+        run: |
+          docker run --rm -v "$PWD/dist/extra:/out" -v "$PWD/tools:/tools:ro" -e REF=2026-09-10 debian:trixie sh -ec '
+            apt-get update -q
+            apt-get install -y -q --no-install-recommends ca-certificates git gtk-update-icon-cache libgtk-3-bin >/dev/null 2>&1 || apt-get install -y -q --no-install-recommends ca-certificates git >/dev/null
+            useradd -m build
+            su build -c "git clone -q --depth 1 --branch $REF https://github.com/vinceliuice/WhiteSur-icon-theme /home/build/src && mkdir -p /home/build/out && cd /home/build/src && ./install.sh -a -d /home/build/out -n WhiteSur >/dev/null"
+            sh /tools/icons-fixups.sh /home/build/out
+            p=/home/build/pkg; mkdir -p $p/DEBIAN $p/usr/share/icons $p/usr/share/doc/citos-icons
+            cp -a /home/build/out/WhiteSur* $p/usr/share/icons/
+            cp /home/build/src/COPYING $p/usr/share/doc/citos-icons/copyright 2>/dev/null || cp /home/build/src/LICENSE $p/usr/share/doc/citos-icons/copyright
+            printf "Package: citos-icons\nVersion: %s\nArchitecture: all\nMaintainer: CIT-OS <citos@cybroid.com>\nSection: x11\nPriority: optional\nDescription: CIT-OS app icons (WhiteSur, %s)\n Rounded-square app icons for CIT-OS Desktop: WhiteSur by Vince Liuice,\n GPL-3.0, with CIT-OS fixups.\n" "$(echo $REF | tr -d -)+citos1" "$REF" > $p/DEBIAN/control
+            printf "#!/bin/sh\nset -e\nif [ \"\$1\" = configure ] && command -v gtk-update-icon-cache >/dev/null; then for t in /usr/share/icons/WhiteSur*; do gtk-update-icon-cache -q -f \"\$t\" || true; done; fi\n" > $p/DEBIAN/postinst
+            chmod 0755 $p/DEBIAN/postinst
+            chown -R root:root $p
+            dpkg-deb --root-owner-group -Zxz --build $p /out/citos-icons_all.deb >/dev/null'
+          ls -la dist/extra
+
       - name: Build the desktop VM image (CIT-OS Desktop, KDE Plasma)
         if: matrix.image == 'desktop'
         run: sudo VARIANT=desktop EXTRA_DEBS="$PWD/dist/extra" OUT="$PWD/out" targets/server/build.sh

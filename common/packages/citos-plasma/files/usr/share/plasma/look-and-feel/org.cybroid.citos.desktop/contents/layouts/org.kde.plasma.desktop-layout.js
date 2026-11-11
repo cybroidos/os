@@ -1,5 +1,5 @@
-// CIT-OS Horizon (citos-plasma): a slim top bar (the CIT-OS mark for the app
-// grid, the app's own menu, tray, clock). Plasma runs this once, when
+// CIT-OS Horizon (citos-plasma): a slim top bar (the CIT-OS mark for
+// Launchpad, the app's own menu, tray, clock). Plasma runs this once, when
 // someone first signs in.
 var bar = new Panel;
 bar.location = "top";
@@ -7,15 +7,10 @@ bar.height = 2 * Math.floor(gridUnit * 1.7 / 2);
 bar.hiding = "none";
 bar.floating = false;
 
-// The CIT-OS mark opens the app grid: every app full screen, with search
-// (also the Meta key and Alt+F1; the dock's Apps button opens it too).
-var grid = bar.addWidget("org.kde.plasma.kickerdash");
-grid.currentConfigGroup = ["General"];
-grid.writeConfig("icon", "/usr/share/citos/branding/mark.svg");
-grid.globalShortcut = "Alt+F1";
-// Open on every app (no empty "recent" lists on a new account).
-grid.writeConfig("showRecentApps", "false");
-grid.writeConfig("showRecentDocs", "false");
+// The CIT-OS mark opens Launchpad: every app in one big grid with search
+// (also the Meta key, Alt+F1 and the dock's Apps tile).
+var launchpad = bar.addWidget("org.cybroid.citos.launchpad");
+launchpad.globalShortcut = "Alt+F1";
 bar.addWidget("org.kde.plasma.appmenu");
 bar.addWidget("org.kde.plasma.panelspacer");
 bar.addWidget("org.kde.plasma.systemtray");

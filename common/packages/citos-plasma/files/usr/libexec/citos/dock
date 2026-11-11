@@ -1,13 +1,18 @@
 #!/bin/sh
 # Starts the CIT-OS dock (Plank). The first time, it puts the CIT-OS apps
-# in it; after that the person's own arrangement stands.
+# in it, with the Trash at the end as on a Mac (a launcher for Files' trash:/;
+# Plank's own Trash docklet needs GNOME's gvfs); after that the person's own
+# arrangement stands. Launchers point at the renamed copies (Files,
+# Terminal...) where app-names made one, so the dock shows the same names.
 conf="${XDG_CONFIG_HOME:-$HOME/.config}"
 dir="$conf/plank/dock1/launchers"
 if [ ! -f "$conf/citos/dock-set" ]; then
 	mkdir -p "$dir"
-	for a in citos-apps firefox-esr org.kde.dolphin org.kde.konsole org.kde.kwrite systemsettings; do
-		[ -f "/usr/share/applications/$a.desktop" ] || continue
-		printf '[PlankDockItemPreferences]\nLauncher=file:///usr/share/applications/%s.desktop\n' "$a" > "$dir/$a.dockitem"
+	for a in citos-apps firefox-esr org.kde.dolphin org.kde.konsole org.kde.kwrite systemsettings citos-trash; do
+		f=/usr/share/citos/apps/applications/$a.desktop
+		[ -f "$f" ] || f=/usr/share/applications/$a.desktop
+		[ -f "$f" ] || continue
+		printf '[PlankDockItemPreferences]\nLauncher=file://%s\n' "$f" > "$dir/$a.dockitem"
 	done
 	mkdir -p "$conf/citos" && : > "$conf/citos/dock-set"
 fi

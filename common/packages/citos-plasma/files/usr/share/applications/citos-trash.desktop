@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Trash
+Comment=Files you have deleted
+Icon=user-trash
+Exec=dolphin trash:/
+NoDisplay=true
+StartupNotify=true

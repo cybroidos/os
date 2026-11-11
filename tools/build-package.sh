@@ -8,6 +8,7 @@
 #   prepare          executable that stages generated files (optional):
 #                    prepare <package-root> <repo-root>
 #   preinst postinst prerm postrm    maintainer scripts (optional)
+#   triggers         DEBIAN/triggers (optional), e.g. interest-noawait <dir>
 #
 # Files under etc/ become conffiles. Packages are built with plain dpkg-deb,
 # so arm64 packages of prebuilt binaries build on any host with no
@@ -69,6 +70,9 @@ build_one() {
 			install -m 0755 "${src}/${script}" "${root}/DEBIAN/${script}"
 		fi
 	done
+	if [ -f "${src}/triggers" ]; then
+		install -m 0644 "${src}/triggers" "${root}/DEBIAN/triggers"
+	fi
 	if [ -d "${root}/etc" ]; then
 		(cd "${root}" && find etc -type f | sort | sed 's|^|/|') > "${root}/DEBIAN/conffiles"
 		[ -s "${root}/DEBIAN/conffiles" ] || rm "${root}/DEBIAN/conffiles"

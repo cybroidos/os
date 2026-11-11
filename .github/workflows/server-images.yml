@@ -4,6 +4,8 @@ name: Server images
 # (Proxmox LXC; imports into Docker too), uploaded to the citos-images bucket
 # on Hangar's storage (s3.cybroid.com), where Hangar's Images page prepares
 # them for launching. The desktop VM is CIT-OS Desktop Lite (Xfce, xrdp).
+# The "iso" image is CIT-OS Desktop as a live and installer ISO
+# (iso/citos-desktop-amd64.iso).
 #
 # Secrets: CITOS_IMAGES_KEY_ID, CITOS_IMAGES_SECRET (a Garage key that can
 # write only to the citos-images bucket).
@@ -23,6 +25,8 @@ on:
       - 'targets/lib/**'
       - 'targets/server/**'
       - 'targets/container/**'
+      - 'targets/desktop/**'
+      - 'tools/**'
       - '.github/workflows/server-images.yml'
 
 permissions:
@@ -40,16 +44,16 @@ jobs:
   build:
     name: Build ${{ matrix.image }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
+    timeout-minutes: 120
     strategy:
       fail-fast: false
       matrix:
-        image: [ vm, desktop, lite, container ]
+        image: [ vm, desktop, lite, container, iso ]
     steps:
       - uses: actions/checkout@v5
 
       - name: Install tools
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends qemu-utils zstd dpkg-dev cloud-guest-utils e2fsprogs librsvg2-bin
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends qemu-utils zstd dpkg-dev cloud-guest-utils e2fsprogs librsvg2-bin python3-pil
 
       - name: Build the VM image
         if: matrix.image == 'vm'
@@ -61,7 +65,7 @@ jobs:
       # Built here, not in a job of its own: the account's artifact storage
       # is full.
       - name: Build the rounded-corners effect
-        if: matrix.image == 'desktop'
+        if: matrix.image == 'desktop' || matrix.image == 'iso'
         run: |
           mkdir -p dist/extra
           docker run --rm -v "$PWD/dist/extra:/out" -e VERSION=v0.11.0 debian:trixie sh -ec '
@@ -77,7 +81,7 @@ jobs:
       # Plank, rebuilt with tools/plank-edge-gap.py (PLANK_EDGE_GAP), as
       # 0.11.89-6+citos1 so it takes Debian's place.
       - name: Build the dock (Plank with an edge gap)
-        if: matrix.image == 'desktop'
+        if: matrix.image == 'desktop' || matrix.image == 'iso'
         run: |
           docker run --rm -v "$PWD/dist/extra:/out" -v "$PWD/tools:/tools:ro" debian:trixie sh -ec '
             printf "Types: deb deb-src\nURIs: http://deb.debian.org/debian\nSuites: trixie trixie-updates\nComponents: main\nSigned-By: /usr/share/keyrings/debian-archive-keyring.gpg\n\nTypes: deb deb-src\nURIs: http://deb.debian.org/debian-security\nSuites: trixie-security\nComponents: main\nSigned-By: /usr/share/keyrings/debian-archive-keyring.gpg\n" > /etc/apt/sources.list.d/debian.sources
@@ -97,7 +101,7 @@ jobs:
       # tools/icons-fixups.sh (no Apple Photos flower) and tools/icons-dark.py
       # (dark app icons for Dark, as macOS has), packed as citos-icons.
       - name: Build the icons (citos-icons)
-        if: matrix.image == 'desktop'
+        if: matrix.image == 'desktop' || matrix.image == 'iso'
         run: |
           docker run --rm -v "$PWD/dist/extra:/out" -v "$PWD/tools:/tools:ro" -e REF=2026-09-10 debian:trixie sh -ec '
             apt-get update -q
@@ -121,6 +125,16 @@ jobs:
         if: matrix.image == 'desktop'
         run: sudo VARIANT=desktop EXTRA_DEBS="$PWD/dist/extra" OUT="$PWD/out" targets/server/build.sh
 
+      # The live and installer ISO: the same packages, booted live (Calamares
+      # puts it on a disk). The runner's preinstalled toolchains are removed
+      # first: the live system and the ISO need the room.
+      - name: Build the installer ISO (CIT-OS Desktop, live and install)
+        if: matrix.image == 'iso'
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL /usr/local/share/boost
+          df -h / | tail -1
+          sudo EXTRA_DEBS="$PWD/dist/extra" OUT="$PWD/out" targets/desktop/build-iso.sh
+
       - name: Build the light desktop VM image (CIT-OS Lite, Xfce)
         if: matrix.image == 'lite'
         run: sudo VARIANT=lite OUT="$PWD/out" targets/server/build.sh
@@ -133,7 +147,9 @@ jobs:
         run: |
           sudo chown -R "$(id -u)" out
           ls -lh out/
-          if [ "${{ matrix.image }}" = vm ]; then
+          if [ "${{ matrix.image }}" = iso ]; then
+            ls -lh out/citos-desktop-*-amd64.iso
+          elif [ "${{ matrix.image }}" = vm ]; then
             qemu-img check out/citos-server-*-amd64.qcow2
           elif [ "${{ matrix.image }}" = desktop ] || [ "${{ matrix.image }}" = lite ]; then
             qemu-img check out/citos-${{ matrix.image }}-*-amd64.qcow2
@@ -155,7 +171,9 @@ jobs:
           aws configure set default.s3.max_concurrent_requests 2
           aws configure set default.s3.multipart_chunksize 16MB
           s3() { for try in 1 2 3; do aws --endpoint-url "$S3_URL" --cli-read-timeout 300 s3 "$@" && return 0; echo "upload try $try failed, retrying"; sleep 20; done; return 1; }
-          if [ "${{ matrix.image }}" = vm ]; then
+          if [ "${{ matrix.image }}" = iso ]; then
+            f=$(ls out/citos-desktop-*-amd64.iso); key=iso/citos-desktop-amd64.iso
+          elif [ "${{ matrix.image }}" = vm ]; then
             f=$(ls out/citos-server-*-amd64.qcow2); key=server/citos-server-amd64.qcow2
           elif [ "${{ matrix.image }}" = desktop ] || [ "${{ matrix.image }}" = lite ]; then
             f=$(ls out/citos-${{ matrix.image }}-*-amd64.qcow2); key=desktop/citos-${{ matrix.image }}-amd64.qcow2

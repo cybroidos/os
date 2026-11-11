@@ -222,6 +222,76 @@ def wallpaper(ctx: Context) -> None:
     lsrc = ctx.write(f"usr/share/backgrounds/{ctx.id}/{ctx.id}-light.svg", light)
     for w, h in WALLPAPER_SIZES:
         rasterise(lsrc, lsrc.with_name(f"{ctx.id}-light-{w}x{h}.png"), w, h)
+    # Hex, the HUD design: graphite with Hangar's 32 px grid, corner brackets,
+    # and the mark as line work in a hexagon frame with amber nodes.
+    hsrc = ctx.write(f"usr/share/backgrounds/{ctx.id}/{ctx.id}-hex.svg", hex_wallpaper())
+    for w, h in WALLPAPER_SIZES:
+        rasterise(hsrc, hsrc.with_name(f"{ctx.id}-hex-{w}x{h}.png"), w, h)
+
+
+def hex_wallpaper() -> str:
+    """CIT-OS Hex's wallpaper (1920 x 1080), drawn here rather than from a
+    template: the grid and the hexagon are geometry."""
+    import math
+
+    W, H, cx, cy = 1920, 1080, 960, 500
+    acc, line, line2, dim = "#f0a63c", "#121a1f", "#1d272d", "#33424a"
+    out = [
+        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}">',
+        "<defs>",
+        '<radialGradient id="bg" cx=".5" cy=".45" r=".8"><stop offset="0" stop-color="#0d1316"/>'
+        '<stop offset="1" stop-color="#050708"/></radialGradient>',
+        '<pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">'
+        f'<path d="M32 0H0V32" fill="none" stroke="{line}" stroke-width="1"/></pattern>',
+        '<radialGradient id="fade" cx=".5" cy=".46" r=".62"><stop offset="0" stop-color="#fff" stop-opacity=".9"/>'
+        '<stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>',
+        '<mask id="m"><rect width="100%" height="100%" fill="url(#fade)"/></mask>',
+        "</defs>",
+        f'<rect width="{W}" height="{H}" fill="url(#bg)"/>',
+        f'<rect width="{W}" height="{H}" fill="url(#grid)" mask="url(#m)"/>',
+    ]
+    # Corner brackets near the screen's corners: amber above, grey below.
+    # Inset so 16:10 and 4:3 screens (which crop a 16:9 picture's sides)
+    # still show them whole.
+    mx, my, L = 240, 72, 64
+    for x, y, sx, sy in ((mx, my, 1, 1), (W - mx, my, -1, 1), (mx, H - my, 1, -1), (W - mx, H - my, -1, -1)):
+        col = acc if sy == 1 else dim
+        out.append(f'<path d="M{x},{y + sy * L} V{y} H{x + sx * L}" fill="none" stroke="{col}" stroke-width="2"/>')
+    # The hexagon frame around the mark, with a second, fainter ring of ticks.
+    def hexagon(r):
+        pts = [(cx + r * math.cos(math.radians(60 * k - 90)), cy + r * math.sin(math.radians(60 * k - 90))) for k in range(6)]
+        return "M" + " L".join(f"{x:.1f},{y:.1f}" for x, y in pts) + " Z"
+    out.append(f'<path d="{hexagon(250)}" fill="none" stroke="{line2}" stroke-width="2"/>')
+    out.append(f'<path d="{hexagon(270)}" fill="none" stroke="{line}" stroke-width="1"/>')
+    for k in range(72):
+        a = math.radians(k * 5)
+        r1, r2 = 320, 320 + (14 if k % 6 == 0 else 6)
+        col = acc if k % 18 == 0 else dim
+        out.append(
+            f'<line x1="{cx + r1 * math.cos(a):.1f}" y1="{cy + r1 * math.sin(a):.1f}" x2="{cx + r2 * math.cos(a):.1f}" '
+            f'y2="{cy + r2 * math.sin(a):.1f}" stroke="{col}" stroke-width="2" stroke-opacity="{0.9 if col == acc else 0.6}"/>'
+        )
+    # The mark as line work (the brand mark's arcs), amber nodes.
+    s = 0.62  # scale of the 784-unit mark
+    ox, oy = cx - 392 * s, cy - 392 * s
+    t = lambda x, y: (ox + x * s, oy + y * s)
+    def arc(x1, y1, r, x2, y2, sweep):
+        a, b = t(x1, y1)
+        c, d = t(x2, y2)
+        return f"M{a:.1f},{b:.1f} A{r * s:.1f},{r * s:.1f} 0 0 {sweep} {c:.1f},{d:.1f}"
+    bands = [arc(447.8, 151.7, 228, 253.3, 533.5, 0), arc(264.5, 544.7, 228, 584.0, 536.4, 0), arc(463.5, 154.2, 228, 589.4, 225.4, 1)]
+    for d in bands:
+        out.append(f'<path d="{d}" fill="none" stroke="#2a3a42" stroke-width="{85 * s:.1f}"/>')
+        out.append(f'<path d="{d}" fill="none" stroke="#8fa3ad" stroke-width="2"/>')
+    traces = [arc(215.9, 151.3, 305, 624.1, 151.3, 1), arc(167.1, 207.4, 305, 115.2, 367.4, 0), arc(120.6, 436.2, 305, 377.6, 680.0, 0),
+              arc(446.6, 681.8, 305, 628.0, 601.1, 0), arc(368.0, 235.2, 152, 363.1, 518.9, 0)]
+    for d in traces:
+        out.append(f'<path d="{d}" fill="none" stroke="{dim}" stroke-width="3"/>')
+    for x, y in ((215.9, 151.3), (624.1, 151.3), (167.1, 207.4), (120.6, 436.2), (377.6, 680.0), (446.6, 681.8), (628.0, 601.1), (368.0, 235.2), (363.1, 518.9)):
+        a, b = t(x, y)
+        out.append(f'<circle cx="{a:.1f}" cy="{b:.1f}" r="7" fill="#050708" stroke="{acc}" stroke-width="3"/>')
+    out.append("</svg>")
+    return "\n".join(out) + "\n"
 
 
 def dart_color(hex_value: str) -> str:

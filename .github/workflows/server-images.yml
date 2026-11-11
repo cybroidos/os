@@ -80,7 +80,7 @@ jobs:
         if: matrix.image == 'desktop'
         run: |
           docker run --rm -v "$PWD/dist/extra:/out" -v "$PWD/tools:/tools:ro" debian:trixie sh -ec '
-            printf "Types: deb deb-src\nURIs: http://deb.debian.org/debian\nSuites: trixie trixie-updates\nComponents: main\nSigned-By: /usr/share/keyrings/debian-archive-keyring.gpg\n" > /etc/apt/sources.list.d/debian.sources
+            printf "Types: deb deb-src\nURIs: http://deb.debian.org/debian\nSuites: trixie trixie-updates\nComponents: main\nSigned-By: /usr/share/keyrings/debian-archive-keyring.gpg\n\nTypes: deb deb-src\nURIs: http://deb.debian.org/debian-security\nSuites: trixie-security\nComponents: main\nSigned-By: /usr/share/keyrings/debian-archive-keyring.gpg\n" > /etc/apt/sources.list.d/debian.sources
             apt-get update -q
             apt-get install -y -q --no-install-recommends dpkg-dev devscripts python3 >/dev/null
             apt-get build-dep -y -q plank >/dev/null

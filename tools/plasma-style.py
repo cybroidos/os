@@ -142,6 +142,112 @@ STYLES = {
 S = STYLES["citos"]
 
 
+def popup(r, margins, pad, shadow_alpha):
+    """Popups and tooltips at CIT-OS's radius, with a soft shadow.
+
+    The layout follows Plasma's own Breeze dialog: a nine-piece frame with
+    zero "hint-*-inset"s, a mask, and shadow pieces pad + r deep whose
+    "shadow-hint-*-margin" and "shadow-hint-*-inset" are both pad. Without
+    the insets Plasma placed the shadow wrongly (square boxes at the
+    corners). Plain filled pieces, no outline: Plasma tiles the edges, and a
+    hairline showed as stripes at the seams. The colour comes from the colour
+    scheme (ColorScheme-Background), so one file serves Dark and Light."""
+    w = 4  # stretched pieces' length
+    parts = []
+    add = parts.append
+    fill = 'class="ColorScheme-Background" fill="currentColor"'
+
+    # The frame at (10, 10).
+    X, Y = 10, 10
+    tx, by = X + r + w, Y + r + w
+
+    def corner(pid, cx, cy, sx, sy, mask=False):
+        # (cx, cy): the corner's centre of curvature; sx, sy: outwards.
+        sweep = 1 if sx * sy > 0 else 0
+        ox, oy = cx + sx * r, cy + sy * r
+        shape = f"M{cx},{cy} L{ox},{cy} A{r},{r} 0 0 {sweep} {cx},{oy} Z"
+        if mask:
+            return f'<path id="{pid}" d="{shape}" fill="#000000"/>'
+        return f'<path id="{pid}" d="{shape}" {fill}/>'
+
+    def frame(prefix, x, y, mask=False):
+        X, Y = x, y
+        tx, by = X + r + w, Y + r + w
+        p = prefix
+        add(corner(p + "topleft", X + r, Y + r, -1, -1, mask))
+        add(corner(p + "topright", tx, Y + r, 1, -1, mask))
+        add(corner(p + "bottomleft", X + r, by, -1, 1, mask))
+        add(corner(p + "bottomright", tx, by, 1, 1, mask))
+        for pid, x0, y0, ww, hh, edge in (
+            ("top", X + r, Y, w, r, f"M{X + r},{Y + 0.5} h{w}"),
+            ("bottom", X + r, by, w, r, f"M{X + r},{by + r - 0.5} h{w}"),
+            ("left", X, Y + r, r, w, f"M{X + 0.5},{Y + r} v{w}"),
+            ("right", tx, Y + r, r, w, f"M{tx + r - 0.5},{Y + r} v{w}"),
+            ("center", X + r, Y + r, w, w, None),
+        ):
+            rect = f'x="{x0}" y="{y0}" width="{ww}" height="{hh}"'
+            if mask:
+                add(f'<rect id="{p}{pid}" {rect} fill="#000000"/>')
+            else:
+                add(f'<rect id="{p}{pid}" {rect} {fill}/>')
+
+    frame("", X, Y)
+    frame("mask-", X + 60, Y, mask=True)
+    hx = X + 120
+    mt, ml, mr, mb = margins
+    for side, size in (("top", mt), ("left", ml), ("right", mr), ("bottom", mb)):
+        hw, hh = (size, 4) if side in ("left", "right") else (4, size)
+        add(f'<rect id="hint-{side}-margin" x="{hx}" y="{Y}" width="{hw}" height="{hh}" fill="none"/>')
+        iw, ih = (1e-8, 4) if side in ("left", "right") else (4, 1e-8)
+        add(f'<rect id="hint-{side}-inset" x="{hx}" y="{Y + 40}" width="{iw}" height="{ih}" fill="none"/>')
+        hx += 20
+
+    # The shadow at (10, 100): pieces d deep, darkest at the frame's edge.
+    d = pad + r
+    steps = 10
+    a = 1 - (1 - shadow_alpha) ** (1 / steps)
+    SX, SY = 10, 100
+    stx, sby = SX + d + w, SY + d + w
+
+    def layers(shape):
+        return "".join(f'<path d="{shape(pad * (1 - i / steps))}" fill="#000000" fill-opacity="{a:.4f}"/>' for i in range(steps))
+
+    def scorner(pid, cx, cy, sx, sy):
+        sweep = 1 if sx * sy > 0 else 0
+
+        def q(t):
+            R = r + t
+            return f"M{cx},{cy} L{cx + sx * R},{cy} A{R},{R} 0 0 {sweep} {cx},{cy + sy * R} Z"
+
+        add(f'<g id="{pid}">{layers(q)}</g>')
+
+    scorner("shadow-topleft", SX + d, SY + d, -1, -1)
+    scorner("shadow-topright", stx, SY + d, 1, -1)
+    scorner("shadow-bottomleft", SX + d, sby, -1, 1)
+    scorner("shadow-bottomright", stx, sby, 1, 1)
+    add('<g id="shadow-top">' + layers(lambda t: f"M{SX + d},{SY + d} h{w} v{-(r + t)} h{-w} Z") + "</g>")
+    add('<g id="shadow-bottom">' + layers(lambda t: f"M{SX + d},{sby} h{w} v{r + t} h{-w} Z") + "</g>")
+    add('<g id="shadow-left">' + layers(lambda t: f"M{SX + d},{SY + d} v{w} h{-(r + t)} v{-w} Z") + "</g>")
+    add('<g id="shadow-right">' + layers(lambda t: f"M{stx},{SY + d} v{w} h{r + t} v{-w} Z") + "</g>")
+    add(f'<rect id="shadow-center" x="{SX + d}" y="{SY + d}" width="{w}" height="{w}" fill="none"/>')
+    hx = stx + d + 20
+    for side in ("top", "left", "right", "bottom"):
+        hw, hh = (pad, 2) if side in ("left", "right") else (2, pad)
+        add(f'<rect id="shadow-hint-{side}-margin" x="{hx}" y="{SY}" width="{hw}" height="{hh}" fill="none"/>')
+        add(f'<rect id="shadow-hint-{side}-inset" x="{hx}" y="{SY + 30}" width="{hw}" height="{hh}" fill="none"/>')
+        hx += 20
+
+    h = sby + d + 20
+    return (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="400" height="{h}" viewBox="0 0 400 {h}">\n'
+        '<style type="text/css" id="current-color-scheme">'
+        ".ColorScheme-Background{color:#111b3d;}.ColorScheme-Text{color:#e8eefc;}</style>\n"
+        + "\n".join(parts)
+        + "\n</svg>\n"
+    )
+
+
 def panel(variant):
     """The top bar: nearly clear over the wallpaper (macOS's menu bar), solid
     navy when a window is maximised (Plasma's opaque variant)."""
@@ -206,10 +312,10 @@ def write(out, sid):
     for variant, alpha in VARIANTS.items():
         base = f"{variant}/" if variant else ""
         files[f"{base}widgets/panel-background.svg"] = panel(variant or "default")
-        # Popups and tooltips are Plasma's default style's (Breeze): they take
-        # the colour scheme's colours (navy, or white in Light), and their
-        # frames and shadows fit their rounded corners. Ours drew square
-        # boxes at the corners.
+        # Popups at the radius of Control Centre's tiles and the cards (14),
+        # tooltips a little tighter; both follow the colour scheme.
+        files[f"{base}dialogs/background.svg"] = popup(14, (10, 10, 10, 10), 12, 0.30)
+        files[f"{base}widgets/tooltip.svg"] = popup(10, (6, 10, 10, 6), 8, 0.22)
     files["widgets/tasks.svg"] = tasks()
     files["widgets/viewitem.svg"] = viewitem()
     for name, text in files.items():

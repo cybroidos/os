@@ -8,7 +8,10 @@ conf="${XDG_CONFIG_HOME:-$HOME/.config}"
 dir="$conf/plank/dock1/launchers"
 if [ ! -f "$conf/citos/dock-set" ]; then
 	mkdir -p "$dir"
-	for a in citos-apps firefox-esr org.kde.dolphin org.kde.konsole org.kde.kwrite systemsettings citos-trash; do
+	apps="citos-apps firefox-esr org.kde.dolphin org.kde.konsole org.kde.kwrite systemsettings citos-trash"
+	# The live system (the ISO): "Install CIT-OS" comes first.
+	[ -d /run/live/medium ] && apps="install-debian ${apps}"
+	for a in ${apps}; do
 		f=/usr/share/citos/apps/applications/$a.desktop
 		[ -f "$f" ] || f=/usr/share/applications/$a.desktop
 		[ -f "$f" ] || continue

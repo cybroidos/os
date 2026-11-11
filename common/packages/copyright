@@ -25,3 +25,18 @@ Copyright: 2014 The Flutter Authors
 License: BSD-3-Clause
  Flutter engine, shipped only in citos-kiosk-app.
  https://github.com/flutter/flutter/blob/main/LICENSE
+
+Files: usr/share/Kvantum/CIT-OS/* usr/share/Kvantum/CIT-OSLight/*
+Copyright: 2018-2024 Vince Liuice (WhiteSur-kde), recoloured for CIT-OS
+License: GPL-3.0-or-later
+ Shipped in citos-plasma. Made by tools/kvantum-theme.py from WhiteSur's
+ opaque Kvantum themes, https://github.com/vinceliuice/WhiteSur-kde (release
+ 2024-11-18). Full text in /usr/share/common-licenses/GPL-3.
+
+Files: usr/share/icons/WhiteSur*
+Copyright: 2018-2026 Vince Liuice (WhiteSur icon theme)
+License: GPL-3.0-or-later
+ Shipped in citos-icons, built in CI from
+ https://github.com/vinceliuice/WhiteSur-icon-theme (release 2026-09-10),
+ with CIT-OS changes (tools/icons-fixups.sh, tools/icons-dark.py).
+ Full text in /usr/share/common-licenses/GPL-3.

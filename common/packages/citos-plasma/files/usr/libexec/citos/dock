@@ -25,6 +25,14 @@ if [ ! -f "$st" ]; then
 	printf '[MainWindow]\nState=AAAA/wAAAAD9AAAAAQAAAAAAAAAAAAAAAPwCAAAAAvsAAAAcAFMAUwBIAE0AYQBuAGEAZwBlAHIARABvAGMAawAAAAAA/////wAAAQkA////+wAAACIAUQB1AGkAYwBrAEMAbwBtAG0AYQBuAGQAcwBEAG8AYwBrAAAAAAD/////AAABbAD///8AAAKAAAABaAAAAAQAAAAEAAAACAAAAAj8AAAAAQAAAAIAAAACAAAAFgBtAGEAaQBuAFQAbwBvAGwAQgBhAHIAAAAAAP////8AAAAAAAAAAAAAABwAcwBlAHMAcwBpAG8AbgBUAG8AbwBsAGIAYQByAAAAAAD/////AAAAAAAAAAA=\n' > "$st"
 fi
 
+# No Templates folder (macOS has none, and its icon looked like the App
+# Store's): switched off in the user folders and removed while empty. Once.
+if [ ! -f "$conf/citos/templates-off" ] && command -v xdg-user-dirs-update >/dev/null; then
+	xdg-user-dirs-update --set TEMPLATES "$HOME" 2>/dev/null || true
+	rmdir "$HOME/Templates" 2>/dev/null || true
+	mkdir -p "$conf/citos" && : > "$conf/citos/templates-off"
+fi
+
 # Float the dock a little above the screen's edge, as macOS does (our
 # Plank build reads this; tools/plank-edge-gap.py).
 PLANK_EDGE_GAP=8 exec plank

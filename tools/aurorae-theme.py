@@ -46,7 +46,12 @@ VARIANTS = {
     "CIT-OS": ((17, 27, 61), (14, 22, 52), (232, 238, 252), (138, 156, 196), 0.12, (255, 255, 255, 0.10)),
     # [WM] of CITOSHorizonLight
     "CIT-OS-Light": ((236, 239, 245), (245, 246, 249), (22, 30, 52), (120, 130, 150), 0.07, (255, 255, 255, 0.9)),
+    # Hex, the HUD design: graphite, crisp 6 px corners, square status keys.
+    "CIT-OS-Hex": ((12, 17, 20), (10, 14, 17), (223, 231, 234), (134, 148, 156), 0.14, (255, 255, 255, 0.05)),
 }
+# Per variant: corner radius and button shape (the defaults are Horizon's).
+SHAPES = {"CIT-OS-Hex": (6, "square")}
+BUTTON = "circle"
 
 BUTTONS = {  # file: (colour, symbol)
     "close": ((255, 98, 89), "x"),
@@ -318,8 +323,13 @@ def button(c, kind):
     for state, col, op, sym in states:
         inner = (
             f'<rect x="0" y="0" width="20" height="20" fill="none"/>'
-            f'<circle cx="10" cy="10" r="6.5" fill="{rgb(col)}" fill-opacity="{op}"/>'
-            f'<circle cx="10" cy="10" r="6.1" fill="none" stroke="#000000" stroke-opacity="0.18" stroke-width="0.8"/>'
+            + (
+                f'<circle cx="10" cy="10" r="6.5" fill="{rgb(col)}" fill-opacity="{op}"/>'
+                f'<circle cx="10" cy="10" r="6.1" fill="none" stroke="#000000" stroke-opacity="0.18" stroke-width="0.8"/>'
+                if BUTTON == "circle"
+                else f'<rect x="3.5" y="3.5" width="13" height="13" rx="3" fill="{rgb(col)}" fill-opacity="{op}"/>'
+                f'<rect x="3.9" y="3.9" width="12.2" height="12.2" rx="2.7" fill="none" stroke="#000000" stroke-opacity="0.22" stroke-width="0.8"/>'
+            )
         )
         if sym:
             inner += symbol(kind, c)
@@ -375,8 +385,9 @@ PaddingRight={PR}
 
 
 def main(out):
-    global NAME, ACTIVE_BAR, INACTIVE_BAR, ACTIVE_TEXT, INACTIVE_TEXT, SHADOW, HIGHLIGHT
+    global NAME, ACTIVE_BAR, INACTIVE_BAR, ACTIVE_TEXT, INACTIVE_TEXT, SHADOW, HIGHLIGHT, R, BUTTON
     for NAME, (ACTIVE_BAR, INACTIVE_BAR, ACTIVE_TEXT, INACTIVE_TEXT, SHADOW, HIGHLIGHT) in VARIANTS.items():
+        R, BUTTON = SHAPES.get(NAME, (18, "circle"))
         write(out)
 
 

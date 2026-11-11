@@ -1,0 +1,14 @@
+{
+    "KPackageStructure": "Plasma/LookAndFeel",
+    "KPlugin": {
+        "Authors": [{ "Name": "Cybroid Institute of Technology", "Email": "citos@cybroid.com" }],
+        "Category": "",
+        "Description": "CIT-OS Hex: the HUD design, graphite with one amber accent, bracketed frames and live readouts",
+        "Id": "org.cybroid.citos.hex",
+        "License": "GPL-2.0-or-later",
+        "Name": "CIT-OS Hex",
+        "Version": "1.0",
+        "Website": "https://cybroid.com"
+    },
+    "X-Plasma-APIVersion": "2"
+}

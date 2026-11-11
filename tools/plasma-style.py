@@ -138,6 +138,12 @@ STYLES = {
         bar=((246, 248, 252), 0.82), bar_default=((246, 248, 252), 0.9), bar_solid=(240, 243, 248),
         hover=((14, 24, 58), 0.06),
     ),
+    # Hex, the HUD design: a graphite bar, crisp 6 px popups, amber hovers.
+    "citos-hex": dict(
+        name="CIT-OS Hex", desc="CIT-OS Hex: the HUD design, graphite with one amber accent",
+        bar=((12, 17, 20), 0.92), bar_default=((12, 17, 20), 0.95), bar_solid=(12, 17, 20),
+        hover=((240, 166, 60), 0.12), radius=6, tip_radius=4,
+    ),
 }
 S = STYLES["citos"]
 
@@ -314,8 +320,8 @@ def write(out, sid):
         files[f"{base}widgets/panel-background.svg"] = panel(variant or "default")
         # Popups at the radius of Control Centre's tiles and the cards (14),
         # tooltips a little tighter; both follow the colour scheme.
-        files[f"{base}dialogs/background.svg"] = popup(14, (10, 10, 10, 10), 12, 0.30)
-        files[f"{base}widgets/tooltip.svg"] = popup(10, (6, 10, 10, 6), 8, 0.22)
+        files[f"{base}dialogs/background.svg"] = popup(S.get("radius", 14), (10, 10, 10, 10), 12, 0.30)
+        files[f"{base}widgets/tooltip.svg"] = popup(S.get("tip_radius", 10), (6, 10, 10, 6), 8, 0.22)
     files["widgets/tasks.svg"] = tasks()
     files["widgets/viewitem.svg"] = viewitem()
     for name, text in files.items():

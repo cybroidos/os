@@ -36,6 +36,7 @@ PlasmoidItem {
     property real volume: -1         // 0..1.5, -1 = no sound output
     property bool muted: false
     property bool dark: true         // CIT-OS Horizon, or Horizon Light
+    property bool hex: false         // the HUD design (CIT-OS Hex)
 
     Plasmoid.icon: "citos-control-centre"
     toolTipMainText: "Control Centre"
@@ -92,6 +93,7 @@ PlasmoidItem {
         })
         sh.run("kreadconfig6 --file kdeglobals --group General --key ColorScheme", (out) => {
             root.dark = !/Light/.test(out)
+            root.hex = /Hex/.test(out)
         })
         sh.run("wpctl get-volume @DEFAULT_AUDIO_SINK@", (out, code) => {
             const m = out.match(/Volume:\s*([\d.]+)/)
@@ -102,6 +104,13 @@ PlasmoidItem {
 
     // Light or Dark: the two CIT-OS global themes (colours, window title
     // bars, top bar and popups, icons); the layout stays as it is.
+    // The design: Horizon (clean, for everyone) or Hex (the HUD).
+    function setDesign(hex) {
+        root.hex = hex
+        root.expanded = false
+        sh.run("citos-appearance " + (hex ? "hex" : "horizon"), () => {})
+    }
+
     function setAppearance(dark) {
         root.dark = dark
         sh.run("citos-appearance " + (dark ? "dark" : "light"), () => {})
@@ -226,6 +235,13 @@ PlasmoidItem {
             RowLayout {
                 spacing: 10
                 Layout.fillWidth: true
+                Tile {
+                    Layout.fillWidth: true; Layout.preferredWidth: 1
+                    icon: root.hex ? "view-grid-symbolic" : "preferences-desktop-theme-global-symbolic"
+                    title: root.hex ? "Hex" : "Horizon"
+                    on: root.hex
+                    onClicked: root.setDesign(!root.hex)
+                }
                 Tile {
                     Layout.fillWidth: true; Layout.preferredWidth: 1
                     icon: "camera-photo-symbolic"

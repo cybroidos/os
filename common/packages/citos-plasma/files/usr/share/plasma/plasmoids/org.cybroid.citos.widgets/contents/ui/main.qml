@@ -12,6 +12,7 @@
  *   open    no card: large type straight on the wallpaper, with a shadow
  *           that keeps it legible (macOS's lock-screen clock)
  *   gauges  a compact card; System shows memory and disk as rings
+ *   hud     Hex, the HUD design: bracketed frames, mono readouts, tick gauges
  */
 import QtQuick
 import QtQuick.Effects
@@ -49,6 +50,11 @@ PlasmoidItem {
     property real diskFree: 0
     property real diskSize: 0
     property string tower: ""
+    // HUD readouts: CPU use (from /proc/stat between readings), load, uptime.
+    property real cpuShare: 0
+    property var cpuLast: null
+    property string load: ""
+    property string uptime: ""
 
     readonly property real memShare: memTotal ? Math.min(1, memUsed / memTotal) : 0
     readonly property real diskShare: diskSize ? Math.min(1, (diskSize - diskFree) / diskSize) : 0
@@ -59,7 +65,7 @@ PlasmoidItem {
     }
     // Machine facts every 15 s; the weather every 20 minutes.
     Timer {
-        interval: 15000; running: root.card === "system"; repeat: true; triggeredOnStart: true
+        interval: root.look === "hud" ? 3000 : 15000; running: root.card === "system"; repeat: true; triggeredOnStart: true
         onTriggered: root.refresh()
     }
     Timer {
@@ -93,6 +99,22 @@ PlasmoidItem {
                 root.diskFree = Number(d[0]) / 1e9
                 root.diskSize = Number(d[1]) / 1e9
             }
+        })
+        sh.run("sh -c 'head -1 /proc/stat; cat /proc/loadavg; cut -d. -f1 /proc/uptime'", (out) => {
+            const l = out.trim().split("\n")
+            const t = (l[0] || "").trim().split(/\s+/).slice(1).map(Number)
+            if (t.length >= 4) {
+                const idle = t[3] + (t[4] || 0), total = t.reduce((a, b) => a + b, 0)
+                if (root.cpuLast) {
+                    const dt = total - root.cpuLast.total, di = idle - root.cpuLast.idle
+                    root.cpuShare = dt > 0 ? Math.max(0, Math.min(1, 1 - di / dt)) : 0
+                }
+                root.cpuLast = { total: total, idle: idle }
+            }
+            root.load = ((l[1] || "").split(" ").slice(0, 3)).join("  ")
+            const up = Math.floor(Number(l[2] || 0))
+            const d = Math.floor(up / 86400), h = Math.floor(up % 86400 / 3600), m = Math.floor(up % 3600 / 60)
+            root.uptime = (d ? d + "d " : "") + String(h).padStart(2, "0") + "h " + String(m).padStart(2, "0") + "m"
         })
         sh.run("tailscale status --json --peers=false", (out) => {
             try {
@@ -227,6 +249,97 @@ PlasmoidItem {
         }
     }
 
+
+    // ---- Hex, the HUD look (look "hud"): Hangar's HUD on the desktop. ----
+    readonly property color hudAcc: "#f0a63c"
+    readonly property color hudLine: "#33424a"
+    readonly property color hudFg: "#dfe7ea"
+    readonly property color hudMuted: "#86949c"
+    readonly property color hudDim: "#4d5b63"
+    readonly property string mono: "JetBrains Mono"
+
+    // A HUD frame: a hairline panel, amber brackets on the top corners and
+    // grey ones below; 320 x 196 so the two sit as a matching pair.
+    component HudFrame: Item {
+        default property alias content: hudInner.data
+        property string label
+        implicitWidth: 320
+        implicitHeight: 196
+        Rectangle {
+            anchors.fill: parent
+            color: Qt.rgba(12 / 255, 17 / 255, 20 / 255, 0.88)
+            border.color: Qt.alpha(root.hudLine, 0.9)
+            border.width: 1
+        }
+        Repeater {
+            model: [[0, 0, 1, 1], [1, 0, -1, 1], [0, 1, 1, -1], [1, 1, -1, -1]]
+            delegate: Item {
+                required property var modelData
+                x: modelData[0] ? parent.width - 14 : 0
+                y: modelData[1] ? parent.height - 14 : 0
+                width: 14; height: 14
+                Rectangle {
+                    width: 14; height: 2; color: modelData[1] ? root.hudDim : root.hudAcc
+                    y: modelData[3] > 0 ? 0 : 12
+                }
+                Rectangle {
+                    width: 2; height: 14; color: modelData[1] ? root.hudDim : root.hudAcc
+                    x: modelData[2] > 0 ? 0 : 12
+                }
+            }
+        }
+        QQC2.Label {
+            x: 16; y: 12
+            text: parent.label
+            color: root.hudMuted
+            font.family: root.mono; font.pixelSize: 11; font.letterSpacing: 1.6
+        }
+        Item {
+            id: hudInner
+            anchors { fill: parent; leftMargin: 16; rightMargin: 16; topMargin: 32; bottomMargin: 14 }
+        }
+    }
+
+    // A gauge as Hangar draws it: 28 ticks over 270 degrees, lit amber up to
+    // the value and red above 85 %.
+    component TickGauge: Item {
+        property real share: 0
+        property string label
+        implicitWidth: 84; implicitHeight: 84
+        Canvas {
+            id: g
+            anchors.fill: parent
+            property real s: parent.share
+            onSChanged: requestPaint()
+            onPaint: {
+                const c = getContext("2d")
+                c.reset()
+                const n = 28, cx = width / 2, cy = height / 2, r1 = width / 2 - 4, r2 = r1 - 9
+                const lit = Math.round(s * n)
+                for (let i = 0; i < n; i++) {
+                    const a = (135 + i * 270 / (n - 1)) * Math.PI / 180
+                    c.strokeStyle = i < lit ? (s > 0.85 ? "#ff6b5a" : "#f0a63c") : "#1d272d"
+                    c.lineWidth = 3
+                    c.beginPath()
+                    c.moveTo(cx + r2 * Math.cos(a), cy + r2 * Math.sin(a))
+                    c.lineTo(cx + r1 * Math.cos(a), cy + r1 * Math.sin(a))
+                    c.stroke()
+                }
+            }
+        }
+        QQC2.Label {
+            anchors.centerIn: parent; anchors.verticalCenterOffset: -4
+            text: Math.round(parent.share * 100)
+            color: root.hudFg; font.family: root.mono; font.pixelSize: 20; font.weight: Font.DemiBold
+        }
+        QQC2.Label {
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.bottom: parent.bottom; anchors.bottomMargin: 6
+            text: parent.label
+            color: root.hudMuted; font.family: root.mono; font.pixelSize: 9; font.letterSpacing: 1.2
+        }
+    }
+
     fullRepresentation: Item {
         Layout.preferredWidth: view.implicitWidth
         Layout.preferredHeight: view.implicitHeight
@@ -235,7 +348,62 @@ PlasmoidItem {
         Loader {
             id: view
             anchors.left: parent.left
-            sourceComponent: root.card === "system" ? (root.look === "gauges" ? systemGauges : systemCard) : todayCard
+            sourceComponent: root.look === "hud"
+                ? (root.card === "system" ? systemHud : todayHud)
+                : root.card === "system" ? (root.look === "gauges" ? systemGauges : systemCard) : todayCard
+        }
+
+        Component {
+            id: todayHud
+            HudFrame {
+                label: "LOCAL TIME // " + Qt.formatDate(root.now, "ddd").toUpperCase()
+                Column {
+                    anchors.fill: parent
+                    spacing: 2
+                    QQC2.Label {
+                        text: Qt.formatTime(root.now, "HH:mm:ss")
+                        color: root.hudFg
+                        font.family: root.mono; font.pixelSize: 54; font.weight: Font.Medium
+                    }
+                    QQC2.Label {
+                        text: Qt.formatDate(root.now, "dd MMM yyyy").toUpperCase()
+                        color: root.hudAcc
+                        font.family: root.mono; font.pixelSize: 13; font.letterSpacing: 1.6
+                    }
+                    QQC2.Label {
+                        topPadding: 8
+                        text: root.weather ? root.weather.toUpperCase() : "WEATHER // OFFLINE"
+                        color: root.hudMuted
+                        font.family: root.mono; font.pixelSize: 11; font.letterSpacing: 1.2
+                        width: parent.width; elide: Text.ElideRight
+                    }
+                }
+            }
+        }
+
+        Component {
+            id: systemHud
+            HudFrame {
+                label: "SYSTEM // " + (root.host || "").toUpperCase()
+                Row {
+                    id: gauges
+                    spacing: 10
+                    TickGauge { share: root.cpuShare; label: "CPU" }
+                    TickGauge { share: root.memShare; label: "MEM" }
+                    TickGauge { share: root.diskShare; label: "DISK" }
+                }
+                Column {
+                    anchors.top: gauges.bottom; anchors.topMargin: 6
+                    spacing: 3
+                    QQC2.Label { text: "LOAD   " + root.load; color: root.hudMuted; font.family: root.mono; font.pixelSize: 11 }
+                    QQC2.Label { text: "UPTIME " + root.uptime; color: root.hudMuted; font.family: root.mono; font.pixelSize: 11 }
+                    QQC2.Label {
+                        text: "TOWER  " + (root.tower === "On Tower" ? "LINKED" : "OFFLINE")
+                        color: root.tower === "On Tower" ? "#46d39a" : root.hudDim
+                        font.family: root.mono; font.pixelSize: 11
+                    }
+                }
+            }
         }
 
         Component {

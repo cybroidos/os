@@ -1,38 +1,65 @@
 #!/bin/sh
-# citos-appearance light|dark|toggle|status: CIT-OS Horizon Light or Dark,
-# applied live through Plasma's own tools (colours, the Plasma style, icons,
-# window title bars), the dock and, where it is CIT-OS's own, the wallpaper
-# and lock screen (as macOS pairs light and dark wallpapers), as Control
-# Centre's Appearance tile does. GTK apps and Firefox follow the colour
-# scheme through Plasma's GTK settings.
+# citos-appearance dark|light|hex|horizon|toggle|status: the CIT-OS design
+# and appearance, applied live through Plasma's own tools, as Control
+# Centre's Appearance and Design tiles do.
+#
+#   dark, light   Horizon, the clean design, in Dark or Light
+#   horizon       Horizon (Dark)
+#   hex           Hex, the HUD design (graphite, amber, live readouts)
+#   toggle        Horizon's Dark <-> Light (Hex stays Hex)
+#   status        prints dark, light or hex
+#
+# Each sets: colours, the Plasma style (top bar, popups), icons, window title
+# bars and corners, app controls (Kvantum for Horizon, Breeze for Hex), the
+# dock, the desktop widgets' look and, where they are CIT-OS's own, the
+# wallpaper and lock screen. GTK apps and Firefox follow the colour scheme
+# through Plasma's GTK settings.
 #
 # Not plasma-apply-lookandfeel: it writes the theme as defaults
 # (~/.config/kdedefaults), which the running shell and KWin don't reload.
 set -eu
 current() {
 	case "$(kreadconfig6 --file kdeglobals --group General --key ColorScheme)" in
+	*Hex) echo hex ;;
 	*Light) echo light ;;
 	*) echo dark ;;
 	esac
 }
+was="$(current)"
 mode="${1:-status}"
-if [ "$mode" = toggle ]; then
-	if [ "$(current)" = dark ]; then mode=light; else mode=dark; fi
-fi
 case "$mode" in
-light) kv=CIT-OSLight scheme=CITOSHorizonLight style=citos-light icons=WhiteSur-light deco=CIT-OS-Light lnf=org.cybroid.citos.desktop.light dock=CIT-OS-Light wall=citos-light ;;
-dark) kv=CIT-OS scheme=CITOSHorizon style=citos icons=WhiteSur-dark deco=CIT-OS lnf=org.cybroid.citos.desktop dock=CIT-OS wall=citos ;;
+toggle) if [ "$was" = light ]; then mode=dark; elif [ "$was" = dark ]; then mode=light; else mode=hex; fi ;;
+horizon) mode=dark ;;
+esac
+case "$mode" in
+light)
+	kv=CIT-OSLight style_engine=kvantum scheme=CITOSHorizonLight style=citos-light icons=WhiteSur-light
+	deco=CIT-OS-Light lnf=org.cybroid.citos.desktop.light dock=CIT-OS-Light wall=citos-light
+	radius=18 look=card cw=300 ch=176
+	;;
+dark)
+	kv=CIT-OS style_engine=kvantum scheme=CITOSHorizon style=citos icons=WhiteSur-dark
+	deco=CIT-OS lnf=org.cybroid.citos.desktop dock=CIT-OS wall=citos
+	radius=18 look=card cw=300 ch=176
+	;;
+hex)
+	kv=CIT-OS style_engine=Breeze scheme=CITOSHex style=citos-hex icons=WhiteSur-dark
+	deco=CIT-OS-Hex lnf=org.cybroid.citos.hex dock=CIT-OS-Hex wall=citos-hex
+	radius=6 look=hud cw=320 ch=196
+	;;
 status)
-	current
+	echo "$was"
 	exit 0
 	;;
 *)
-	echo "usage: citos-appearance light|dark|toggle|status" >&2
+	echo "usage: citos-appearance dark|light|hex|horizon|toggle|status" >&2
 	exit 2
 	;;
 esac
 kwriteconfig6 --file kdeglobals --group KDE --key LookAndFeelPackage "$lnf"
-# App controls (Kvantum): apps already open take it when next opened.
+# App controls: Kvantum in CIT-OS's themes (Horizon) or Breeze (Hex); apps
+# already open take it when next opened.
+kwriteconfig6 --file kdeglobals --group KDE --key widgetStyle "$style_engine"
 kvdir="${XDG_CONFIG_HOME:-$HOME/.config}/Kvantum"
 mkdir -p "$kvdir"
 printf '[General]\ntheme=%s\n' "$kv" > "$kvdir/kvantum.kvconfig"
@@ -44,8 +71,11 @@ for c in /usr/lib/*/libexec/plasma-changeicons /usr/libexec/plasma-changeicons; 
 		break
 	fi
 done
+# Window title bars, and the corners the rounded-corners effect cuts to match.
 kwriteconfig6 --file kwinrc --group org.kde.kdecoration2 --key library org.kde.kwin.aurorae
 kwriteconfig6 --file kwinrc --group org.kde.kdecoration2 --key theme "__aurorae__svg__$deco"
+kwriteconfig6 --file kwinrc --group Round-Corners --key Size "$radius"
+kwriteconfig6 --file kwinrc --group Round-Corners --key InactiveCornerRadius "$radius"
 qdbus6 org.kde.KWin /KWin reconfigure >/dev/null 2>&1 || true
 
 # GTK apps and the dock read their icons from GTK's settings.
@@ -62,17 +92,31 @@ if pkill -x plank 2>/dev/null; then
 	(setsid /usr/libexec/citos/dock >/dev/null 2>&1 &)
 fi
 
-# The wallpaper and the lock screen, only where they are CIT-OS's own: a
-# picture someone chose stays.
+# The wallpaper (where it is CIT-OS's own: a picture someone chose stays) and
+# the desktop widgets' look, kept as a matching pair at the top corners.
 img="file:///usr/share/backgrounds/citos/$wall-1920x1080.png"
 qdbus6 org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript "
 var ds = desktops();
 for (var i = 0; i < ds.length; i++) {
     var d = ds[i];
-    if (d.wallpaperPlugin != 'org.kde.image') continue;
-    d.currentConfigGroup = ['Wallpaper', 'org.kde.image', 'General'];
-    var cur = String(d.readConfig('Image'));
-    if (cur == '' || cur.indexOf('/backgrounds/citos/') >= 0) d.writeConfig('Image', '$img');
+    if (d.wallpaperPlugin == 'org.kde.image') {
+        d.currentConfigGroup = ['Wallpaper', 'org.kde.image', 'General'];
+        var cur = String(d.readConfig('Image'));
+        if (cur == '' || cur.indexOf('/backgrounds/citos/') >= 0) d.writeConfig('Image', '$img');
+    }
+    var g = screenGeometry(d.screen);
+    var ws = d.widgets('org.cybroid.citos.widgets');
+    if (ws.length == 0) continue;
+    var places = '';
+    for (var j = 0; j < ws.length; j++) {
+        ws[j].currentConfigGroup = ['General'];
+        ws[j].writeConfig('look', '$look');
+        var right = ws[j].readConfig('card') == 'system';
+        places += 'Applet-' + ws[j].id + ':' + (right ? g.width - $cw - 40 : 40) + ',56,$cw,$ch,0;';
+    }
+    d.currentConfigGroup = [];
+    d.writeConfig('ItemGeometries-' + g.width + 'x' + g.height, places);
+    d.writeConfig('ItemGeometriesHorizontal', places);
 }" >/dev/null 2>&1 || true
 lock="$(kreadconfig6 --file kscreenlockerrc --group Greeter --group Wallpaper --group org.kde.image --group General --key Image)"
 case "$lock" in
@@ -81,4 +125,9 @@ case "$lock" in
 	kwriteconfig6 --file kscreenlockerrc --group Greeter --group Wallpaper --group org.kde.image --group General --key PreviewImage "$img"
 	;;
 esac
+# Between designs the widgets change size: the desktop takes the new places
+# when it starts again (a moment's blink).
+if { [ "$mode" = hex ] && [ "$was" != hex ]; } || { [ "$mode" != hex ] && [ "$was" = hex ]; }; then
+	systemctl --user restart plasma-plasmashell >/dev/null 2>&1 || true
+fi
 echo "$mode"

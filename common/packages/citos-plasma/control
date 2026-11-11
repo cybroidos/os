@@ -14,11 +14,13 @@ Depends: citos-base (>= @VERSION@), citos-artwork (>= @VERSION@), citos-plymouth
  plasma-widgets-addons, plank, dbus-bin, breeze-gtk-theme, kde-config-gtk-style, librsvg2-common, pipewire, wireplumber, upower,
  dolphin, konsole, kwrite, ark, gwenview, firefox-esr,
  xrdp, xorgxrdp, dbus-x11, plymouth, plymouth-themes
+Recommends: citos-icons
 Conflicts: citos-desktop
 Description: CIT-OS Desktop: KDE Plasma 6 in the CIT-OS Horizon look
  A modern desktop for CIT-OS: KDE Plasma 6 on X11 with a slim top bar (menu,
  the app's own menu, tray, clock) and a floating dock, the CIT-OS Horizon
- colours (navy, cyan and blue), Papirus icons, Inter and JetBrains Mono,
+ colours (navy, cyan and blue), WhiteSur app icons (citos-icons; Papirus
+ as the fallback), Inter and JetBrains Mono,
  a CIT-OS sign-in screen (SDDM) and splash, the CIT-OS boot splash
  (Plymouth), Firefox ESR with CIT-OS's home page and bookmarks, and xrdp
  for Remote Desktop. Defaults only: each person can change them.

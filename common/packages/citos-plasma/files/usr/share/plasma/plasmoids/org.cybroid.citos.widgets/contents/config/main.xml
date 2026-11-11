@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kcfg xmlns="http://www.kde.org/standards/kcfg/1.0"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0 http://www.kde.org/standards/kcfg/1.0/kcfg.xsd">
+  <kcfgfile name=""/>
+  <group name="General">
+    <!-- Which card: "today" (the day, the time, the weather) or "system"
+         (this computer: memory, disk, Tower). -->
+    <entry name="card" type="String">
+      <default>today</default>
+    </entry>
+    <!-- How it is drawn: "card" (a raised card), "open" (large type on the
+         wallpaper) or "gauges" (compact, with rings for memory and disk). -->
+    <entry name="look" type="String">
+      <default>card</default>
+    </entry>
+  </group>
+</kcfg>

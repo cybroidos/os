@@ -4,10 +4,10 @@
 TopRoundness=18
 BottomRoundness=18
 LineWidth=1
-OuterStrokeColor=20;;30;;60;;40
-FillStartColor=255;;255;;255;;175
-FillEndColor=246;;248;;252;;160
-InnerStrokeColor=255;;255;;255;;120
+OuterStrokeColor=0;;0;;0;;48
+FillStartColor=255;;255;;255;;200
+FillEndColor=240;;244;;252;;165
+InnerStrokeColor=255;;255;;255;;235
 
 [PlankDockTheme]
 HorizPadding=3
@@ -15,7 +15,7 @@ TopPadding=2.5
 BottomPadding=2.5
 ItemPadding=3.5
 IndicatorSize=4
-IconShadowSize=1
+IconShadowSize=2.5
 UrgentBounceHeight=1.6666666666666667
 LaunchBounceHeight=0.625
 FadeOpacity=1

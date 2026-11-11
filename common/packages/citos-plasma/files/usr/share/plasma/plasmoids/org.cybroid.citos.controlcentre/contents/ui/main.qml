@@ -50,7 +50,7 @@ PlasmoidItem {
         onClicked: root.expanded = !root.expanded
         Kirigami.Icon {
             anchors.centerIn: parent
-            width: Math.round(parent.height * 0.6); height: width
+            width: Math.round(parent.height * 0.82); height: width
             source: Plasmoid.icon
             active: button.containsMouse || root.expanded
         }

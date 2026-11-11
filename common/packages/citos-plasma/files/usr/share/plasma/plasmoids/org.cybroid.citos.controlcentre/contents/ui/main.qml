@@ -1,8 +1,9 @@
 /*
  * CIT-OS Control Centre (citos-plasma): the two-toggles icon in the top bar
  * opens the settings people change most, as macOS's Control Centre does:
- * network and Tower (CIT's private network) as big tiles, Do Not Disturb,
- * a screenshot and Settings as small ones, and the sound level. Everything
+ * network, Tower (CIT's private network), Do Not Disturb and Appearance
+ * (Light or Dark) as big tiles, a screenshot and Settings as small ones,
+ * and the sound level. Everything
  * is read from the machine as it opens (ip, tailscale, wpctl), so a tile
  * never claims a state the system doesn't have; the sound slider hides when
  * there's no output (most VMs).
@@ -19,11 +20,13 @@ import org.kde.notificationmanager as NotificationManager
 PlasmoidItem {
     id: root
 
-    readonly property color ink: "#eef3ff"
-    readonly property color soft: "#a9b8da"
-    readonly property color accent: "#1ccbff"
-    readonly property color tile: "#16ffffff"
-    readonly property color tileOn: "#1ccbff"
+    // Colours follow the colour scheme (CIT-OS Horizon or Horizon Light).
+    readonly property color ink: Kirigami.Theme.textColor
+    readonly property color soft: Qt.alpha(Kirigami.Theme.textColor, 0.68)
+    readonly property color accent: Kirigami.Theme.focusColor
+    readonly property color tile: Qt.alpha(Kirigami.Theme.textColor, 0.07)
+    readonly property color tileOn: Kirigami.Theme.focusColor
+    readonly property color onAccent: Kirigami.ColorUtils.brightnessForColor(tileOn) === Kirigami.ColorUtils.Light ? "#06122e" : "#ffffff"
 
     // What the tiles show, filled by refresh().
     property string netKind: ""      // "Wired", "Wi-Fi" or "" when offline
@@ -32,6 +35,7 @@ PlasmoidItem {
     property string towerAddress: ""
     property real volume: -1         // 0..1.5, -1 = no sound output
     property bool muted: false
+    property bool dark: true         // CIT-OS Horizon, or Horizon Light
 
     Plasmoid.icon: "citos-control-centre"
     toolTipMainText: "Control Centre"
@@ -86,11 +90,21 @@ PlasmoidItem {
                 root.towerAddress = (s.TailscaleIPs || [])[0] || ""
             } catch (e) { root.towerState = "Off" }
         })
+        sh.run("kreadconfig6 --file kdeglobals --group General --key ColorScheme", (out) => {
+            root.dark = !/Light/.test(out)
+        })
         sh.run("wpctl get-volume @DEFAULT_AUDIO_SINK@", (out, code) => {
             const m = out.match(/Volume:\s*([\d.]+)/)
             root.volume = code === 0 && m ? Number(m[1]) : -1
             root.muted = /MUTED/.test(out)
         })
+    }
+
+    // Light or Dark: the two CIT-OS global themes (colours, window title
+    // bars, top bar and popups, icons); the layout stays as it is.
+    function setAppearance(dark) {
+        root.dark = dark
+        sh.run("citos-appearance " + (dark ? "dark" : "light"), () => {})
     }
 
     // Do Not Disturb: Plasma's own setting, so its notifications obey it.
@@ -122,7 +136,7 @@ PlasmoidItem {
         property bool big: false
         signal clicked()
         radius: 16
-        color: area.pressed ? Qt.lighter(base, 1.25) : area.containsMouse ? Qt.lighter(base, 1.12) : base
+        color: area.pressed ? Qt.alpha(root.ink, 0.17) : area.containsMouse ? Qt.alpha(root.ink, 0.12) : base
         readonly property color base: root.tile
         implicitHeight: big ? 64 : 76
         Behavior on color { ColorAnimation { duration: 120 } }
@@ -133,8 +147,8 @@ PlasmoidItem {
             spacing: 10
             Rectangle {
                 Layout.preferredWidth: 34; Layout.preferredHeight: 34; radius: 17
-                color: t.on ? root.tileOn : "#24ffffff"
-                Kirigami.Icon { anchors.centerIn: parent; width: 18; height: 18; source: t.icon; color: t.on ? "#06122e" : root.ink; isMask: true }
+                color: t.on ? root.tileOn : Qt.alpha(root.ink, 0.12)
+                Kirigami.Icon { anchors.centerIn: parent; width: 18; height: 18; source: t.icon; color: t.on ? root.onAccent : root.ink; isMask: true }
             }
             ColumnLayout {
                 Layout.fillWidth: true; spacing: 0
@@ -149,18 +163,18 @@ PlasmoidItem {
             Rectangle {
                 Layout.alignment: Qt.AlignHCenter
                 Layout.preferredWidth: 34; Layout.preferredHeight: 34; radius: 17
-                color: t.on ? root.tileOn : "#24ffffff"
-                Kirigami.Icon { anchors.centerIn: parent; width: 18; height: 18; source: t.icon; color: t.on ? "#06122e" : root.ink; isMask: true }
+                color: t.on ? root.tileOn : Qt.alpha(root.ink, 0.12)
+                Kirigami.Icon { anchors.centerIn: parent; width: 18; height: 18; source: t.icon; color: t.on ? root.onAccent : root.ink; isMask: true }
             }
             QQC2.Label { Layout.alignment: Qt.AlignHCenter; text: t.title; color: root.ink; font.pixelSize: 12 }
         }
     }
 
     fullRepresentation: Item {
-        Layout.preferredWidth: 340
+        Layout.preferredWidth: 372
         Layout.preferredHeight: col.implicitHeight + 24
-        Layout.minimumWidth: 340
-        Layout.maximumWidth: 340
+        Layout.minimumWidth: 372
+        Layout.maximumWidth: 372
 
         ColumnLayout {
             id: col
@@ -172,7 +186,7 @@ PlasmoidItem {
                 Layout.fillWidth: true
                 Tile {
                     Layout.fillWidth: true; Layout.preferredWidth: 1; big: true
-                    icon: root.netKind === "Wi-Fi" ? "network-wireless" : root.netKind ? "network-wired" : "network-offline"
+                    icon: root.netKind === "Wi-Fi" ? "network-wireless-symbolic" : root.netKind ? "network-wired-symbolic" : "network-offline-symbolic"
                     title: root.netKind || "Offline"
                     detail: root.netAddress
                     on: root.netKind.length > 0
@@ -180,7 +194,7 @@ PlasmoidItem {
                 }
                 Tile {
                     Layout.fillWidth: true; Layout.preferredWidth: 1; big: true
-                    icon: "network-vpn"
+                    icon: "network-vpn-symbolic"
                     title: "Tower"
                     detail: root.towerState === "Connected" ? root.towerAddress : root.towerState
                     on: root.towerState === "Connected"
@@ -192,21 +206,35 @@ PlasmoidItem {
                 spacing: 10
                 Layout.fillWidth: true
                 Tile {
-                    Layout.fillWidth: true; Layout.preferredWidth: 1
-                    icon: dnd.on ? "notifications-disabled" : "notifications"
+                    Layout.fillWidth: true; Layout.preferredWidth: 1; big: true
+                    icon: dnd.on ? "notifications-disabled-symbolic" : "notifications-symbolic"
                     title: "Do Not Disturb"
+                    detail: dnd.on ? "On" : "Off"
                     on: dnd.on
                     onClicked: dnd.toggle()
                 }
                 Tile {
+                    Layout.fillWidth: true; Layout.preferredWidth: 1; big: true
+                    icon: root.dark ? "weather-clear-night-symbolic" : "weather-clear-symbolic"
+                    title: "Appearance"
+                    detail: root.dark ? "Dark" : "Light"
+                    on: true
+                    onClicked: root.setAppearance(!root.dark)
+                }
+            }
+
+            RowLayout {
+                spacing: 10
+                Layout.fillWidth: true
+                Tile {
                     Layout.fillWidth: true; Layout.preferredWidth: 1
-                    icon: "camera-photo"
+                    icon: "camera-photo-symbolic"
                     title: "Screenshot"
                     onClicked: { root.expanded = false; sh.run("sleep 0.4; spectacle -r", () => {}) }
                 }
                 Tile {
                     Layout.fillWidth: true; Layout.preferredWidth: 1
-                    icon: "configure"
+                    icon: "configure-symbolic"
                     title: "Settings"
                     onClicked: { root.expanded = false; sh.run("systemsettings", () => {}) }
                 }

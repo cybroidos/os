@@ -141,8 +141,10 @@ def identity(ctx: Context) -> None:
         f'DOCUMENTATION_URL="{ident["documentation"]}"',
         f'VENDOR_NAME="{ident["vendor"]}"',
     ]
-    if "icons" in t["components"]:
-        lines.append(f"LOGO={ctx.id}")  # hicolor icon name
+    # The hicolor icon name (citos-artwork ships it). Every target writes it:
+    # citos-base's os-release replaces the image's on upgrade, and System
+    # Info showed a placeholder when it lacked LOGO.
+    lines.append(f"LOGO={ctx.id}")
     lines.append("")
     ctx.write("usr/lib/os-release", "\n".join(lines))
     ctx.write("etc/motd", ctx.template("identity/motd"))

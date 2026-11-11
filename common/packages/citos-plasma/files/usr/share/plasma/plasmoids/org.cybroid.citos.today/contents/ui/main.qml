@@ -18,11 +18,13 @@ import org.kde.notificationmanager as NotificationManager
 PlasmoidItem {
     id: root
 
-    readonly property color ink: "#eef3ff"
-    readonly property color soft: "#a9b8da"
-    readonly property color faint: "#7f8fb3"
-    readonly property color accent: "#1ccbff"
-    readonly property color card: "#14ffffff"
+    // Colours follow the colour scheme (CIT-OS Horizon or Horizon Light).
+    readonly property color ink: Kirigami.Theme.textColor
+    readonly property color soft: Qt.alpha(Kirigami.Theme.textColor, 0.72)
+    readonly property color faint: Qt.alpha(Kirigami.Theme.textColor, 0.5)
+    readonly property color accent: Kirigami.Theme.focusColor
+    readonly property color onAccent: Kirigami.ColorUtils.brightnessForColor(accent) === Kirigami.ColorUtils.Light ? "#06122e" : "#ffffff"
+    readonly property color card: Qt.alpha(Kirigami.Theme.textColor, 0.06)
 
     property date now: new Date()
     property string weather: ""
@@ -53,7 +55,7 @@ PlasmoidItem {
         Rectangle {
             anchors.fill: parent; anchors.topMargin: 3; anchors.bottomMargin: 3
             radius: 6
-            color: root.expanded ? "#26ffffff" : button.containsMouse ? "#14ffffff" : "transparent"
+            color: root.expanded ? Qt.alpha(root.ink, 0.16) : button.containsMouse ? Qt.alpha(root.ink, 0.08) : "transparent"
         }
         RowLayout {
             id: label
@@ -172,7 +174,7 @@ PlasmoidItem {
         default property alias content: inner.data
         radius: 18
         color: root.card
-        border.color: "#12ffffff"
+        border.color: Qt.alpha(root.ink, 0.07)
         implicitHeight: inner.implicitHeight + 28
         ColumnLayout {
             id: inner
@@ -227,7 +229,7 @@ PlasmoidItem {
                         Layout.fillWidth: true
                         implicitHeight: ncol.implicitHeight + 24
                         radius: 16
-                        color: nArea.containsMouse ? "#20ffffff" : root.card
+                        color: nArea.containsMouse ? Qt.alpha(root.ink, 0.11) : root.card
                         MouseArea {
                             id: nArea
                             anchors.fill: parent
@@ -293,7 +295,7 @@ PlasmoidItem {
                     }
                     Rectangle {
                         Layout.fillWidth: true; Layout.topMargin: 4
-                        implicitHeight: 6; radius: 3; color: "#1fffffff"
+                        implicitHeight: 6; radius: 3; color: Qt.alpha(root.ink, 0.12)
                         Rectangle {
                             width: parent.width * (root.memTotal ? Math.min(1, root.memUsed / root.memTotal) : 0)
                             height: parent.height; radius: 3
@@ -339,7 +341,7 @@ PlasmoidItem {
                             verticalAlignment: Text.AlignVCenter
                             font.pixelSize: 12
                             font.weight: today ? Font.Bold : Font.Normal
-                            color: today ? "#06122e" : month === root.now.getMonth() ? root.ink : "#4cffffff"
+                            color: today ? root.onAccent : month === root.now.getMonth() ? root.ink : Qt.alpha(root.ink, 0.3)
                             background: Rectangle {
                                 anchors.centerIn: parent
                                 width: 26; height: 26; radius: 13

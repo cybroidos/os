@@ -8,7 +8,7 @@ blur behind. Everything here comes from a few numbers (radius, fill, edge),
 so the look is tuned in one place. Elements this style doesn't draw fall
 back to Plasma's default style.
 
-    tools/plasma-style.py <out>   # writes usr/share/plasma/desktoptheme/citos/
+    tools/plasma-style.py <out>   # writes usr/share/plasma/desktoptheme/citos{,-light}/
 """
 
 import json
@@ -17,7 +17,6 @@ import sys
 
 NAVY = (14, 24, 58)
 GLASS = (34, 52, 108)
-POPUP = (20, 30, 64)  # menus and popups: a dark surface a step above the wallpaper
 ACCENT = (28, 203, 255)
 BLUE = (58, 124, 255)
 WHITE = (255, 255, 255)
@@ -122,61 +121,25 @@ class Sheet:
             mpiece(p + "mask-right", f"M{tx2},{Y + r} h{r} v{w} h{-r} Z")
             mpiece(p + "mask-center", f"M{X + r},{Y + r} h{w} v{w} h{-w} Z")
 
-    def shadow(self, r, pad, alpha=0.32, steps=10):
-        """A soft shadow around a frame of radius r, reaching pad pixels out.
-
-        Plasma draws it from nine "shadow-*" pieces placed outside the window
-        (the hint margins say how far), each pad + r deep so the corners
-        follow the frame's curve. Without these, Plasma used the default
-        style's shadow, which didn't fit the rounded corners. Qt's SVG has no
-        blur, so the fade is stacked translucent shapes, darkest nearest the
-        frame."""
-        d = pad + r  # a piece's depth
-        a = 1 - (1 - alpha) ** (1 / steps)  # per layer, so the stack reaches alpha
-        op = f"{a:.4f}"
-        x0, y0 = 10, self.y + 10
-        w = 4
-
-        def layers(shape):
-            # shape(t) -> path for the layer reaching t pixels beyond the frame
-            return "".join(
-                f'<path d="{shape(pad * (1 - i / steps))}" fill="#000000" fill-opacity="{op}"/>' for i in range(steps)
-            )
-
-        def corner(pid, cx, cy, sx, sy):
-            # (cx, cy): the frame's corner centre; sx, sy: which way is outward
-            def q(t):
-                R = r + t
-                return (
-                    f"M{cx},{cy} L{cx + sx * R},{cy} "
-                    f"A{R},{R} 0 0 {1 if sx * sy > 0 else 0} {cx},{cy + sy * R} Z"
-                )
-
-            self.add(f'<g id="{pid}">{layers(q)}</g>')
-
-        X, Y = x0, y0
-        corner("shadow-topleft", X + d, Y + d, -1, -1)
-        tx = X + d + w
-        corner("shadow-topright", tx, Y + d, 1, -1)
-        by = Y + d + w
-        corner("shadow-bottomleft", X + d, by, -1, 1)
-        corner("shadow-bottomright", tx, by, 1, 1)
-        # Edges: bands from the frame outwards.
-        self.add('<g id="shadow-top">' + layers(lambda t: f"M{X + d},{Y + d} h{w} v{-(r + t)} h{-w} Z") + "</g>")
-        self.add('<g id="shadow-bottom">' + layers(lambda t: f"M{X + d},{by} h{w} v{r + t} h{-w} Z") + "</g>")
-        self.add('<g id="shadow-left">' + layers(lambda t: f"M{X + d},{Y + d} v{w} h{-(r + t)} v{-w} Z") + "</g>")
-        self.add('<g id="shadow-right">' + layers(lambda t: f"M{tx},{Y + d} v{w} h{r + t} v{-w} Z") + "</g>")
-        self.add(f'<rect id="shadow-center" x="{X + d}" y="{Y + d}" width="{w}" height="{w}" fill="none"/>')
-        hx = tx + d + 20
-        for side in ("top", "left", "right", "bottom"):
-            hw, hh = (pad, 4) if side in ("left", "right") else (4, pad)
-            self.add(f'<rect id="shadow-hint-{side}-margin" x="{hx}" y="{Y}" width="{hw}" height="{hh}" fill="none"/>')
-            hx += 30
-        self.y = by + d + 10
-
 
 # alpha by variant: translucent (blur behind), default, opaque (no compositing)
 VARIANTS = {"translucent": 0.72, "": 0.9, "opaque": 1.0}
+
+# The two styles: CIT-OS Horizon (dark) and CIT-OS Horizon Light. Each names
+# the bar over the wallpaper (colour, alpha), the bar when a window is
+# maximised and the tint for hovered rows. main() writes one style per entry.
+STYLES = {
+    "citos": dict(
+        name="CIT-OS Horizon", desc="CIT-OS Horizon: a clear top bar, solid navy popups",
+        bar=(WHITE, 0.05), bar_default=(NAVY, 0.55), bar_solid=NAVY, hover=(WHITE, 0.08),
+    ),
+    "citos-light": dict(
+        name="CIT-OS Horizon Light", desc="CIT-OS Horizon Light: a frosted white top bar, white popups",
+        bar=((246, 248, 252), 0.82), bar_default=((246, 248, 252), 0.9), bar_solid=(240, 243, 248),
+        hover=((14, 24, 58), 0.06),
+    ),
+}
+S = STYLES["citos"]
 
 
 def panel(variant):
@@ -184,27 +147,11 @@ def panel(variant):
     navy when a window is maximised (Plasma's opaque variant)."""
     s = Sheet()
     if variant == "opaque":
-        s.frame("", 1, NAVY, 1.0, None, 0, margins=(4, 8, 8, 4))
+        s.frame("", 1, S["bar_solid"], 1.0, None, 0, margins=(4, 8, 8, 4))
     elif variant == "translucent":
-        s.frame("", 1, WHITE, 0.05, None, 0, margins=(4, 8, 8, 4))
+        s.frame("", 1, S["bar"][0], S["bar"][1], None, 0, margins=(4, 8, 8, 4))
     else:
-        s.frame("", 1, NAVY, 0.55, None, 0, margins=(4, 8, 8, 4))
-    return s.svg()
-
-
-def dialog(alpha):
-    """Menus and popups: solid dark with a hairline light edge. Fully opaque:
-    any see-through let the blur behind show as blocks at the edges."""
-    s = Sheet()
-    s.frame("", 14, POPUP, 1.0, WHITE, 0.10, margins=(10, 10, 10, 10), mask=False)
-    s.shadow(14, 16)
-    return s.svg()
-
-
-def tooltip(alpha):
-    s = Sheet()
-    s.frame("", 10, POPUP, 1.0, WHITE, 0.10, margins=(8, 10, 10, 8))
-    s.shadow(10, 10, alpha=0.25)
+        s.frame("", 1, S["bar_default"][0], S["bar_default"][1], None, 0, margins=(4, 8, 8, 4))
     return s.svg()
 
 
@@ -224,7 +171,7 @@ def viewitem():
     """Rounded highlights in lists (the launcher, menus, the tray)."""
     s = Sheet()
     m = (4, 8, 8, 4)
-    s.frame("hover", 8, WHITE, 0.08, None, 0, margins=m, mask=False)
+    s.frame("hover", 8, S["hover"][0], S["hover"][1], None, 0, margins=m, mask=False)
     s.frame("selected", 8, BLUE, 0.32, BLUE, 0.4, margins=m, mask=False)
     s.frame("selected+hover", 8, BLUE, 0.42, BLUE, 0.5, margins=m, mask=False)
     s.frame("normal", 8, WHITE, 0.0, None, 0, margins=m, mask=False)
@@ -232,14 +179,20 @@ def viewitem():
 
 
 def main(out):
-    root = pathlib.Path(out) / "usr/share/plasma/desktoptheme/citos"
+    global S
+    for sid, S in STYLES.items():
+        write(out, sid)
+
+
+def write(out, sid):
+    root = pathlib.Path(out) / "usr/share/plasma/desktoptheme" / sid
     meta = {
         "KPlugin": {
             "Authors": [{"Name": "Cybroid Institute of Technology", "Email": "citos@cybroid.com"}],
-            "Description": "CIT-OS Horizon: frosted navy panels, a rounded dock and popups",
-            "Id": "citos",
+            "Description": S["desc"],
+            "Id": sid,
             "License": "GPL-2.0-or-later",
-            "Name": "CIT-OS Horizon",
+            "Name": S["name"],
             "Version": "1.0",
             "Website": "https://cybroid.com",
         },
@@ -253,8 +206,10 @@ def main(out):
     for variant, alpha in VARIANTS.items():
         base = f"{variant}/" if variant else ""
         files[f"{base}widgets/panel-background.svg"] = panel(variant or "default")
-        files[f"{base}dialogs/background.svg"] = dialog(alpha)
-        files[f"{base}widgets/tooltip.svg"] = tooltip(alpha)
+        # Popups and tooltips are Plasma's default style's (Breeze): they take
+        # the colour scheme's colours (navy, or white in Light), and their
+        # frames and shadows fit their rounded corners. Ours drew square
+        # boxes at the corners.
     files["widgets/tasks.svg"] = tasks()
     files["widgets/viewitem.svg"] = viewitem()
     for name, text in files.items():

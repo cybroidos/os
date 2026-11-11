@@ -1,0 +1,44 @@
+#!/bin/sh
+# citos-appearance light|dark|toggle|status: CIT-OS Horizon Light or Dark,
+# applied live through Plasma's own tools (colours, the Plasma style, icons,
+# window title bars), as Control Centre's Appearance tile does. GTK apps and
+# Firefox follow the colour scheme through Plasma's GTK settings.
+#
+# Not plasma-apply-lookandfeel: it writes the theme as defaults
+# (~/.config/kdedefaults), which the running shell and KWin don't reload.
+set -eu
+current() {
+	case "$(kreadconfig6 --file kdeglobals --group General --key ColorScheme)" in
+	*Light) echo light ;;
+	*) echo dark ;;
+	esac
+}
+mode="${1:-status}"
+if [ "$mode" = toggle ]; then
+	if [ "$(current)" = dark ]; then mode=light; else mode=dark; fi
+fi
+case "$mode" in
+light) scheme=CITOSHorizonLight style=citos-light icons=WhiteSur-light deco=CIT-OS-Light lnf=org.cybroid.citos.desktop.light ;;
+dark) scheme=CITOSHorizon style=citos icons=WhiteSur-dark deco=CIT-OS lnf=org.cybroid.citos.desktop ;;
+status)
+	current
+	exit 0
+	;;
+*)
+	echo "usage: citos-appearance light|dark|toggle|status" >&2
+	exit 2
+	;;
+esac
+kwriteconfig6 --file kdeglobals --group KDE --key LookAndFeelPackage "$lnf"
+plasma-apply-colorscheme "$scheme" >/dev/null
+plasma-apply-desktoptheme "$style" >/dev/null
+for c in /usr/lib/*/libexec/plasma-changeicons /usr/libexec/plasma-changeicons; do
+	if [ -x "$c" ]; then
+		"$c" "$icons" >/dev/null 2>&1 || true
+		break
+	fi
+done
+kwriteconfig6 --file kwinrc --group org.kde.kdecoration2 --key library org.kde.kwin.aurorae
+kwriteconfig6 --file kwinrc --group org.kde.kdecoration2 --key theme "__aurorae__svg__$deco"
+qdbus6 org.kde.KWin /KWin reconfigure >/dev/null 2>&1 || true
+echo "$mode"

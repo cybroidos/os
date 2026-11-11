@@ -28,9 +28,9 @@ R = 18  # corner radius: kwinrc [Round-Corners] Size
 TITLE_H = 20  # title text row
 EDGE_T, EDGE_B = 8, 8  # space above and below it
 BAR = EDGE_T + TITLE_H + EDGE_B
-# Shadow room around the window (left, top, right, bottom): it falls lower,
-# as macOS's windows float well above the desktop.
-PL, PT, PR, PB = 32, 20, 32, 40
+# Shadow room around the window (left, top, right, bottom): soft and short,
+# falling a little lower, as on macOS.
+PL, PT, PR, PB = 24, 14, 24, 28
 LAYERS = 18
 SHADOW = 0.30  # the soft shadow's strength (per variant)
 HIGHLIGHT = (255, 255, 255, 0.10)  # the light line along the bar's top
@@ -43,9 +43,9 @@ INACTIVE_TEXT = (138, 156, 196)
 # name: (active bar, inactive bar, active text, inactive text); main() sets
 # the globals above from each in turn.
 VARIANTS = {
-    "CIT-OS": ((17, 27, 61), (14, 22, 52), (232, 238, 252), (138, 156, 196), 0.22, (255, 255, 255, 0.10)),
+    "CIT-OS": ((17, 27, 61), (14, 22, 52), (232, 238, 252), (138, 156, 196), 0.12, (255, 255, 255, 0.10)),
     # [WM] of CITOSHorizonLight
-    "CIT-OS-Light": ((236, 239, 245), (245, 246, 249), (22, 30, 52), (120, 130, 150), 0.13, (255, 255, 255, 0.9)),
+    "CIT-OS-Light": ((236, 239, 245), (245, 246, 249), (22, 30, 52), (120, 130, 150), 0.07, (255, 255, 255, 0.9)),
 }
 
 BUTTONS = {  # file: (colour, symbol)

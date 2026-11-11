@@ -3,7 +3,8 @@
  * desktop, as macOS keeps its widgets. Each copy shows one card (setting
  * "card"): "today" (the day, the time, the date and Kampala's weather from
  * Open-Meteo) or "system" (this computer: memory, disk, Tower). A first
- * sign-in puts Today at the left and System at the right.
+ * sign-in puts Today at the left and System at the right, both as cards of
+ * one size.
  *
  * Three looks (setting "look"), all in the colour scheme's colours so they
  * suit CIT-OS Horizon and Horizon Light:
@@ -133,12 +134,17 @@ PlasmoidItem {
 
     // A raised surface: lit from above, a light edge, a soft shadow. With
     // "open" it draws nothing and only the text carries a shadow.
+    // Cards are one fixed size, as macOS's widgets are, so Today and This
+    // computer match side by side (300 x 176); content sits in the middle.
+    readonly property int cardWidth: 300
+    readonly property int cardHeight: 176
+
     component Surface: Item {
         id: surf
         default property alias content: inner.data
         property int pad: 18
-        implicitWidth: inner.implicitWidth + 2 * pad
-        implicitHeight: inner.implicitHeight + 2 * pad
+        implicitWidth: root.look === "card" ? root.cardWidth : inner.implicitWidth + 2 * pad
+        implicitHeight: root.look === "card" ? root.cardHeight : inner.implicitHeight + 2 * pad
         Rectangle {
             visible: root.look !== "open"
             anchors.fill: parent
@@ -170,7 +176,10 @@ PlasmoidItem {
             }
             ColumnLayout {
                 id: inner
-                anchors { left: parent.left; right: parent.right; top: parent.top; margins: surf.pad }
+                anchors { left: parent.left; right: parent.right; margins: surf.pad }
+                anchors.verticalCenter: root.look === "card" ? parent.verticalCenter : undefined
+                anchors.top: root.look === "card" ? undefined : parent.top
+                anchors.topMargin: surf.pad
                 spacing: 6
             }
         }
@@ -232,7 +241,7 @@ PlasmoidItem {
         Component {
             id: todayCard
             Surface {
-                width: root.look === "open" ? 360 : 300
+                width: root.look === "open" ? 360 : root.cardWidth
                 QQC2.Label { text: Qt.formatDate(root.now, "dddd"); color: root.accent; font.pixelSize: root.look === "open" ? 20 : 14; font.weight: Font.DemiBold }
                 QQC2.Label {
                     text: Qt.formatTime(root.now, "HH:mm")
@@ -251,7 +260,7 @@ PlasmoidItem {
         Component {
             id: systemCard
             Surface {
-                width: root.look === "open" ? 320 : 300
+                width: root.look === "open" ? 320 : root.cardWidth
                 RowLayout {
                     Layout.fillWidth: true
                     QQC2.Label { text: "This computer"; color: root.ink; font.pixelSize: root.look === "open" ? 18 : 14; font.weight: Font.DemiBold; Layout.fillWidth: true }

@@ -16,6 +16,15 @@ if [ ! -f "$conf/citos/dock-set" ]; then
 	done
 	mkdir -p "$conf/citos" && : > "$conf/citos/dock-set"
 fi
+# Terminal without its toolbars (New Tab, Split View...), as on a Mac: KDE
+# keeps that in the window's saved state, so a first sign-in gets one with
+# both hidden (Konsole's own, captured once); anyone can show them again.
+st="${XDG_STATE_HOME:-$HOME/.local/state}/konsolestaterc"
+if [ ! -f "$st" ]; then
+	mkdir -p "$(dirname "$st")"
+	printf '[MainWindow]\nState=AAAA/wAAAAD9AAAAAQAAAAAAAAAAAAAAAPwCAAAAAvsAAAAcAFMAUwBIAE0AYQBuAGEAZwBlAHIARABvAGMAawAAAAAA/////wAAAQkA////+wAAACIAUQB1AGkAYwBrAEMAbwBtAG0AYQBuAGQAcwBEAG8AYwBrAAAAAAD/////AAABbAD///8AAAKAAAABaAAAAAQAAAAEAAAACAAAAAj8AAAAAQAAAAIAAAACAAAAFgBtAGEAaQBuAFQAbwBvAGwAQgBhAHIAAAAAAP////8AAAAAAAAAAAAAABwAcwBlAHMAcwBpAG8AbgBUAG8AbwBsAGIAYQByAAAAAAD/////AAAAAAAAAAA=\n' > "$st"
+fi
+
 # Float the dock a little above the screen's edge, as macOS does (our
 # Plank build reads this; tools/plank-edge-gap.py).
 PLANK_EDGE_GAP=8 exec plank

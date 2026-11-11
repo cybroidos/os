@@ -1,6 +1,6 @@
 // CIT-OS Horizon (citos-plasma): a slim top bar (the CIT-OS mark for
-// Launchpad, the app's own menu, tray, clock). Plasma runs this once, when
-// someone first signs in.
+// Launchpad, the app's own menu, tray, Control Centre, the clock). Plasma
+// runs this once, when someone first signs in.
 var bar = new Panel;
 bar.location = "top";
 bar.height = 2 * Math.floor(gridUnit * 1.7 / 2);
@@ -14,12 +14,10 @@ launchpad.globalShortcut = "Alt+F1";
 bar.addWidget("org.kde.plasma.appmenu");
 bar.addWidget("org.kde.plasma.panelspacer");
 bar.addWidget("org.kde.plasma.systemtray");
-var clock = bar.addWidget("org.kde.plasma.digitalclock");
-clock.currentConfigGroup = ["Appearance"];
-clock.writeConfig("showDate", "true");
-clock.writeConfig("dateDisplayFormat", "BesideTime");
-clock.writeConfig("dateFormat", "custom");
-clock.writeConfig("customDateFormat", "ddd d MMM");
+// Control Centre (network, Tower, Do Not Disturb, sound), then the date and
+// time, which opens notifications and the Today widgets, as on macOS.
+bar.addWidget("org.cybroid.citos.controlcentre");
+bar.addWidget("org.cybroid.citos.today");
 
 // The dock is Plank (its icons zoom as the pointer passes), started by
 // /etc/xdg/autostart/citos-dock.desktop; Plasma draws only the top bar.

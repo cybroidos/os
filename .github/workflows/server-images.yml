@@ -73,6 +73,24 @@ jobs:
             cp kwin4_effect_shapecorners*.deb /out/citos-kwin-effects_amd64.deb'
           ls -la dist/extra
 
+      # The dock floats above the screen's edge like macOS's: Debian's own
+      # Plank, rebuilt with tools/plank-edge-gap.py (PLANK_EDGE_GAP), as
+      # 0.11.89-6+citos1 so it takes Debian's place.
+      - name: Build the dock (Plank with an edge gap)
+        if: matrix.image == 'desktop'
+        run: |
+          docker run --rm -v "$PWD/dist/extra:/out" -v "$PWD/tools:/tools:ro" debian:trixie sh -ec '
+            printf "Types: deb deb-src\nURIs: http://deb.debian.org/debian\nSuites: trixie trixie-updates\nComponents: main\nSigned-By: /usr/share/keyrings/debian-archive-keyring.gpg\n" > /etc/apt/sources.list.d/debian.sources
+            apt-get update -q
+            apt-get install -y -q --no-install-recommends dpkg-dev devscripts python3 >/dev/null
+            apt-get build-dep -y -q plank >/dev/null
+            mkdir /src && cd /src && apt-get source -q plank >/dev/null && cd plank-*/
+            python3 /tools/plank-edge-gap.py .
+            DEBEMAIL=citos@cybroid.com DEBFULLNAME=CIT-OS dch -l +citos "Float a bottom dock above the edge of the screen (PLANK_EDGE_GAP)." >/dev/null
+            DEB_BUILD_OPTIONS="nocheck parallel=$(nproc)" dpkg-buildpackage -b -uc -us >/dev/null
+            cp ../plank_*+citos*_amd64.deb ../libplank1_*+citos*_amd64.deb ../libplank-common_*+citos*_all.deb /out/'
+          ls -la dist/extra
+
       - name: Build the desktop VM image (CIT-OS Desktop, KDE Plasma)
         if: matrix.image == 'desktop'
         run: sudo VARIANT=desktop EXTRA_DEBS="$PWD/dist/extra" OUT="$PWD/out" targets/server/build.sh

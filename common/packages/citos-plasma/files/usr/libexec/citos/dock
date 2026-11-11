@@ -16,4 +16,6 @@ if [ ! -f "$conf/citos/dock-set" ]; then
 	done
 	mkdir -p "$conf/citos" && : > "$conf/citos/dock-set"
 fi
-exec plank
+# Float the dock a little above the screen's edge, as macOS does (our
+# Plank build reads this; tools/plank-edge-gap.py).
+PLANK_EDGE_GAP=8 exec plank

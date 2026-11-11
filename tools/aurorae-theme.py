@@ -30,7 +30,7 @@ EDGE_T, EDGE_B = 8, 8  # space above and below it
 BAR = EDGE_T + TITLE_H + EDGE_B
 # Shadow room around the window (left, top, right, bottom): it falls lower,
 # as macOS's windows float well above the desktop.
-PL, PT, PR, PB = 40, 24, 40, 56
+PL, PT, PR, PB = 32, 20, 32, 40
 LAYERS = 18
 SHADOW = 0.30  # the soft shadow's strength (per variant)
 HIGHLIGHT = (255, 255, 255, 0.10)  # the light line along the bar's top
@@ -43,9 +43,9 @@ INACTIVE_TEXT = (138, 156, 196)
 # name: (active bar, inactive bar, active text, inactive text); main() sets
 # the globals above from each in turn.
 VARIANTS = {
-    "CIT-OS": ((17, 27, 61), (14, 22, 52), (232, 238, 252), (138, 156, 196), 0.34, (255, 255, 255, 0.10)),
+    "CIT-OS": ((17, 27, 61), (14, 22, 52), (232, 238, 252), (138, 156, 196), 0.22, (255, 255, 255, 0.10)),
     # [WM] of CITOSHorizonLight
-    "CIT-OS-Light": ((236, 239, 245), (245, 246, 249), (22, 30, 52), (120, 130, 150), 0.22, (255, 255, 255, 0.9)),
+    "CIT-OS-Light": ((236, 239, 245), (245, 246, 249), (22, 30, 52), (120, 130, 150), 0.13, (255, 255, 255, 0.9)),
 }
 
 BUTTONS = {  # file: (colour, symbol)
@@ -70,8 +70,9 @@ def shadow_layers(strength):
         out.append((PL * t, PT * t, PR * t, PB * t, a))
     # A tight, darker edge right at the window: its outline reads at once,
     # as on macOS, whatever lies behind.
-    for d, a in ((2.5, 0.10), (1.2, 0.12)):
-        out.append((d, d * 0.6, d, d * 1.4, a * strength))
+    # Whole pixels: fractional rings left a faint line where pieces meet.
+    for d, a in ((2, 0.06), (1, 0.08)):
+        out.append((d, d, d, d, a * strength))
     return out[::-1]
 
 
@@ -103,7 +104,8 @@ def frame(doc, prefix, bar, strength):
     """
     oy = doc.y + 10
     ox = 10
-    W = 4  # stretched pieces' length
+    W = 1  # repeated pieces: 1 px always fills the bar exactly (4 px left a
+    # 1 px gap by the corner when the width was not a multiple of 4)
     cw_l, cw_r = PL + R, PR + R  # corner widths
     top_h = PT + BAR  # top row height
     bot_h = PB + R  # bottom row height (overlaps the window by R)
@@ -113,7 +115,18 @@ def frame(doc, prefix, bar, strength):
     yt, ym, yb = oy, oy + top_h, oy + top_h + W
     layers = shadow_layers(strength)
 
+    boxes = {
+        "topleft": (xl, yt, cw_l, top_h), "top": (xm, yt, W, top_h), "topright": (xr, yt, cw_r, top_h),
+        "bottomleft": (xl, yb, cw_l, bot_h), "bottom": (xm, yb, W, bot_h), "bottomright": (xr, yb, cw_r, bot_h),
+    }
+
     def g(pid, body):
+        # An invisible rectangle pins each piece to its exact size: measured
+        # from its drawing alone, a corner came out a pixel narrow and left a
+        # faint line where it meets the title bar.
+        if pid in boxes:
+            x, y, w, h = boxes[pid]
+            body = f'<rect x="{x}" y="{y}" width="{w}" height="{h}" fill="#000000" fill-opacity="0"/>' + body
         doc.add(f'<g id="{prefix}-{pid}">{body}</g>')
 
     def ring_corner(cx, cy, sx, sy, X0, Y0, X1, Y1, inner):
@@ -168,8 +181,11 @@ def frame(doc, prefix, bar, strength):
             f'<path d="M{edge_x:.2f},{y_bot:.2f} L{edge_x:.2f},{cy:.2f} '
             f"A{R},{R} 0 0 {sweep} {cx:.2f},{y_top:.2f} L{inner_x:.2f},{y_top:.2f} "
             f'L{inner_x:.2f},{y_bot:.2f} Z" fill="{rgb(bar)}"/>'
+            # The highlight stops half a pixel inside the piece: its stroke
+            # reaching past the edge made the piece measure half a pixel
+            # wider, and the shifted piece left a line at the seam.
             f'<path d="M{cx + sx * r2:.2f},{cy + 4:.2f} L{cx + sx * r2:.2f},{cy:.2f} '
-            f'A{r2},{r2} 0 0 {sweep} {cx:.2f},{y_top + 0.5:.2f} L{inner_x:.2f},{y_top + 0.5:.2f}" {hl}/>'
+            f'A{r2},{r2} 0 0 {sweep} {cx:.2f},{y_top + 0.5:.2f} L{inner_x + sx * 0.5:.2f},{y_top + 0.5:.2f}" {hl}/>'
         )
 
     # --- top-left: rings around the corner, the window cut out, the bar.
@@ -186,7 +202,9 @@ def frame(doc, prefix, bar, strength):
         for dl, dt, dr, db, a in layers
     )
     body += f'<rect x="{xm}" y="{yt + PT}" width="{W}" height="{BAR}" fill="{rgb(bar)}"/>'
-    body += f'<path d="M{xm},{yt + PT + 0.5} h{W}" {hl}/>'
+    # The highlight as a filled 1 px strip: KWin repeats this piece across
+    # the bar, and a stroked line showed its ends as stripes at each seam.
+    body += f'<rect x="{xm}" y="{yt + PT}" width="{W}" height="1" fill="{rgb(HIGHLIGHT[:3])}" fill-opacity="{HIGHLIGHT[3] * strength:.3f}"/>'
     g("top", body)
 
     # --- top-right

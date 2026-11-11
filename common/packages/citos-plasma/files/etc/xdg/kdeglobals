@@ -1,7 +1,7 @@
 # CIT-OS desktop defaults (citos-plasma): each person can change them.
 [KDE]
 LookAndFeelPackage=org.cybroid.citos.desktop
-widgetStyle=Breeze
+widgetStyle=kvantum
 SingleClick=false
 AnimationDurationFactor=0.7
 

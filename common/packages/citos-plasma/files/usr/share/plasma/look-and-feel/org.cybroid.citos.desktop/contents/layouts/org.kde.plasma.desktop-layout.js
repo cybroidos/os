@@ -36,4 +36,5 @@ for (var i = 0; i < desks.length; i++) {
     var sys = desks[i].addWidget("org.cybroid.citos.widgets", g.width - 300 - 40, 56, 300, 220);
     sys.currentConfigGroup = ["General"];
     sys.writeConfig("card", "system");
+    sys.writeConfig("look", "gauges");
 }

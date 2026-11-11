@@ -1,8 +1,10 @@
 #!/bin/sh
 # citos-appearance light|dark|toggle|status: CIT-OS Horizon Light or Dark,
 # applied live through Plasma's own tools (colours, the Plasma style, icons,
-# window title bars), as Control Centre's Appearance tile does. GTK apps and
-# Firefox follow the colour scheme through Plasma's GTK settings.
+# window title bars), the dock and, where it is CIT-OS's own, the wallpaper
+# and lock screen (as macOS pairs light and dark wallpapers), as Control
+# Centre's Appearance tile does. GTK apps and Firefox follow the colour
+# scheme through Plasma's GTK settings.
 #
 # Not plasma-apply-lookandfeel: it writes the theme as defaults
 # (~/.config/kdedefaults), which the running shell and KWin don't reload.
@@ -18,8 +20,8 @@ if [ "$mode" = toggle ]; then
 	if [ "$(current)" = dark ]; then mode=light; else mode=dark; fi
 fi
 case "$mode" in
-light) scheme=CITOSHorizonLight style=citos-light icons=WhiteSur-light deco=CIT-OS-Light lnf=org.cybroid.citos.desktop.light ;;
-dark) scheme=CITOSHorizon style=citos icons=WhiteSur-dark deco=CIT-OS lnf=org.cybroid.citos.desktop ;;
+light) scheme=CITOSHorizonLight style=citos-light icons=WhiteSur-light deco=CIT-OS-Light lnf=org.cybroid.citos.desktop.light dock=CIT-OS-Light wall=citos-light ;;
+dark) scheme=CITOSHorizon style=citos icons=WhiteSur-dark deco=CIT-OS lnf=org.cybroid.citos.desktop dock=CIT-OS wall=citos ;;
 status)
 	current
 	exit 0
@@ -41,4 +43,27 @@ done
 kwriteconfig6 --file kwinrc --group org.kde.kdecoration2 --key library org.kde.kwin.aurorae
 kwriteconfig6 --file kwinrc --group org.kde.kdecoration2 --key theme "__aurorae__svg__$deco"
 qdbus6 org.kde.KWin /KWin reconfigure >/dev/null 2>&1 || true
+
+# The dock (Plank keeps its settings in dconf).
+gsettings set net.launchpad.plank.dock.settings:/net/launchpad/plank/docks/dock1/ theme "$dock" 2>/dev/null || true
+
+# The wallpaper and the lock screen, only where they are CIT-OS's own: a
+# picture someone chose stays.
+img="file:///usr/share/backgrounds/citos/$wall-1920x1080.png"
+qdbus6 org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript "
+var ds = desktops();
+for (var i = 0; i < ds.length; i++) {
+    var d = ds[i];
+    if (d.wallpaperPlugin != 'org.kde.image') continue;
+    d.currentConfigGroup = ['Wallpaper', 'org.kde.image', 'General'];
+    var cur = String(d.readConfig('Image'));
+    if (cur == '' || cur.indexOf('/backgrounds/citos/') >= 0) d.writeConfig('Image', '$img');
+}" >/dev/null 2>&1 || true
+lock="$(kreadconfig6 --file kscreenlockerrc --group Greeter --group Wallpaper --group org.kde.image --group General --key Image)"
+case "$lock" in
+"" | *"/backgrounds/citos/"*)
+	kwriteconfig6 --file kscreenlockerrc --group Greeter --group Wallpaper --group org.kde.image --group General --key Image "$img"
+	kwriteconfig6 --file kscreenlockerrc --group Greeter --group Wallpaper --group org.kde.image --group General --key PreviewImage "$img"
+	;;
+esac
 echo "$mode"

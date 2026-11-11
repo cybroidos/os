@@ -27,4 +27,7 @@ for (var i = 0; i < desks.length; i++) {
     desks[i].wallpaperPlugin = "org.kde.image";
     desks[i].currentConfigGroup = ["Wallpaper", "org.kde.image", "General"];
     desks[i].writeConfig("Image", "file:///usr/share/backgrounds/citos/citos-1920x1080.png");
+    // The design's cards on the desktop (Today, This computer, the month),
+    // at the left like macOS's widgets.
+    desks[i].addWidget("org.cybroid.citos.widgets", 32, 48, 300, 640);
 }

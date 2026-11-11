@@ -207,6 +207,20 @@ def wallpaper(ctx: Context) -> None:
     psrc = ctx.write(f"usr/share/backgrounds/{ctx.id}/{ctx.id}-plain.svg", plain)
     for w, h in WALLPAPER_SIZES:
         rasterise(psrc, psrc.with_name(f"{ctx.id}-plain-{w}x{h}.png"), w, h)
+    # The light version (CIT-OS Horizon Light): the same picture on a soft
+    # white-blue ground, as macOS pairs a light and a dark wallpaper.
+    light = re.sub(
+        r'(<radialGradient id="bg".*?</radialGradient>)',
+        '<radialGradient id="bg" cx=".5" cy=".42" r=".75">'
+        '<stop offset="0" stop-color="#f7f9fe"/><stop offset=".6" stop-color="#e6edfb"/>'
+        '<stop offset="1" stop-color="#cfdcf6"/></radialGradient>',
+        svg,
+        flags=re.S,
+    )
+    light = re.sub(r'(<g fill="none" stroke=")[^"]*(" stroke-opacity=")[^"]*', r"\g<1>#3a7cff\g<2>.10", light)
+    lsrc = ctx.write(f"usr/share/backgrounds/{ctx.id}/{ctx.id}-light.svg", light)
+    for w, h in WALLPAPER_SIZES:
+        rasterise(lsrc, lsrc.with_name(f"{ctx.id}-light-{w}x{h}.png"), w, h)
 
 
 def dart_color(hex_value: str) -> str:

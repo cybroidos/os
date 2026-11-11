@@ -36,4 +36,12 @@ for (var i = 0; i < desks.length; i++) {
     var sys = desks[i].addWidget("org.cybroid.citos.widgets", g.width - 300 - 40, 56, 300, 176);
     sys.currentConfigGroup = ["General"];
     sys.writeConfig("card", "system");
+    // The desktop keeps widget places in its saved geometry; positions given
+    // to addWidget last only until the shell restarts, after which both
+    // cards fell into the top-left corner. Save them there too.
+    var places = "Applet-" + today.id + ":40,56,300,176,0;" +
+        "Applet-" + sys.id + ":" + (g.width - 300 - 40) + ",56,300,176,0;";
+    desks[i].currentConfigGroup = [];
+    desks[i].writeConfig("ItemGeometries-" + g.width + "x" + g.height, places);
+    desks[i].writeConfig("ItemGeometriesHorizontal", places);
 }

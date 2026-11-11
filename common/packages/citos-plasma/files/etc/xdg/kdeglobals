@@ -1,6 +1,10 @@
 # CIT-OS desktop defaults (citos-plasma): each person can change them.
 [KDE]
 LookAndFeelPackage=org.cybroid.citos.desktop
+# Settings → Quick Settings → Theme offers these two (Plasma's light and
+# dark pair): CIT-OS Horizon Light and Horizon, not Breeze.
+DefaultLightLookAndFeel=org.cybroid.citos.desktop.light
+DefaultDarkLookAndFeel=org.cybroid.citos.desktop
 widgetStyle=kvantum
 SingleClick=false
 AnimationDurationFactor=0.7

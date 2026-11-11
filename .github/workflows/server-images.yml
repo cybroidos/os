@@ -94,7 +94,8 @@ jobs:
       # App icons: WhiteSur (GPL-3.0, github.com/vinceliuice/WhiteSur-icon-theme)
       # at a fixed release, installed with -a (its own file-manager and store
       # icons) as an unprivileged user inside the build container, then
-      # tools/icons-fixups.sh (no Apple Photos flower), packed as citos-icons.
+      # tools/icons-fixups.sh (no Apple Photos flower) and tools/icons-dark.py
+      # (dark app icons for Dark, as macOS has), packed as citos-icons.
       - name: Build the icons (citos-icons)
         if: matrix.image == 'desktop'
         run: |
@@ -104,6 +105,8 @@ jobs:
             useradd -m build
             su build -c "git clone -q --depth 1 --branch $REF https://github.com/vinceliuice/WhiteSur-icon-theme /home/build/src && mkdir -p /home/build/out && cd /home/build/src && ./install.sh -a -d /home/build/out -n WhiteSur >/dev/null"
             sh /tools/icons-fixups.sh /home/build/out
+            apt-get install -y -q --no-install-recommends python3 python3-pil librsvg2-bin >/dev/null
+            python3 /tools/icons-dark.py /home/build/out
             p=/home/build/pkg; mkdir -p $p/DEBIAN $p/usr/share/icons $p/usr/share/doc/citos-icons
             cp -a /home/build/out/WhiteSur* $p/usr/share/icons/
             cp /home/build/src/COPYING $p/usr/share/doc/citos-icons/copyright 2>/dev/null || cp /home/build/src/LICENSE $p/usr/share/doc/citos-icons/copyright

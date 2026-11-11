@@ -1,4 +1,6 @@
 # CIT-OS Horizon: navy surfaces, cyan and blue accents (citos-plasma).
+# Header (toolbars) is the title bar's colour, so a window reads as one
+# surface, as on macOS.
 [ColorEffects:Disabled]
 Color=18,28,61
 ColorAmount=0
@@ -48,8 +50,8 @@ ForegroundPositive=62,224,160
 ForegroundVisited=175,160,255
 
 [Colors:Header]
-BackgroundAlternate=14,22,52
-BackgroundNormal=12,20,48
+BackgroundAlternate=20,31,68
+BackgroundNormal=17,27,61
 DecorationFocus=28,203,255
 DecorationHover=58,124,255
 ForegroundActive=28,203,255
@@ -140,7 +142,7 @@ shadeSortColumn=true
 contrast=4
 
 [WM]
-activeBackground=12,20,48
+activeBackground=17,27,61
 activeBlend=232,238,252
 activeForeground=232,238,252
 inactiveBackground=14,22,52

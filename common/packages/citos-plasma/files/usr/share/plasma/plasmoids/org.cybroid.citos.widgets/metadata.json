@@ -3,7 +3,7 @@
     "KPlugin": {
         "Authors": [{ "Name": "Cybroid Institute of Technology", "Email": "citos@cybroid.com" }],
         "Category": "Date and Time",
-        "Description": "Today, this computer and the month as cards on the desktop, like macOS's desktop widgets",
+        "Description": "Today and this computer as cards on the desktop, like macOS's desktop widgets",
         "Icon": "preferences-desktop",
         "Id": "org.cybroid.citos.widgets",
         "License": "GPL-2.0-or-later",

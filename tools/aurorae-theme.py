@@ -28,9 +28,12 @@ R = 18  # corner radius: kwinrc [Round-Corners] Size
 TITLE_H = 20  # title text row
 EDGE_T, EDGE_B = 8, 8  # space above and below it
 BAR = EDGE_T + TITLE_H + EDGE_B
-# Shadow room around the window (left, top, right, bottom): it falls lower.
-PL, PT, PR, PB = 26, 16, 26, 36
-LAYERS = 14
+# Shadow room around the window (left, top, right, bottom): it falls lower,
+# as macOS's windows float well above the desktop.
+PL, PT, PR, PB = 40, 24, 40, 56
+LAYERS = 18
+SHADOW = 0.30  # the soft shadow's strength (per variant)
+HIGHLIGHT = (255, 255, 255, 0.10)  # the light line along the bar's top
 
 ACTIVE_BAR = (17, 27, 61)  # [Colors:Window] BackgroundNormal of CITOSHorizon
 INACTIVE_BAR = (14, 22, 52)
@@ -40,9 +43,9 @@ INACTIVE_TEXT = (138, 156, 196)
 # name: (active bar, inactive bar, active text, inactive text); main() sets
 # the globals above from each in turn.
 VARIANTS = {
-    "CIT-OS": ((17, 27, 61), (14, 22, 52), (232, 238, 252), (138, 156, 196)),
+    "CIT-OS": ((17, 27, 61), (14, 22, 52), (232, 238, 252), (138, 156, 196), 0.34, (255, 255, 255, 0.10)),
     # [WM] of CITOSHorizonLight
-    "CIT-OS-Light": ((236, 239, 245), (245, 246, 249), (22, 30, 52), (120, 130, 150)),
+    "CIT-OS-Light": ((236, 239, 245), (245, 246, 249), (22, 30, 52), (120, 130, 150), 0.22, (255, 255, 255, 0.9)),
 }
 
 BUTTONS = {  # file: (colour, symbol)
@@ -63,8 +66,12 @@ def shadow_layers(strength):
     for i in range(LAYERS):
         t = (i + 1) / LAYERS  # 1/L .. 1: how far out
         # Each ring adds a little; stacked, they fade from dark at the edge.
-        a = strength * (1 - t) ** 2 * 0.22
+        a = strength * (1 - t) ** 2 * SHADOW
         out.append((PL * t, PT * t, PR * t, PB * t, a))
+    # A tight, darker edge right at the window: its outline reads at once,
+    # as on macOS, whatever lies behind.
+    for d, a in ((2.5, 0.10), (1.2, 0.12)):
+        out.append((d, d * 0.6, d, d * 1.4, a * strength))
     return out[::-1]
 
 
@@ -148,15 +155,21 @@ def frame(doc, prefix, bar, strength):
         """The window's own rounded corner inside the piece (cut from rings)."""
         return quarter(cx, cy, R, R, sx, sy, X0, Y0, X1, Y1)
 
+    hl = f'fill="none" stroke="{rgb(HIGHLIGHT[:3])}" stroke-opacity="{HIGHLIGHT[3] * strength:.3f}" stroke-width="1"'
+
     def bar_corner(cx, cy, sx, X0, X1, y_top, y_bot):
-        """The title bar's fill in a top corner piece: rounded at the top."""
+        """The title bar's fill in a top corner piece: rounded at the top,
+        with the highlight following the curve."""
         edge_x = cx + sx * R
         inner_x = X1 if sx < 0 else X0
         sweep = 1 if sx < 0 else 0
+        r2 = R - 0.5
         return (
             f'<path d="M{edge_x:.2f},{y_bot:.2f} L{edge_x:.2f},{cy:.2f} '
             f"A{R},{R} 0 0 {sweep} {cx:.2f},{y_top:.2f} L{inner_x:.2f},{y_top:.2f} "
             f'L{inner_x:.2f},{y_bot:.2f} Z" fill="{rgb(bar)}"/>'
+            f'<path d="M{cx + sx * r2:.2f},{cy + 4:.2f} L{cx + sx * r2:.2f},{cy:.2f} '
+            f'A{r2},{r2} 0 0 {sweep} {cx:.2f},{y_top + 0.5:.2f} L{inner_x:.2f},{y_top + 0.5:.2f}" {hl}/>'
         )
 
     # --- top-left: rings around the corner, the window cut out, the bar.
@@ -173,6 +186,7 @@ def frame(doc, prefix, bar, strength):
         for dl, dt, dr, db, a in layers
     )
     body += f'<rect x="{xm}" y="{yt + PT}" width="{W}" height="{BAR}" fill="{rgb(bar)}"/>'
+    body += f'<path d="M{xm},{yt + PT + 0.5} h{W}" {hl}/>'
     g("top", body)
 
     # --- top-right
@@ -343,8 +357,8 @@ PaddingRight={PR}
 
 
 def main(out):
-    global NAME, ACTIVE_BAR, INACTIVE_BAR, ACTIVE_TEXT, INACTIVE_TEXT
-    for NAME, (ACTIVE_BAR, INACTIVE_BAR, ACTIVE_TEXT, INACTIVE_TEXT) in VARIANTS.items():
+    global NAME, ACTIVE_BAR, INACTIVE_BAR, ACTIVE_TEXT, INACTIVE_TEXT, SHADOW, HIGHLIGHT
+    for NAME, (ACTIVE_BAR, INACTIVE_BAR, ACTIVE_TEXT, INACTIVE_TEXT, SHADOW, HIGHLIGHT) in VARIANTS.items():
         write(out)
 
 

@@ -1,11 +1,19 @@
 /*
- * CIT-OS Widgets (citos-plasma): the cards from the CIT-OS design, on the
- * desktop as macOS keeps its widgets: Today (the day, a large clock, the date
- * and Kampala's weather from Open-Meteo), This computer (memory, disk,
- * Tower) and the month. Frosted cards in the colour scheme's colours, so
- * they suit CIT-OS Horizon and Horizon Light; the wallpaper shows around them.
+ * CIT-OS Widgets (citos-plasma): the cards from the CIT-OS design on the
+ * desktop, as macOS keeps its widgets. Each copy shows one card (setting
+ * "card"): "today" (the day, the time, the date and Kampala's weather from
+ * Open-Meteo) or "system" (this computer: memory, disk, Tower). A first
+ * sign-in puts Today at the left and System at the right.
+ *
+ * Three looks (setting "look"), all in the colour scheme's colours so they
+ * suit CIT-OS Horizon and Horizon Light:
+ *   card    a raised card: lit from above, a light edge, a soft shadow
+ *   open    no card: large type straight on the wallpaper, with a shadow
+ *           that keeps it legible (macOS's lock-screen clock)
+ *   gauges  a compact card; System shows memory and disk as rings
  */
 import QtQuick
+import QtQuick.Effects
 import QtQuick.Controls as QQC2
 import QtQuick.Layouts
 import org.kde.plasma.plasmoid
@@ -19,12 +27,17 @@ PlasmoidItem {
     Plasmoid.backgroundHints: PlasmaCore.Types.NoBackground
     preferredRepresentation: fullRepresentation
 
-    readonly property color ink: Kirigami.Theme.textColor
-    readonly property color soft: Qt.alpha(Kirigami.Theme.textColor, 0.72)
-    readonly property color faint: Qt.alpha(Kirigami.Theme.textColor, 0.5)
-    readonly property color accent: Kirigami.Theme.focusColor
-    readonly property color onAccent: Kirigami.ColorUtils.brightnessForColor(accent) === Kirigami.ColorUtils.Light ? "#06122e" : "#ffffff"
-    readonly property color cardColor: Qt.alpha(Kirigami.Theme.backgroundColor, 0.78)
+    readonly property string card: Plasmoid.configuration.card || "today"
+    readonly property string look: Plasmoid.configuration.look || "card"
+
+    readonly property bool dark: Kirigami.ColorUtils.brightnessForColor(Kirigami.Theme.backgroundColor) === Kirigami.ColorUtils.Dark
+    // On the wallpaper ("open") text is white in both appearances, as on a
+    // Mac's lock screen; on a card it follows the scheme.
+    readonly property color ink: look === "open" ? "#ffffff" : Kirigami.Theme.textColor
+    readonly property color soft: Qt.alpha(ink, 0.75)
+    readonly property color faint: Qt.alpha(ink, 0.55)
+    readonly property color accent: look === "open" ? "#ffffff" : Kirigami.Theme.focusColor
+    readonly property color cardColor: Qt.alpha(Kirigami.Theme.backgroundColor, dark ? 0.82 : 0.74)
 
     property date now: new Date()
     property string weather: ""
@@ -32,20 +45,24 @@ PlasmoidItem {
     property string cpus: ""
     property real memUsed: 0
     property real memTotal: 0
-    property string disk: ""
+    property real diskFree: 0
+    property real diskSize: 0
     property string tower: ""
+
+    readonly property real memShare: memTotal ? Math.min(1, memUsed / memTotal) : 0
+    readonly property real diskShare: diskSize ? Math.min(1, (diskSize - diskFree) / diskSize) : 0
 
     Timer {
         interval: 1000; running: true; repeat: true; triggeredOnStart: true
         onTriggered: root.now = new Date()
     }
-    // Machine facts every 30 s; the weather every 20 minutes.
+    // Machine facts every 15 s; the weather every 20 minutes.
     Timer {
-        interval: 30000; running: true; repeat: true; triggeredOnStart: true
+        interval: 15000; running: root.card === "system"; repeat: true; triggeredOnStart: true
         onTriggered: root.refresh()
     }
     Timer {
-        interval: 20 * 60000; running: true; repeat: true; triggeredOnStart: true
+        interval: 20 * 60000; running: root.card === "today"; repeat: true; triggeredOnStart: true
         onTriggered: root.fetchWeather()
     }
 
@@ -63,7 +80,7 @@ PlasmoidItem {
     }
 
     function refresh() {
-        sh.run("sh -c 'hostname; nproc; grep -E \"^(MemTotal|MemAvailable):\" /proc/meminfo; df -h --output=avail,size / | tail -1'", (out) => {
+        sh.run("sh -c 'hostname; nproc; grep -E \"^(MemTotal|MemAvailable):\" /proc/meminfo; df -B1 --output=avail,size / | tail -1'", (out) => {
             const l = out.trim().split("\n")
             root.host = l[0] || ""
             root.cpus = l[1] || ""
@@ -71,13 +88,15 @@ PlasmoidItem {
             root.memTotal = kb(/MemTotal:\s+(\d+)/) / 1048576
             root.memUsed = root.memTotal - kb(/MemAvailable:\s+(\d+)/) / 1048576
             const d = (l[l.length - 1] || "").trim().split(/\s+/)
-            const gb = (v) => v.replace(/([0-9.]+)([KMGT])$/, "$1 $2B")
-            root.disk = d.length === 2 ? gb(d[0]) + " free of " + gb(d[1]) : ""
+            if (d.length === 2) {
+                root.diskFree = Number(d[0]) / 1e9
+                root.diskSize = Number(d[1]) / 1e9
+            }
         })
         sh.run("tailscale status --json --peers=false", (out) => {
             try {
                 const s = JSON.parse(out)
-                root.tower = s.BackendState === "Running" ? "On Tower · " + ((s.TailscaleIPs || [])[0] || "") : "Not on Tower"
+                root.tower = s.BackendState === "Running" ? "On Tower" : "Not on Tower"
             } catch (e) { root.tower = "" }
         })
     }
@@ -110,101 +129,179 @@ PlasmoidItem {
         return "thunderstorms"
     }
 
-    component Card: Rectangle {
+    function gb(v) { return v >= 100 ? Math.round(v) + " GB" : v.toFixed(1) + " GB" }
+
+    // A raised surface: lit from above, a light edge, a soft shadow. With
+    // "open" it draws nothing and only the text carries a shadow.
+    component Surface: Item {
+        id: surf
         default property alias content: inner.data
-        Layout.fillWidth: true
-        implicitHeight: inner.implicitHeight + 36
-        radius: 22
-        color: root.cardColor
-        border.color: Qt.alpha(root.ink, 0.08)
-        ColumnLayout {
-            id: inner
-            anchors { left: parent.left; right: parent.right; top: parent.top; margins: 18 }
-            spacing: 6
+        property int pad: 18
+        implicitWidth: inner.implicitWidth + 2 * pad
+        implicitHeight: inner.implicitHeight + 2 * pad
+        Rectangle {
+            visible: root.look !== "open"
+            anchors.fill: parent
+            radius: root.look === "gauges" ? 20 : 24
+            gradient: Gradient {
+                GradientStop { position: 0.0; color: Qt.tint(root.cardColor, Qt.alpha("#ffffff", root.dark ? 0.07 : 0.35)) }
+                GradientStop { position: 1.0; color: root.cardColor }
+            }
+            border.color: root.dark ? Qt.alpha("#ffffff", 0.10) : Qt.alpha("#ffffff", 0.7)
+            layer.enabled: true
+            layer.effect: MultiEffect {
+                shadowEnabled: true
+                shadowColor: Qt.alpha("#000000", root.dark ? 0.55 : 0.22)
+                shadowBlur: 1.0
+                shadowVerticalOffset: 8
+                autoPaddingEnabled: true
+            }
+        }
+        Item {
+            id: textLayer
+            anchors.fill: parent
+            layer.enabled: root.look === "open"
+            layer.effect: MultiEffect {
+                shadowEnabled: true
+                shadowColor: Qt.alpha("#000000", 0.45)
+                shadowBlur: 0.6
+                shadowVerticalOffset: 2
+                autoPaddingEnabled: true
+            }
+            ColumnLayout {
+                id: inner
+                anchors { left: parent.left; right: parent.right; top: parent.top; margins: surf.pad }
+                spacing: 6
+            }
+        }
+    }
+
+    // A ring gauge: share 0..1, a label in the middle and one under it.
+    component Ring: Item {
+        property real share: 0
+        property string centre
+        property string caption
+        implicitWidth: 92
+        implicitHeight: 92 + 22
+        Canvas {
+            id: c
+            width: 92; height: 92
+            property real s: parent.share
+            property color track: Qt.alpha(root.ink, 0.12)
+            property color fill: parent.share > 0.85 ? "#f0a63c" : root.accent
+            onSChanged: requestPaint()
+            onTrackChanged: requestPaint()
+            onFillChanged: requestPaint()
+            onPaint: {
+                const g = getContext("2d")
+                g.reset()
+                g.lineWidth = 9
+                g.lineCap = "round"
+                g.strokeStyle = track
+                g.beginPath(); g.arc(46, 46, 38, 0, Math.PI * 2); g.stroke()
+                if (s > 0) {
+                    g.strokeStyle = fill
+                    g.beginPath(); g.arc(46, 46, 38, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * s); g.stroke()
+                }
+            }
+        }
+        QQC2.Label {
+            anchors.centerIn: c
+            text: parent.centre
+            color: root.ink; font.pixelSize: 18; font.weight: Font.DemiBold
+        }
+        QQC2.Label {
+            anchors.top: c.bottom; anchors.topMargin: 4
+            anchors.horizontalCenter: c.horizontalCenter
+            text: parent.caption
+            color: root.soft; font.pixelSize: 12
         }
     }
 
     fullRepresentation: Item {
-        Layout.preferredWidth: 300
-        Layout.preferredHeight: col.implicitHeight
-        Layout.minimumWidth: 260
+        Layout.preferredWidth: view.implicitWidth
+        Layout.preferredHeight: view.implicitHeight
+        Layout.minimumWidth: 220
 
-        ColumnLayout {
-            id: col
-            anchors { left: parent.left; right: parent.right; top: parent.top }
-            spacing: 14
+        Loader {
+            id: view
+            anchors.left: parent.left
+            sourceComponent: root.card === "system" ? (root.look === "gauges" ? systemGauges : systemCard) : todayCard
+        }
 
-            Card {
-                QQC2.Label { text: Qt.formatDate(root.now, "dddd"); color: root.accent; font.pixelSize: 14; font.weight: Font.DemiBold }
-                QQC2.Label { text: Qt.formatTime(root.now, "HH:mm"); color: root.ink; font.pixelSize: 56; font.weight: Font.DemiBold; Layout.topMargin: -6; Layout.bottomMargin: -6 }
+        Component {
+            id: todayCard
+            Surface {
+                width: root.look === "open" ? 360 : 300
+                QQC2.Label { text: Qt.formatDate(root.now, "dddd"); color: root.accent; font.pixelSize: root.look === "open" ? 20 : 14; font.weight: Font.DemiBold }
+                QQC2.Label {
+                    text: Qt.formatTime(root.now, "HH:mm")
+                    color: root.ink
+                    font.pixelSize: root.look === "open" ? 104 : root.look === "gauges" ? 44 : 56
+                    font.weight: root.look === "open" ? Font.Light : Font.DemiBold
+                    Layout.topMargin: -6; Layout.bottomMargin: -6
+                }
                 QQC2.Label {
                     text: Qt.formatDate(root.now, "d MMMM") + (root.weather ? " · " + root.weather : "")
-                    color: root.soft; font.pixelSize: 13; wrapMode: Text.Wrap; Layout.fillWidth: true
+                    color: root.soft; font.pixelSize: root.look === "open" ? 16 : 13; wrapMode: Text.Wrap; Layout.fillWidth: true
                 }
             }
+        }
 
-            Card {
+        Component {
+            id: systemCard
+            Surface {
+                width: root.look === "open" ? 320 : 300
                 RowLayout {
                     Layout.fillWidth: true
-                    QQC2.Label { text: "This computer"; color: root.ink; font.pixelSize: 14; font.weight: Font.DemiBold; Layout.fillWidth: true }
+                    QQC2.Label { text: "This computer"; color: root.ink; font.pixelSize: root.look === "open" ? 18 : 14; font.weight: Font.DemiBold; Layout.fillWidth: true }
                     QQC2.Label { text: root.host; color: root.soft; font.pixelSize: 12 }
                 }
                 QQC2.Label {
-                    text: (root.cpus ? root.cpus + (root.cpus === "1" ? " CPU" : " CPUs") : "") + (root.memTotal ? " · " + root.memTotal.toFixed(1) + " GB" : "")
-                    color: root.soft; font.pixelSize: 12
+                    text: (root.cpus ? root.cpus + (root.cpus === "1" ? " CPU" : " CPUs") : "") + (root.memTotal ? " · " + root.memTotal.toFixed(1) + " GB memory" : "") + (root.tower ? " · " + root.tower : "")
+                    color: root.soft; font.pixelSize: 12; wrapMode: Text.Wrap; Layout.fillWidth: true
                 }
-                Rectangle {
-                    Layout.fillWidth: true; Layout.topMargin: 4
-                    implicitHeight: 6; radius: 3; color: Qt.alpha(root.ink, 0.12)
-                    Rectangle {
-                        width: parent.width * (root.memTotal ? Math.min(1, root.memUsed / root.memTotal) : 0)
-                        height: parent.height; radius: 3
-                        color: root.memTotal && root.memUsed / root.memTotal > 0.85 ? "#f0a63c" : root.accent
-                        Behavior on width { NumberAnimation { duration: 400; easing.type: Easing.OutCubic } }
-                    }
-                }
-                QQC2.Label { text: "Memory " + root.memUsed.toFixed(1) + " of " + root.memTotal.toFixed(1) + " GB"; color: root.faint; font.pixelSize: 12 }
-                RowLayout {
-                    Layout.fillWidth: true
-                    QQC2.Label { text: root.disk ? "Disk " + root.disk : ""; color: root.faint; font.pixelSize: 12; Layout.fillWidth: true }
-                    QQC2.Label { text: root.tower; color: root.faint; font.pixelSize: 12 }
-                }
-            }
-
-            Card {
-                QQC2.Label { text: Qt.formatDate(root.now, "MMMM").toUpperCase(); color: root.accent; font.pixelSize: 12; font.weight: Font.Bold; font.letterSpacing: 1 }
-                QQC2.DayOfWeekRow {
-                    Layout.fillWidth: true
-                    locale: Qt.locale("en_GB")
-                    delegate: QQC2.Label {
-                        required property string shortName
-                        text: shortName.slice(0, 1)
-                        color: root.faint; font.pixelSize: 11; font.weight: Font.DemiBold
-                        horizontalAlignment: Text.AlignHCenter
-                    }
-                }
-                QQC2.MonthGrid {
-                    Layout.fillWidth: true
-                    month: root.now.getMonth()
-                    year: root.now.getFullYear()
-                    locale: Qt.locale("en_GB")
-                    delegate: QQC2.Label {
-                        required property int day
-                        required property int month
-                        required property bool today
-                        text: day
-                        topPadding: 4; bottomPadding: 4
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                        font.pixelSize: 12
-                        font.weight: today ? Font.Bold : Font.Normal
-                        color: today ? root.onAccent : month === root.now.getMonth() ? root.ink : "transparent"
-                        background: Rectangle {
-                            anchors.centerIn: parent
-                            width: 24; height: 24; radius: 12
-                            color: today ? root.accent : "transparent"
+                Repeater {
+                    model: [
+                        { name: "Memory", share: root.memShare, detail: root.memUsed.toFixed(1) + " of " + root.memTotal.toFixed(1) + " GB" },
+                        { name: "Disk", share: root.diskShare, detail: root.gb(root.diskFree) + " free of " + root.gb(root.diskSize) }
+                    ]
+                    delegate: ColumnLayout {
+                        required property var modelData
+                        Layout.fillWidth: true; Layout.topMargin: 6
+                        spacing: 4
+                        RowLayout {
+                            Layout.fillWidth: true
+                            QQC2.Label { text: modelData.name; color: root.ink; font.pixelSize: 12; font.weight: Font.Medium; Layout.fillWidth: true }
+                            QQC2.Label { text: modelData.detail; color: root.faint; font.pixelSize: 12 }
+                        }
+                        Rectangle {
+                            Layout.fillWidth: true
+                            implicitHeight: 6; radius: 3; color: Qt.alpha(root.ink, 0.14)
+                            Rectangle {
+                                width: parent.width * modelData.share
+                                height: parent.height; radius: 3
+                                color: modelData.share > 0.85 ? "#f0a63c" : root.accent
+                                Behavior on width { NumberAnimation { duration: 400; easing.type: Easing.OutCubic } }
+                            }
                         }
                     }
+                }
+            }
+        }
+
+        Component {
+            id: systemGauges
+            Surface {
+                RowLayout {
+                    spacing: 18
+                    Ring { share: root.memShare; centre: Math.round(root.memShare * 100) + "%"; caption: "Memory" }
+                    Ring { share: root.diskShare; centre: Math.round(root.diskShare * 100) + "%"; caption: "Disk" }
+                }
+                QQC2.Label {
+                    text: root.host + (root.tower ? " · " + root.tower : "")
+                    color: root.faint; font.pixelSize: 12
+                    Layout.alignment: Qt.AlignHCenter
                 }
             }
         }

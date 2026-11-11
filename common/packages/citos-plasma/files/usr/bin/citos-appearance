@@ -44,8 +44,19 @@ kwriteconfig6 --file kwinrc --group org.kde.kdecoration2 --key library org.kde.k
 kwriteconfig6 --file kwinrc --group org.kde.kdecoration2 --key theme "__aurorae__svg__$deco"
 qdbus6 org.kde.KWin /KWin reconfigure >/dev/null 2>&1 || true
 
-# The dock (Plank keeps its settings in dconf).
+# GTK apps and the dock read their icons from GTK's settings.
+for f in "${XDG_CONFIG_HOME:-$HOME/.config}"/gtk-3.0/settings.ini "${XDG_CONFIG_HOME:-$HOME/.config}"/gtk-4.0/settings.ini; do
+	[ -f "$f" ] && sed -i "s/^gtk-icon-theme-name=.*/gtk-icon-theme-name=$icons/" "$f"
+done
+gsettings set org.gnome.desktop.interface icon-theme "$icons" 2>/dev/null || true
+
+# The dock (Plank keeps its settings in dconf); it loads icons once, so it
+# starts again with the new ones.
 gsettings set net.launchpad.plank.dock.settings:/net/launchpad/plank/docks/dock1/ theme "$dock" 2>/dev/null || true
+if pkill -x plank 2>/dev/null; then
+	sleep 0.5
+	(setsid /usr/libexec/citos/dock >/dev/null 2>&1 &)
+fi
 
 # The wallpaper and the lock screen, only where they are CIT-OS's own: a
 # picture someone chose stays.

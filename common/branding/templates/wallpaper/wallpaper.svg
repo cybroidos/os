@@ -5,12 +5,18 @@
 <stop offset="0" stop-color="${color_primary}"/>
 <stop offset="1" stop-color="${color_background}"/>
 </radialGradient>
+<filter id="soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="140"/></filter>
 <radialGradient id="halo" cx=".5" cy=".5" r=".5">
 <stop offset="0" stop-color="${color_accent_alt}" stop-opacity=".22"/>
 <stop offset="1" stop-color="${color_accent_alt}" stop-opacity="0"/>
 </radialGradient>
 </defs>
 <rect width="1920" height="1080" fill="url(#bg)"/>
+<!-- Light falling across the desktop: two broad, blurred glows. -->
+<g filter="url(#soft)">
+<ellipse cx="300" cy="120" rx="700" ry="320" fill="${color_accent}" fill-opacity=".20"/>
+<ellipse cx="1680" cy="1010" rx="760" ry="340" fill="${color_accent_alt}" fill-opacity=".30"/>
+</g>
 <circle cx="960" cy="470" r="420" fill="url(#halo)"/>
 <g fill="none" stroke="${color_glow}" stroke-opacity=".08" stroke-width="2">
 <circle cx="960" cy="470" r="520"/>

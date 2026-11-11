@@ -17,6 +17,9 @@ Rectangle {
     readonly property color accent: "#1ccbff"
     property string message: ""
     property bool otherUser: false
+    property bool showPass: false
+    // SDDM's keyboard model follows the Caps Lock light.
+    readonly property bool capsLock: typeof keyboard !== "undefined" && keyboard.capsLock
 
     Image {
         anchors.fill: parent
@@ -112,10 +115,10 @@ Rectangle {
 
                 TextField {
                     id: passField
-                    anchors.left: parent.left; anchors.right: go.left
+                    anchors.left: parent.left; anchors.right: capsBadge.visible ? capsBadge.left : eye.left
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.leftMargin: 18; anchors.rightMargin: 6
-                    echoMode: TextInput.Password
+                    echoMode: root.showPass ? TextInput.Normal : TextInput.Password
                     placeholderText: userField.text.length ? "Password for " + userField.text : "Password"
                     color: "white"
                     placeholderTextColor: root.soft
@@ -123,6 +126,67 @@ Rectangle {
                     background: Item {}
                     focus: true
                     onAccepted: root.signIn()
+                }
+                // Caps Lock on: the ⇪ symbol inside the field, as macOS shows it.
+                Canvas {
+                    id: capsBadge
+                    visible: root.capsLock
+                    width: 22; height: 22
+                    anchors.right: eye.left; anchors.rightMargin: 4
+                    anchors.verticalCenter: parent.verticalCenter
+                    Accessible.name: "Caps Lock is on"
+                    onPaint: {
+                        const c = getContext("2d")
+                        c.reset()
+                        c.fillStyle = root.ink
+                        c.beginPath()
+                        c.moveTo(11, 2); c.lineTo(20, 11); c.lineTo(15, 11); c.lineTo(15, 15)
+                        c.lineTo(7, 15); c.lineTo(7, 11); c.lineTo(2, 11)
+                        c.closePath(); c.fill()
+                        c.fillRect(7, 17, 8, 3)
+                    }
+                }
+                // Show or hide the password: an eye, struck through while hidden.
+                Item {
+                    id: eye
+                    width: 30; height: 30
+                    anchors.right: go.left; anchors.rightMargin: 4
+                    anchors.verticalCenter: parent.verticalCenter
+                    Accessible.role: Accessible.Button
+                    Accessible.name: root.showPass ? "Hide password" : "Show password"
+                    Rectangle {
+                        anchors.fill: parent; radius: 15
+                        color: eyeArea.containsMouse ? "#1fffffff" : "transparent"
+                    }
+                    Canvas {
+                        id: eyeIcon
+                        anchors.centerIn: parent
+                        width: 22; height: 22
+                        property bool open: root.showPass
+                        onOpenChanged: requestPaint()
+                        onPaint: {
+                            const c = getContext("2d")
+                            c.reset()
+                            c.strokeStyle = root.soft; c.fillStyle = root.soft
+                            c.lineWidth = 1.6; c.lineCap = "round"
+                            c.beginPath()
+                            c.moveTo(2, 11)
+                            c.quadraticCurveTo(11, 1, 20, 11)
+                            c.quadraticCurveTo(11, 21, 2, 11)
+                            c.stroke()
+                            c.beginPath(); c.arc(11, 11, 3, 0, Math.PI * 2); c.fill()
+                            if (!open) {
+                                c.beginPath(); c.moveTo(4, 19); c.lineTo(18, 3); c.stroke()
+                            }
+                        }
+                    }
+                    MouseArea {
+                        id: eyeArea
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: { root.showPass = !root.showPass; passField.forceActiveFocus() }
+                    }
                 }
                 Button {
                     id: go
@@ -146,6 +210,13 @@ Rectangle {
             text: root.message
             visible: root.message.length > 0
             color: "#ffb4b4"
+            font.family: "Inter"; font.pixelSize: 13
+        }
+        Text {
+            anchors.horizontalCenter: parent.horizontalCenter
+            text: "Caps Lock is on"
+            visible: root.capsLock && root.message.length === 0
+            color: root.soft
             font.family: "Inter"; font.pixelSize: 13
         }
     }

@@ -22,7 +22,7 @@ PlasmoidItem {
     switchHeight: 0
     preferredRepresentation: fullRepresentation
     compactRepresentation: null
-    Plasmoid.icon: Plasmoid.configuration.icon || "citos-mark-symbolic"
+    Plasmoid.icon: Plasmoid.configuration.icon || "citos-mark"
 
     fullRepresentation: MouseArea {
         id: button

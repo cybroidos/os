@@ -10,9 +10,17 @@ BorderSize=None
 BorderSizeAuto=false
 
 [Plugins]
-blurEnabled=true
-contrastEnabled=true
+# No blur: surfaces are solid (CIT-OS reads better without glass), and
+# blur drew square, noisy blocks at the rounded corners of popups.
+blurEnabled=false
+contrastEnabled=false
 slidingpopupsEnabled=true
+# Windows grow in as they open and shrink away as they close (scale), and
+# minimise into the dock like macOS's genie (magic lamp).
+scaleEnabled=true
+fadeEnabled=false
+magiclampEnabled=true
+squashEnabled=false
 kwin4_effect_shapecornersEnabled=true
 
 # Rounded windows (citos-kwin-effects: KDE Rounded Corners).
@@ -28,10 +36,6 @@ InactiveOutlineAlpha=40
 # The Meta key opens the app grid (the dock's first button).
 [ModifierOnlyShortcuts]
 Meta=org.kde.plasmashell,/PlasmaShell,org.kde.PlasmaShell,activateLauncherMenu
-
-[Effect-blur]
-BlurStrength=10
-NoiseStrength=2
 
 [Windows]
 Placement=Centered

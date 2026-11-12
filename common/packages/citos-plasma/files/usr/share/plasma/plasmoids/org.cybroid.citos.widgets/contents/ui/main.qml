@@ -16,8 +16,10 @@
  *           each beside the end of one of the dial's leaders. Today is the
  *           left column (time, processor, memory), System the right one
  *           (network, Tower, traffic). citos-appearance sizes and places
- *           them; the readouts sit at fixed shares of the column's height,
- *           which match the wallpaper's leaders (render-brand.py, HEX_*).
+ *           them; each readout sits level with its leader, worked out from
+ *           the screen as the wallpaper is drawn (render-brand.py, HEX_*).
+ *           A third copy, card "title", writes "CIT-OS | <the app in
+ *           front>" in the tab that hangs under the top bar.
  */
 import QtQuick
 import QtQuick.Effects
@@ -29,6 +31,7 @@ import org.kde.plasma.plasmoid
 import org.kde.plasma.core as PlasmaCore
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.plasma5support as P5Support
+import org.kde.taskmanager as TaskManager
 
 PlasmoidItem {
     id: root
@@ -75,6 +78,9 @@ PlasmoidItem {
     property var netHist: []
     property var towerPeers: []
     readonly property bool hud: look === "hud"
+    // Hex's small motions (a light along the headings, the Tower link
+    // flowing, a pulse round this computer) stop when animations are off.
+    readonly property bool moving: hud && Kirigami.Units.longDuration > 0
 
     readonly property real memShare: memTotal ? Math.min(1, memUsed / memTotal) : 0
     readonly property real diskShare: diskSize ? Math.min(1, (diskSize - diskFree) / diskSize) : 0
@@ -85,7 +91,7 @@ PlasmoidItem {
     }
     // Machine facts every 15 s; the weather every 20 minutes.
     Timer {
-        interval: root.hud ? 3000 : 15000; running: root.card === "system" || root.hud; repeat: true; triggeredOnStart: true
+        interval: root.hud ? 3000 : 15000; running: (root.card === "system" || root.hud) && root.card !== "title"; repeat: true; triggeredOnStart: true
         onTriggered: root.refresh()
     }
     Timer {
@@ -336,6 +342,25 @@ PlasmoidItem {
         QQC2.Label { anchors.right: hh.right; text: hh.atRight ? "PANEL" : hh.name; color: root.hudMuted; font.family: root.mono; font.pixelSize: 11; font.letterSpacing: 2 }
         Rectangle { anchors.bottom: hh.bottom; width: hh.width; height: 1; color: root.hudLine }
         Rectangle { anchors.bottom: hh.bottom; anchors.bottomMargin: -0.5; x: hh.atRight ? hh.width - 40 : 0; width: 40; height: 2; color: root.hudAcc }
+        // A light that runs along the rule from the lit end and fades.
+        Rectangle {
+            id: run
+            anchors.bottom: hh.bottom
+            width: 24; height: 1
+            property real t: 0
+            x: hh.atRight ? (hh.width - 40) * (1 - t) - width : 40 + (hh.width - 40 - width) * t
+            opacity: root.moving ? 0.9 * (1 - t) : 0
+            gradient: Gradient {
+                orientation: Gradient.Horizontal
+                GradientStop { position: 0; color: hh.atRight ? root.hudAcc : "transparent" }
+                GradientStop { position: 1; color: hh.atRight ? "transparent" : root.hudAcc }
+            }
+            SequentialAnimation on t {
+                running: root.moving; loops: Animation.Infinite
+                NumberAnimation { from: 0; to: 1; duration: 2600; easing.type: Easing.OutCubic }
+                PauseAnimation { duration: 4400 }
+            }
+        }
     }
 
     // A readout: a label, a value at the right, and what is drawn under them.
@@ -407,15 +432,41 @@ PlasmoidItem {
     // wallpaper is drawn (one picture per screen shape, scaled to cover it),
     // and from where the column is: the desktop snaps widgets to a grid, so
     // the column is never exactly where citos-appearance put it.
-    function hudRowY(item, i) {
-        void root.now  // re-placed each second: cheap, and follows moves
+    function hudGeom() {
         const W = Screen.width, H = Screen.height
-        if (!W || !H) return 0
         const Hp = W / H < 1.7 ? 1200 : 1080
         const s = Math.max(W / 1920, H / Hp)
-        const U = s * Hp / 1080, oy = (H - Hp * s) / 2
+        return { s: s, U: s * Hp / 1080, oy: (H - Hp * s) / 2 }
+    }
+    function hudRowY(item, i) {
+        void root.now  // re-placed each second: cheap, and follows moves
+        if (!Screen.width || !Screen.height) return 0
+        const g = hudGeom()
         const at = item.mapToGlobal(0, 0).y - Screen.virtualY
-        return oy + [242, 530, 818][i] * U - at
+        return g.oy + [242, 530, 818][i] * g.U - at
+    }
+    // The title tab: midway between the top bar and the tab's foot, which
+    // the wallpaper draws at 30 + HEX_TAB (42) in the picture's units.
+    function hudTabY(item) {
+        void root.now
+        if (!Screen.height) return 0
+        const g = hudGeom()
+        const bar = 2 * Math.floor(Kirigami.Units.gridUnit * 1.7 / 2)
+        const foot = g.oy + 30 * g.s + 42 * g.U
+        return (bar + foot) / 2 - (item.mapToGlobal(0, 0).y - Screen.virtualY)
+    }
+    function hudTabX(item) {
+        void root.now
+        return Screen.width / 2 - (item.mapToGlobal(0, 0).x - Screen.virtualX)
+    }
+
+    // The app in front, for the title tab.
+    TaskManager.TasksModel { id: tasks }
+    readonly property string frontApp: {
+        if (card !== "title") return ""
+        const i = tasks.activeTask
+        const n = i && i.valid ? String(tasks.data(i, TaskManager.AbstractTasksModel.AppName) || "") : ""
+        return n || "Desktop"
     }
 
     fullRepresentation: Item {
@@ -429,8 +480,28 @@ PlasmoidItem {
             width: root.hud ? parent.width : implicitWidth
             height: root.hud ? parent.height : implicitHeight
             sourceComponent: root.hud
-                ? (root.card === "system" ? systemHud : todayHud)
+                ? (root.card === "system" ? systemHud : root.card === "title" ? titleHud : todayHud)
                 : root.card === "system" ? (root.look === "gauges" ? systemGauges : systemCard) : todayCard
+        }
+
+        // Hex, the tab under the top bar: CIT-OS, then the app in front.
+        Component {
+            id: titleHud
+            Item {
+                id: tab
+                Row {
+                    x: root.hudTabX(tab) - width / 2
+                    y: root.hudTabY(tab) - height / 2
+                    spacing: 10
+                    QQC2.Label { text: "CIT-OS"; color: "#8fe6ff"; font.family: root.mono; font.pixelSize: 12; font.weight: Font.DemiBold; font.letterSpacing: 2.4 }
+                    QQC2.Label { text: "|"; color: "#3d5fa8"; font.family: root.mono; font.pixelSize: 12 }
+                    QQC2.Label {
+                        text: root.frontApp.toUpperCase()
+                        width: Math.min(implicitWidth, 150 * root.hudGeom().U); elide: Text.ElideRight
+                        color: "#c4d0ea"; font.family: root.mono; font.pixelSize: 12; font.letterSpacing: 2.4
+                    }
+                }
+            }
         }
 
         // Hex, left: the time, the processor, memory.
@@ -478,6 +549,7 @@ PlasmoidItem {
                                 required property int index
                                 width: dots.cell; height: 6
                                 color: index < Math.round(root.memShare * 48) ? (root.memShare > 0.85 ? "#ff6b5a" : root.hudAcc) : "#1b2f63"
+                                Behavior on color { ColorAnimation { duration: 600 } }
                             }
                         }
                     }
@@ -550,6 +622,11 @@ PlasmoidItem {
                                         strokeWidth: 1.2; fillColor: "transparent"
                                         strokeStyle: index === 0 && peer.online ? ShapePath.DashLine : ShapePath.SolidLine
                                         dashPattern: [3, 4]
+                                        // The link to the first device flows outwards.
+                                        NumberAnimation on dashOffset {
+                                            running: root.moving && index === 0 && peer.online
+                                            from: 7; to: 0; duration: 900; loops: Animation.Infinite
+                                        }
                                         startX: map.width / 2; startY: map.height / 2
                                         PathLine { x: px; y: py }
                                     }
@@ -562,6 +639,20 @@ PlasmoidItem {
                                     color: peer.online ? root.hudMuted : root.hudDim
                                     font.family: root.mono; font.pixelSize: 9
                                 }
+                            }
+                        }
+                        // A ring that grows from this computer and fades, slowly.
+                        Hex {
+                            id: pulse
+                            property real g: 0
+                            r: 11 + 14 * g
+                            x: map.width / 2 - r; y: map.height / 2 - r
+                            edge: root.hudAcc
+                            opacity: root.moving ? 0.6 * (1 - g) : 0
+                            SequentialAnimation on g {
+                                running: root.moving; loops: Animation.Infinite
+                                NumberAnimation { from: 0; to: 1; duration: 1800; easing.type: Easing.OutQuad }
+                                PauseAnimation { duration: 1400 }
                             }
                         }
                         Hex { x: map.width / 2 - r; y: map.height / 2 - r; r: 11; fill: root.hudAcc; edge: root.hudAcc }

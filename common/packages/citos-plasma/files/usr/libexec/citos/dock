@@ -37,5 +37,9 @@ if [ ! -f "$conf/citos/templates-off" ] && command -v xdg-user-dirs-update >/dev
 fi
 
 # Float the dock a little above the screen's edge, as macOS does (our
-# Plank build reads this; tools/plank-edge-gap.py).
+# Plank build reads this; tools/plank-edge-gap.py). In Hex, running apps
+# are marked by a small cyan hexagon instead of a glowing dot.
+case "$(kreadconfig6 --file kdeglobals --group General --key ColorScheme 2>/dev/null)" in
+*Hex) export PLANK_INDICATOR="#1ccbff" ;;
+esac
 PLANK_EDGE_GAP=8 exec plank

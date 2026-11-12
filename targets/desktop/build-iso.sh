@@ -94,6 +94,7 @@ efibootmgr
 os-prober
 cryptsetup
 cryptsetup-initramfs
+util-linux-extra
 keyutils
 dosfstools
 ntfs-3g
@@ -213,6 +214,28 @@ alwaysShowPartitionLabels: true
 defaultFileSystemType: "ext4"
 availableFileSystemTypes: [ "ext4", "btrfs", "xfs" ]
 enableLuksAutomatedPartitioning: true
+EOF
+# The live system's own packages leave the installed one. try_remove, as
+# Debian's "remove" stopped the install at the first name the image lacks
+# (live-task-localisation, live-task-recommended): "Package Manager error".
+cat > "${lb}/config/includes.chroot/etc/calamares/modules/packages.conf" <<'EOF'
+---
+backend: apt
+update_db: false
+update_system: false
+operations:
+    - try_remove:
+        - live-boot
+        - live-boot-doc
+        - live-config
+        - live-config-doc
+        - live-config-systemd
+        - live-tools
+        - live-task-localisation
+        - live-task-recommended
+        - user-setup
+        - calamares-settings-debian
+        - calamares
 EOF
 # A step on the installed system: numbers and dates in British English where
 # Calamares picked Luganda's lg_UG from the zone (it isn't generated).

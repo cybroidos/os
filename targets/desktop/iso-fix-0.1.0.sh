@@ -97,6 +97,12 @@ HELPER
 	chmod 0755 "${helper}"
 fi
 
+# Removing the live packages: try_remove, as "remove" stopped the install at
+# the first name the image lacks ("Package Manager error").
+if [ -f /etc/calamares/modules/packages.conf ]; then
+	sed -i 's/^\(\s*-\s*\)remove:/\1try_remove:/' /etc/calamares/modules/packages.conf
+fi
+
 # The installed system: the same drop-in goes, and the live-only sign-in.
 if [ -f /etc/calamares/settings.conf ] && ! grep -q "shellprocess@citos" /etc/calamares/settings.conf; then
 	cat > /etc/calamares/modules/shellprocess-citos.conf <<'EOF'

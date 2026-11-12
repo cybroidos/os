@@ -39,7 +39,7 @@ PlasmoidItem {
     property bool dark: true         // CIT-OS Horizon, or Horizon Light
     property bool hex: false         // the HUD design (CIT-OS Hex)
 
-    Plasmoid.icon: "citos-control-centre"
+    Plasmoid.icon: "citos-control-centre-symbolic"
     toolTipMainText: "Control Centre"
     toolTipSubText: (netKind ? netKind + " · " + netAddress : "Offline") + (dnd.on ? " · Do Not Disturb" : "")
     Plasmoid.status: PlasmaCore.Types.ActiveStatus
@@ -55,6 +55,9 @@ PlasmoidItem {
             width: Math.round(parent.height * 0.82); height: width
             source: Plasmoid.icon
             active: button.containsMouse || root.expanded
+            // Drawn in the bar's text colour, so it shows on a light bar too.
+            isMask: true
+            color: Kirigami.Theme.textColor
         }
     }
 

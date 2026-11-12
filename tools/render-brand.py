@@ -222,74 +222,160 @@ def wallpaper(ctx: Context) -> None:
     lsrc = ctx.write(f"usr/share/backgrounds/{ctx.id}/{ctx.id}-light.svg", light)
     for w, h in WALLPAPER_SIZES:
         rasterise(lsrc, lsrc.with_name(f"{ctx.id}-light-{w}x{h}.png"), w, h)
-    # Hex, the HUD design: graphite with Hangar's 32 px grid, corner brackets,
-    # and the mark as line work in a hexagon frame with amber nodes.
-    hsrc = ctx.write(f"usr/share/backgrounds/{ctx.id}/{ctx.id}-hex.svg", hex_wallpaper())
-    for w, h in WALLPAPER_SIZES:
+    # Hex, the HUD design: a notched frame, the mark in its dial, leaders out
+    # to the readouts. Each screen shape gets its own drawing, never cropped.
+    for w, h in HEX_SIZES:
+        hsrc = ctx.write(f"usr/share/backgrounds/{ctx.id}/{ctx.id}-hex-{w}x{h}.svg", hex_wallpaper(w, h))
         rasterise(hsrc, hsrc.with_name(f"{ctx.id}-hex-{w}x{h}.png"), w, h)
 
 
-def hex_wallpaper() -> str:
-    """CIT-OS Hex's wallpaper (1920 x 1080), drawn here rather than from a
-    template: the grid and the hexagon are geometry."""
-    import math
+# Hex's layout, in units of the picture's height (u = H / 1080). The desktop
+# widgets are placed to the same numbers by citos-appearance (keep them in
+# step): each of the dial's six leaders ends beside one readout.
+HEX_SIZES = ((1920, 1080), (2560, 1440), (3840, 2160), (1920, 1200), (2560, 1600))
+HEX_CY = 530      # the dial's centre, from the top
+HEX_DIAG = 127    # where the four slanting leaders leave the dial
+HEX_ELBOW = 288   # where they turn level
+HEX_SIDE = 300    # where the two level leaders leave it
+HEX_END = 440     # where every leader ends, from the centre line
 
-    W, H, cx, cy = 1920, 1080, 960, 500
-    acc, line, line2, dim = "#f0a63c", "#121a1f", "#1d272d", "#33424a"
+
+def hex_wallpaper(W: int = 1920, H: int = 1080) -> str:
+    """CIT-OS Hex's wallpaper: a notched frame round the screen, the CIT mark
+    alone in a dial, and six leaders out to where the desktop's readouts
+    sit. Drawn here rather than from a template: it is all geometry, and each
+    screen shape (16:9, 16:10) gets its own so nothing is cropped."""
+    u = H / 1080
+    cx, cy = W / 2, HEX_CY * u
+    f = lambda v: f"{v:.1f}"
     out = [
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}">',
         "<defs>",
-        '<radialGradient id="bg" cx=".5" cy=".45" r=".8"><stop offset="0" stop-color="#0d1316"/>'
-        '<stop offset="1" stop-color="#050708"/></radialGradient>',
-        '<pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">'
-        f'<path d="M32 0H0V32" fill="none" stroke="{line}" stroke-width="1"/></pattern>',
-        '<radialGradient id="fade" cx=".5" cy=".46" r=".62"><stop offset="0" stop-color="#fff" stop-opacity=".9"/>'
-        '<stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>',
-        '<mask id="m"><rect width="100%" height="100%" fill="url(#fade)"/></mask>',
+        f'<radialGradient id="bg" gradientUnits="userSpaceOnUse" cx="{f(cx)}" cy="{f(cy)}" r="{f(W * 0.62)}">'
+        '<stop offset="0" stop-color="#0d1c44"/><stop offset=".5" stop-color="#071027"/><stop offset="1" stop-color="#030713"/></radialGradient>',
+        f'<pattern id="grid" width="{f(32 * u)}" height="{f(32 * u)}" patternUnits="userSpaceOnUse">'
+        f'<path d="M{f(32 * u)} 0H0V{f(32 * u)}" fill="none" stroke="#1ccbff" stroke-opacity=".035" stroke-width="1"/></pattern>',
+        '<linearGradient id="cy" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8fe6ff"/><stop offset="1" stop-color="#1ccbff"/></linearGradient>',
+        '<linearGradient id="mk" gradientUnits="userSpaceOnUse" x1="170" y1="640" x2="640" y2="110">'
+        '<stop offset="0" stop-color="#3a7cff"/><stop offset=".55" stop-color="#2c9dff"/><stop offset="1" stop-color="#1ccbff"/></linearGradient>',
+        '<radialGradient id="floor"><stop offset="0" stop-color="#3a7cff" stop-opacity=".55"/>'
+        '<stop offset=".4" stop-color="#1ccbff" stop-opacity=".12"/><stop offset="1" stop-color="#1ccbff" stop-opacity="0"/></radialGradient>',
+        '<radialGradient id="core" cx=".5" cy=".4" r=".7"><stop offset="0" stop-color="#0f2152"/><stop offset="1" stop-color="#050b1e"/></radialGradient>',
         "</defs>",
         f'<rect width="{W}" height="{H}" fill="url(#bg)"/>',
-        f'<rect width="{W}" height="{H}" fill="url(#grid)" mask="url(#m)"/>',
+        f'<rect width="{W}" height="{H}" fill="url(#grid)"/>',
     ]
-    # Corner brackets near the screen's corners: amber above, grey below.
-    # Inset so 16:10 and 4:3 screens (which crop a 16:9 picture's sides)
-    # still show them whole.
-    mx, my, L = 240, 72, 64
-    for x, y, sx, sy in ((mx, my, 1, 1), (W - mx, my, -1, 1), (mx, H - my, 1, -1), (W - mx, H - my, -1, -1)):
-        col = acc if sy == 1 else dim
-        out.append(f'<path d="M{x},{y + sy * L} V{y} H{x + sx * L}" fill="none" stroke="{col}" stroke-width="2"/>')
-    # The hexagon frame around the mark, with a second, fainter ring of ticks.
-    def hexagon(r):
-        pts = [(cx + r * math.cos(math.radians(60 * k - 90)), cy + r * math.sin(math.radians(60 * k - 90))) for k in range(6)]
-        return "M" + " L".join(f"{x:.1f},{y:.1f}" for x, y in pts) + " Z"
-    out.append(f'<path d="{hexagon(250)}" fill="none" stroke="{line2}" stroke-width="2"/>')
-    out.append(f'<path d="{hexagon(270)}" fill="none" stroke="{line}" stroke-width="1"/>')
-    for k in range(72):
-        a = math.radians(k * 5)
-        r1, r2 = 320, 320 + (14 if k % 6 == 0 else 6)
-        col = acc if k % 18 == 0 else dim
-        out.append(
-            f'<line x1="{cx + r1 * math.cos(a):.1f}" y1="{cy + r1 * math.sin(a):.1f}" x2="{cx + r2 * math.cos(a):.1f}" '
-            f'y2="{cy + r2 * math.sin(a):.1f}" stroke="{col}" stroke-width="2" stroke-opacity="{0.9 if col == acc else 0.6}"/>'
+    # The frame: notched under the top bar's tab, at both sides and above the
+    # dock, with lit corners. The top bar covers the top 30 or so pixels.
+    e, top, bot = 20 * u, 30 + 22 * u, H - 20 * u
+    k, n = 24 * u, 20 * u  # corner cut, notch depth
+    tn, bn, sn = 200 * u, 264 * u, 45 * u  # half-widths of the notches
+    frame = (
+        f"M{f(e + k)} {f(top)} H{f(cx - tn - n)} L{f(cx - tn)} {f(top + n)} H{f(cx + tn)} L{f(cx + tn + n)} {f(top)} "
+        f"H{f(W - e - k)} L{f(W - e)} {f(top + k)} V{f(cy - sn - 10 * u)} L{f(W - e - 10 * u)} {f(cy - sn)} "
+        f"V{f(cy + sn)} L{f(W - e)} {f(cy + sn + 10 * u)} V{f(bot - k)} L{f(W - e - k)} {f(bot)} "
+        f"H{f(cx + bn + 16 * u)} L{f(cx + bn)} {f(bot - 16 * u)} H{f(cx - bn)} L{f(cx - bn - 16 * u)} {f(bot)} "
+        f"H{f(e + k)} L{f(e)} {f(bot - k)} V{f(cy + sn + 10 * u)} L{f(e + 10 * u)} {f(cy + sn)} "
+        f"V{f(cy - sn)} L{f(e)} {f(cy - sn - 10 * u)} V{f(top + k)} Z"
+    )
+    out.append(f'<path d="{frame}" fill="none" stroke="#1d3266" stroke-width="{f(1.5 * u)}"/>')
+    L1, L2 = 160 * u, 80 * u
+    lit = (
+        f"M{f(e)} {f(top + k + L2)} V{f(top + k)} L{f(e + k)} {f(top)} H{f(e + k + L1)} "
+        f"M{f(W - e - k - L1)} {f(top)} H{f(W - e - k)} L{f(W - e)} {f(top + k)} V{f(top + k + L2)} "
+        f"M{f(e)} {f(bot - k - L2)} V{f(bot - k)} L{f(e + k)} {f(bot)} H{f(e + k + L1)} "
+        f"M{f(W - e - k - L1)} {f(bot)} H{f(W - e - k)} L{f(W - e)} {f(bot - k)} V{f(bot - k - L2)}"
+    )
+    out.append(f'<path d="{lit}" fill="none" stroke="#1ccbff" stroke-width="{f(2 * u)}"/>')
+    for x, y in ((e + 32 * u, top + 32 * u), (W - e - 32 * u, top + 32 * u), (e + 32 * u, bot - 32 * u), (W - e - 32 * u, bot - 32 * u)):
+        out.append(f'<circle cx="{f(x)}" cy="{f(y)}" r="{f(6 * u)}" fill="#030713" stroke="#1ccbff" stroke-width="{f(1.5 * u)}"/>')
+    # The tab under the top bar, in the top notch: a small hexagon between two
+    # rules, the mark of the design.
+    tw, th = 136 * u, top + 10 * u
+    out.append(
+        f'<path d="M{f(cx - tw)} 0 H{f(cx + tw)} L{f(cx + tw - 16 * u)} {f(th)} H{f(cx - tw + 16 * u)} Z" fill="#0a1532"/>'
+    )
+    hx = lambda r, x0, y0: " ".join(
+        f"{f(x0 + r * c)},{f(y0 + r * s)}" for c, s in ((0, -1), (0.866, -0.5), (0.866, 0.5), (0, 1), (-0.866, 0.5), (-0.866, -0.5))
+    )
+    ty = th - 14 * u
+    out.append(f'<polygon points="{hx(7 * u, cx, ty)}" fill="#1ccbff"/>')
+    out.append(
+        f'<path d="M{f(cx - 80 * u)} {f(ty)} H{f(cx - 18 * u)} M{f(cx + 18 * u)} {f(ty)} H{f(cx + 80 * u)}" '
+        f'stroke="#3d5fa8" stroke-width="{f(1.5 * u)}"/>'
+    )
+    # A light on the floor under the dial.
+    out.append(f'<ellipse cx="{f(cx)}" cy="{f(cy + 358 * u)}" rx="{f(480 * u)}" ry="{f(29 * u)}" fill="url(#floor)"/>')
+    # Six leaders from the dial to the readouts' places.
+    d, el, sd, end = HEX_DIAG * u, HEX_ELBOW * u, HEX_SIDE * u, HEX_END * u
+    lead, starts, ends = [], [], []
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            lead.append(f"M{f(cx + sx * d)} {f(cy + sy * d)} L{f(cx + sx * el)} {f(cy + sy * el)} H{f(cx + sx * end)}")
+            starts.append((cx + sx * d, cy + sy * d, 6))
+            ends.append((cx + sx * end, cy + sy * el))
+        lead.append(f"M{f(cx + sx * sd)} {f(cy)} H{f(cx + sx * end)}")
+        starts.append((cx + sx * sd, cy, 5))
+        ends.append((cx + sx * end, cy))
+    out.append(f'<path d="{" ".join(lead)}" fill="none" stroke="#3d5fa8" stroke-width="{f(1.5 * u)}"/>')
+    for x, y in ends:
+        out.append(f'<circle cx="{f(x)}" cy="{f(y)}" r="{f(4 * u)}" fill="#5f8fe0"/>')
+    # The dial: rings and a hexagon for ornament, the mark alone inside.
+    k2 = 1.2 * u
+    g = [f'<g transform="translate({f(cx)} {f(cy)}) scale({k2:.4f})" fill="none">']
+    g += [
+        '<circle r="250" stroke="#2a4686" stroke-width="1.5" stroke-dasharray="330 62" transform="rotate(-70)"/>',
+        '<circle r="226" stroke="#3d5fa8" stroke-width="8" stroke-dasharray="1.5 10.33" opacity=".7"/>',
+        '<circle r="198" stroke="#0f1e45" stroke-width="20"/>',
+        '<circle r="198" stroke="url(#cy)" stroke-width="20" stroke-dasharray="250 1000" transform="rotate(-110)" opacity=".9"/>',
+        '<circle r="198" stroke="#3a7cff" stroke-width="20" stroke-dasharray="18 6 18 6 18 6 18 6 18 6 18 2000" transform="rotate(20)" opacity=".7"/>',
+        '<circle r="198" stroke="#3a7cff" stroke-width="20" stroke-dasharray="18 6 18 6 18 6 18 6 18 6 18 2000" transform="rotate(200)" opacity=".7"/>',
+        '<circle r="212" stroke="#1ccbff" stroke-width="2" stroke-dasharray="250 1082" transform="rotate(-110)"/>',
+        '<circle r="166" stroke="#2a4686" stroke-width="1.5" stroke-dasharray="120 54"/>',
+        '<polygon points="0,-150 130,-75 130,75 0,150 -130,75 -130,-75" stroke="#1d3266" stroke-width="1.5"/>',
+        '<circle r="124" fill="url(#core)" stroke="#2a4686" stroke-width="1.5"/>',
+        "</g>",
+    ]
+    out += g
+    for x, y, r in starts:
+        out.append(f'<circle cx="{f(x)}" cy="{f(y)}" r="{f(r * u)}" fill="#8fb4ee"/>')
+    # The CIT mark (784 units), in its own colours.
+    s = 0.3 * k2
+    out.append(f'<g transform="translate({f(cx - 111.3 * k2)} {f(cy - 114.9 * k2)}) scale({s:.4f})" fill="none">')
+    for dd in ("M447.8 151.7 A228 228 0 0 0 253.3 533.5", "M264.5 544.7 A228 228 0 0 0 584.0 536.4", "M463.5 154.2 A228 228 0 0 1 589.4 225.4"):
+        out.append(f'<path d="{dd}" stroke="url(#mk)" stroke-width="85"/>')
+    out.append(
+        '<g stroke="#18d8ff" stroke-width="8" stroke-linecap="round"><path d="M215.9 151.3 A305 305 0 0 1 624.1 151.3"/>'
+        '<path d="M167.1 207.4 A305 305 0 0 0 115.2 367.4"/><path d="M120.6 436.2 A305 305 0 0 0 377.6 680.0"/>'
+        '<path d="M446.6 681.8 A305 305 0 0 0 628.0 601.1"/><path d="M368.0 235.2 A152 152 0 0 0 363.1 518.9"/></g>'
+    )
+    out.append(
+        '<g fill="#18d8ff">'
+        + "".join(
+            f'<circle cx="{x}" cy="{y}" r="16"/>'
+            for x, y in ((215.9, 151.3), (624.1, 151.3), (167.1, 207.4), (120.6, 436.2), (377.6, 680), (446.6, 681.8), (628, 601.1), (368, 235.2), (363.1, 518.9))
         )
-    # The mark as line work (the brand mark's arcs), amber nodes.
-    s = 0.62  # scale of the 784-unit mark
-    ox, oy = cx - 392 * s, cy - 392 * s
-    t = lambda x, y: (ox + x * s, oy + y * s)
-    def arc(x1, y1, r, x2, y2, sweep):
-        a, b = t(x1, y1)
-        c, d = t(x2, y2)
-        return f"M{a:.1f},{b:.1f} A{r * s:.1f},{r * s:.1f} 0 0 {sweep} {c:.1f},{d:.1f}"
-    bands = [arc(447.8, 151.7, 228, 253.3, 533.5, 0), arc(264.5, 544.7, 228, 584.0, 536.4, 0), arc(463.5, 154.2, 228, 589.4, 225.4, 1)]
-    for d in bands:
-        out.append(f'<path d="{d}" fill="none" stroke="#2a3a42" stroke-width="{85 * s:.1f}"/>')
-        out.append(f'<path d="{d}" fill="none" stroke="#8fa3ad" stroke-width="2"/>')
-    traces = [arc(215.9, 151.3, 305, 624.1, 151.3, 1), arc(167.1, 207.4, 305, 115.2, 367.4, 0), arc(120.6, 436.2, 305, 377.6, 680.0, 0),
-              arc(446.6, 681.8, 305, 628.0, 601.1, 0), arc(368.0, 235.2, 152, 363.1, 518.9, 0)]
-    for d in traces:
-        out.append(f'<path d="{d}" fill="none" stroke="{dim}" stroke-width="3"/>')
-    for x, y in ((215.9, 151.3), (624.1, 151.3), (167.1, 207.4), (120.6, 436.2), (377.6, 680.0), (446.6, 681.8), (628.0, 601.1), (368.0, 235.2), (363.1, 518.9)):
-        a, b = t(x, y)
-        out.append(f'<circle cx="{a:.1f}" cy="{b:.1f}" r="7" fill="#050708" stroke="{acc}" stroke-width="3"/>')
+        + "</g></g>"
+    )
+    # Two strips along the bottom edge: chevrons at the left, a bar code at
+    # the right (the HUD's instrument marks; no text, so no font is needed).
+    by = bot - 34 * u
+    chev = " ".join(
+        f"M{f(e + 66 * u + i * 10 * u)} {f(by)} l{f(5 * u)} {f(4 * u)} l{f(-5 * u)} {f(4 * u)}" for i in range(4)
+    )
+    out.append(f'<path d="{chev}" fill="none" stroke="#1ccbff" stroke-width="{f(1.6 * u)}"/>')
+    bw, bx = 190 * u, W - e - 66 * u - 190 * u
+    out.append(
+        f'<rect x="{f(bx)}" y="{f(by - 6 * u)}" width="{f(bw)}" height="{f(20 * u)}" fill="none" stroke="#1ccbff" stroke-width="{f(u)}"/>'
+    )
+    pat, x = (2, 3, 4, 2, 1, 4), bx + 4 * u
+    i = 0
+    while x < bx + bw - 6 * u:
+        w = pat[i % len(pat)] * u
+        if i % 2 == 0:
+            out.append(f'<rect x="{f(x)}" y="{f(by - 3 * u)}" width="{f(w)}" height="{f(14 * u)}" fill="{"#8fe6ff" if i % 4 == 0 else "#1ccbff"}"/>')
+        x += w
+        i += 1
     out.append("</svg>")
     return "\n".join(out) + "\n"
 

@@ -12,10 +12,17 @@
  *   open    no card: large type straight on the wallpaper, with a shadow
  *           that keeps it legible (macOS's lock-screen clock)
  *   gauges  a compact card; System shows memory and disk as rings
- *   hud     Hex, the HUD design: bracketed frames, mono readouts, tick gauges
+ *   hud     Hex, the HUD design: a column of three readouts on the wallpaper,
+ *           each beside the end of one of the dial's leaders. Today is the
+ *           left column (time, processor, memory), System the right one
+ *           (network, Tower, traffic). citos-appearance sizes and places
+ *           them; the readouts sit at fixed shares of the column's height,
+ *           which match the wallpaper's leaders (render-brand.py, HEX_*).
  */
 import QtQuick
 import QtQuick.Effects
+import QtQuick.Shapes
+import QtQuick.Window
 import QtQuick.Controls as QQC2
 import QtQuick.Layouts
 import org.kde.plasma.plasmoid
@@ -55,6 +62,19 @@ PlasmoidItem {
     property var cpuLast: null
     property string load: ""
     property string uptime: ""
+    // Hex's readouts: recent CPU use, the network (address, gateway, ping,
+    // bytes through the interface) and Tower's devices.
+    property var cpuHist: []
+    property string netDev: ""
+    property string netIp: ""
+    property string netGw: ""
+    property string netPing: ""
+    property real rxTotal: 0
+    property real txTotal: 0
+    property var netLast: null
+    property var netHist: []
+    property var towerPeers: []
+    readonly property bool hud: look === "hud"
 
     readonly property real memShare: memTotal ? Math.min(1, memUsed / memTotal) : 0
     readonly property real diskShare: diskSize ? Math.min(1, (diskSize - diskFree) / diskSize) : 0
@@ -65,7 +85,7 @@ PlasmoidItem {
     }
     // Machine facts every 15 s; the weather every 20 minutes.
     Timer {
-        interval: root.look === "hud" ? 3000 : 15000; running: root.card === "system"; repeat: true; triggeredOnStart: true
+        interval: root.hud ? 3000 : 15000; running: root.card === "system" || root.hud; repeat: true; triggeredOnStart: true
         onTriggered: root.refresh()
     }
     Timer {
@@ -110,18 +130,63 @@ PlasmoidItem {
                     root.cpuShare = dt > 0 ? Math.max(0, Math.min(1, 1 - di / dt)) : 0
                 }
                 root.cpuLast = { total: total, idle: idle }
+                root.cpuHist = root.cpuHist.concat([root.cpuShare]).slice(-48)
             }
             root.load = ((l[1] || "").split(" ").slice(0, 3)).join("  ")
             const up = Math.floor(Number(l[2] || 0))
             const d = Math.floor(up / 86400), h = Math.floor(up % 86400 / 3600), m = Math.floor(up % 3600 / 60)
             root.uptime = (d ? d + "d " : "") + String(h).padStart(2, "0") + "h " + String(m).padStart(2, "0") + "m"
         })
-        sh.run("tailscale status --json --peers=false", (out) => {
+        sh.run(root.hud ? "tailscale status --json" : "tailscale status --json --peers=false", (out) => {
             try {
                 const s = JSON.parse(out)
                 root.tower = s.BackendState === "Running" ? "On Tower" : "Not on Tower"
-            } catch (e) { root.tower = "" }
+                const peers = []
+                for (const k in (s.Peer || {})) {
+                    const p = s.Peer[k]
+                    peers.push({ name: String(p.HostName || p.DNSName || "").split(".")[0].toLowerCase(), online: !!p.Online })
+                }
+                peers.sort((a, b) => (b.online - a.online) || a.name.localeCompare(b.name))
+                root.towerPeers = peers
+            } catch (e) { root.tower = ""; root.towerPeers = [] }
         })
+        if (root.hud && root.card === "system") refreshNet()
+    }
+
+    // The way out: the interface, this computer's address and the gateway,
+    // a ping to the gateway, and the bytes through the interface.
+    function refreshNet() {
+        sh.run("sh -c 'ip -4 -o route get 1.1.1.1 2>/dev/null; echo; cat /proc/net/dev'", (out) => {
+            const r = (out.split("\n")[0] || "")
+            const m = (re) => ((r.match(re) || [])[1]) || ""
+            root.netDev = m(/ dev (\S+)/)
+            root.netIp = m(/ src (\S+)/)
+            root.netGw = m(/ via (\S+)/)
+            const line = out.split("\n").find((l) => root.netDev && l.trim().startsWith(root.netDev + ":"))
+            if (line) {
+                const f = line.split(":")[1].trim().split(/\s+/).map(Number)
+                const rx = f[0], tx = f[8], t = Date.now()
+                if (root.netLast && t > root.netLast.t) {
+                    const rate = ((rx - root.netLast.rx) + (tx - root.netLast.tx)) / ((t - root.netLast.t) / 1000)
+                    root.netHist = root.netHist.concat([Math.max(0, rate)]).slice(-48)
+                }
+                root.netLast = { rx: rx, tx: tx, t: t }
+                root.rxTotal = rx
+                root.txTotal = tx
+            }
+            if (root.netGw)
+                sh.run("ping -n -c1 -W1 " + root.netGw, (p) => {
+                    const ms = (p.match(/time=([\d.]+)/) || [])[1]
+                    root.netPing = ms ? Math.round(Number(ms)) + "ms" : "--"
+                })
+            else root.netPing = "--"
+        })
+    }
+
+    function bytes(v) {
+        if (v >= 1e9) return (v / 1e9).toFixed(1) + " GB"
+        if (v >= 1e6) return Math.round(v / 1e6) + " MB"
+        return Math.round(v / 1e3) + " KB"
     }
 
     function fetchWeather() {
@@ -251,93 +316,106 @@ PlasmoidItem {
 
 
     // ---- Hex, the HUD look (look "hud"): Hangar's HUD on the desktop. ----
-    readonly property color hudAcc: "#f0a63c"
-    readonly property color hudLine: "#33424a"
-    readonly property color hudFg: "#dfe7ea"
-    readonly property color hudMuted: "#86949c"
-    readonly property color hudDim: "#4d5b63"
+    // Hangar's HUD shapes in CIT's colours: deep navy, cyan, blue.
+    readonly property color hudAcc: "#1ccbff"
+    readonly property color hudBlue: "#3a7cff"
+    readonly property color hudLine: "#2a3d6e"
+    readonly property color hudFg: "#e8eefc"
+    readonly property color hudMuted: "#8fa3c8"
+    readonly property color hudDim: "#4a5b85"
     readonly property string mono: "JetBrains Mono"
 
-    // A HUD frame: a hairline panel, amber brackets on the top corners and
-    // grey ones below; 320 x 196 so the two sit as a matching pair.
-    component HudFrame: Item {
-        default property alias content: hudInner.data
+    // A column's heading: PANEL at the left, its name at the right, over a
+    // rule lit at its outer end.
+    component HudHeading: Item {
+        property string name
+        id: hh
+        property bool atRight: false
+        implicitHeight: 22
+        QQC2.Label { text: hh.atRight ? hh.name : "PANEL"; color: root.hudMuted; font.family: root.mono; font.pixelSize: 11; font.letterSpacing: 2 }
+        QQC2.Label { anchors.right: hh.right; text: hh.atRight ? "PANEL" : hh.name; color: root.hudMuted; font.family: root.mono; font.pixelSize: 11; font.letterSpacing: 2 }
+        Rectangle { anchors.bottom: hh.bottom; width: hh.width; height: 1; color: root.hudLine }
+        Rectangle { anchors.bottom: hh.bottom; anchors.bottomMargin: -0.5; x: hh.atRight ? hh.width - 40 : 0; width: 40; height: 2; color: root.hudAcc }
+    }
+
+    // A readout: a label, a value at the right, and what is drawn under them.
+    component HudReadout: Column {
+        id: ro
         property string label
-        implicitWidth: 320
-        implicitHeight: 196
-        Rectangle {
-            anchors.fill: parent
-            color: Qt.rgba(12 / 255, 17 / 255, 20 / 255, 0.88)
-            border.color: Qt.alpha(root.hudLine, 0.9)
-            border.width: 1
-        }
-        Repeater {
-            model: [[0, 0, 1, 1], [1, 0, -1, 1], [0, 1, 1, -1], [1, 1, -1, -1]]
-            delegate: Item {
-                required property var modelData
-                x: modelData[0] ? parent.width - 14 : 0
-                y: modelData[1] ? parent.height - 14 : 0
-                width: 14; height: 14
-                Rectangle {
-                    width: 14; height: 2; color: modelData[1] ? root.hudDim : root.hudAcc
-                    y: modelData[3] > 0 ? 0 : 12
-                }
-                Rectangle {
-                    width: 2; height: 14; color: modelData[1] ? root.hudDim : root.hudAcc
-                    x: modelData[2] > 0 ? 0 : 12
-                }
-            }
-        }
-        QQC2.Label {
-            x: 16; y: 12
-            text: parent.label
-            color: root.hudMuted
-            font.family: root.mono; font.pixelSize: 11; font.letterSpacing: 1.6
-        }
+        property string value
+        property color valueColor: root.hudFg
+        spacing: 8
         Item {
-            id: hudInner
-            anchors { fill: parent; leftMargin: 16; rightMargin: 16; topMargin: 32; bottomMargin: 14 }
+            width: ro.width; height: 16
+            QQC2.Label { text: ro.label; color: "#c4d0ea"; font.family: root.mono; font.pixelSize: 11; font.letterSpacing: 1.8 }
+            QQC2.Label { anchors.right: parent.right; text: ro.value; color: ro.valueColor; font.family: root.mono; font.pixelSize: 12 }
         }
     }
 
-    // A gauge as Hangar draws it: 28 ticks over 270 degrees, lit amber up to
-    // the value and red above 85 %.
-    component TickGauge: Item {
-        property real share: 0
-        property string label
-        implicitWidth: 84; implicitHeight: 84
-        Canvas {
-            id: g
-            anchors.fill: parent
-            property real s: parent.share
-            onSChanged: requestPaint()
-            onPaint: {
-                const c = getContext("2d")
-                c.reset()
-                const n = 28, cx = width / 2, cy = height / 2, r1 = width / 2 - 4, r2 = r1 - 9
-                const lit = Math.round(s * n)
-                for (let i = 0; i < n; i++) {
-                    const a = (135 + i * 270 / (n - 1)) * Math.PI / 180
-                    c.strokeStyle = i < lit ? (s > 0.85 ? "#ff6b5a" : "#f0a63c") : "#1d272d"
-                    c.lineWidth = 3
-                    c.beginPath()
-                    c.moveTo(cx + r2 * Math.cos(a), cy + r2 * Math.sin(a))
-                    c.lineTo(cx + r1 * Math.cos(a), cy + r1 * Math.sin(a))
-                    c.stroke()
-                }
+    // A line of recent values (0..1 of the highest), over a hairline.
+    component Spark: Canvas {
+        property var values: []
+        property real ceiling: 1
+        implicitHeight: 34
+        onValuesChanged: requestPaint()
+        onWidthChanged: requestPaint()
+        onPaint: {
+            const c = getContext("2d")
+            c.reset()
+            c.strokeStyle = "#2a4686"; c.lineWidth = 1
+            c.beginPath(); c.moveTo(0, height - 0.5); c.lineTo(width, height - 0.5); c.stroke()
+            const v = values || [], n = 48
+            if (v.length < 2) return
+            const hi = Math.max(ceiling, ...v)
+            c.strokeStyle = "#1ccbff"; c.lineWidth = 1.5
+            c.beginPath()
+            for (let i = 0; i < v.length; i++) {
+                const x = width * (n - v.length + i) / (n - 1)
+                const y = height - 3 - (height - 6) * (v[i] / hi)
+                if (i === 0) c.moveTo(x, y); else c.lineTo(x, y)
             }
+            c.stroke()
         }
-        QQC2.Label {
-            anchors.centerIn: parent; anchors.verticalCenterOffset: -4
-            text: Math.round(parent.share * 100)
-            color: root.hudFg; font.family: root.mono; font.pixelSize: 20; font.weight: Font.DemiBold
+    }
+
+    // A hexagon, Hangar's mark for a device.
+    component Hex: Shape {
+        id: hx
+        property real r: 7
+        property color fill: "transparent"
+        property color edge: "#8fb4ee"
+        width: 2 * r; height: 2 * r
+        preferredRendererType: Shape.CurveRenderer
+        ShapePath {
+            id: sp
+            strokeWidth: 1.5; strokeColor: hx.edge; fillColor: hx.fill
+            readonly property real k: hx.r - 1
+            readonly property real c: hx.r
+            startX: sp.c; startY: sp.c - sp.k
+            PathLine { x: sp.c + sp.k * 0.866; y: sp.c - sp.k / 2 }
+            PathLine { x: sp.c + sp.k * 0.866; y: sp.c + sp.k / 2 }
+            PathLine { x: sp.c; y: sp.c + sp.k }
+            PathLine { x: sp.c - sp.k * 0.866; y: sp.c + sp.k / 2 }
+            PathLine { x: sp.c - sp.k * 0.866; y: sp.c - sp.k / 2 }
+            PathLine { x: sp.c; y: sp.c - sp.k }
         }
-        QQC2.Label {
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.bottom: parent.bottom; anchors.bottomMargin: 6
-            text: parent.label
-            color: root.hudMuted; font.family: root.mono; font.pixelSize: 9; font.letterSpacing: 1.2
-        }
+    }
+
+    // Where the three readouts sit: level with the wallpaper's leaders, which
+    // end at 242, 530 and 818 in units of the picture's height (render-
+    // brand.py, HEX_CY and HEX_ELBOW). Worked out from the screen, as the
+    // wallpaper is drawn (one picture per screen shape, scaled to cover it),
+    // and from where the column is: the desktop snaps widgets to a grid, so
+    // the column is never exactly where citos-appearance put it.
+    function hudRowY(item, i) {
+        void root.now  // re-placed each second: cheap, and follows moves
+        const W = Screen.width, H = Screen.height
+        if (!W || !H) return 0
+        const Hp = W / H < 1.7 ? 1200 : 1080
+        const s = Math.max(W / 1920, H / Hp)
+        const U = s * Hp / 1080, oy = (H - Hp * s) / 2
+        const at = item.mapToGlobal(0, 0).y - Screen.virtualY
+        return oy + [242, 530, 818][i] * U - at
     }
 
     fullRepresentation: Item {
@@ -348,60 +426,154 @@ PlasmoidItem {
         Loader {
             id: view
             anchors.left: parent.left
-            sourceComponent: root.look === "hud"
+            width: root.hud ? parent.width : implicitWidth
+            height: root.hud ? parent.height : implicitHeight
+            sourceComponent: root.hud
                 ? (root.card === "system" ? systemHud : todayHud)
                 : root.card === "system" ? (root.look === "gauges" ? systemGauges : systemCard) : todayCard
         }
 
+        // Hex, left: the time, the processor, memory.
         Component {
             id: todayHud
-            HudFrame {
-                label: "LOCAL TIME // " + Qt.formatDate(root.now, "ddd").toUpperCase()
+            Item {
+                id: col
+                HudHeading { width: col.width; name: "SYSTEM" }
                 Column {
-                    anchors.fill: parent
-                    spacing: 2
-                    QQC2.Label {
-                        text: Qt.formatTime(root.now, "HH:mm:ss")
-                        color: root.hudFg
-                        font.family: root.mono; font.pixelSize: 54; font.weight: Font.Medium
+                    width: col.width
+                    y: root.hudRowY(col, 0) - height / 2
+                    spacing: 6
+                    Row {
+                        spacing: 6
+                        QQC2.Label { id: hhmm; text: Qt.formatTime(root.now, "HH:mm"); color: root.hudFg; font.family: root.mono; font.pixelSize: 60; font.weight: Font.Medium; font.letterSpacing: 2 }
+                        QQC2.Label { anchors.baseline: hhmm.baseline; text: Qt.formatTime(root.now, "ss"); color: root.hudAcc; font.family: root.mono; font.pixelSize: 26; font.weight: Font.Light }
                     }
                     QQC2.Label {
-                        text: Qt.formatDate(root.now, "dd MMM yyyy").toUpperCase()
-                        color: root.hudAcc
-                        font.family: root.mono; font.pixelSize: 13; font.letterSpacing: 1.6
+                        width: col.width; elide: Text.ElideRight
+                        text: (Qt.formatDate(root.now, "ddd d MMM") + (root.weather ? " · " + root.weather.replace(/,.*/, "") : "")).toUpperCase()
+                        color: root.hudMuted; font.family: root.mono; font.pixelSize: 11; font.letterSpacing: 1.8
                     }
-                    QQC2.Label {
-                        topPadding: 8
-                        text: root.weather ? root.weather.toUpperCase() : "WEATHER // OFFLINE"
-                        color: root.hudMuted
-                        font.family: root.mono; font.pixelSize: 11; font.letterSpacing: 1.2
-                        width: parent.width; elide: Text.ElideRight
+                }
+                HudReadout {
+                    width: col.width
+                    y: root.hudRowY(col, 1) - height / 2
+                    label: "CPU"
+                    value: Math.round(root.cpuShare * 100) + "%"
+                    valueColor: "#8fe6ff"
+                    Spark { width: col.width; values: root.cpuHist; ceiling: 0.25 }
+                }
+                HudReadout {
+                    width: col.width
+                    y: root.hudRowY(col, 2) - height / 2
+                    label: "MEMORY"
+                    value: root.memUsed.toFixed(1) + " / " + root.memTotal.toFixed(1) + " GiB"
+                    valueColor: root.hudMuted
+                    Grid {
+                        id: dots
+                        columns: 24; spacing: 4
+                        readonly property real cell: (col.width - 23 * spacing) / 24
+                        Repeater {
+                            model: 48
+                            Rectangle {
+                                required property int index
+                                width: dots.cell; height: 6
+                                color: index < Math.round(root.memShare * 48) ? (root.memShare > 0.85 ? "#ff6b5a" : root.hudAcc) : "#1b2f63"
+                            }
+                        }
                     }
                 }
             }
         }
 
+        // Hex, right: the network, Tower, traffic.
         Component {
             id: systemHud
-            HudFrame {
-                label: "SYSTEM // " + (root.host || "").toUpperCase()
+            Item {
+                id: col
+                HudHeading { width: col.width; name: "NETWORK"; atRight: true }
                 Row {
-                    id: gauges
-                    spacing: 10
-                    TickGauge { share: root.cpuShare; label: "CPU" }
-                    TickGauge { share: root.memShare; label: "MEM" }
-                    TickGauge { share: root.diskShare; label: "DISK" }
-                }
-                Column {
-                    anchors.top: gauges.bottom; anchors.topMargin: 6
-                    spacing: 3
-                    QQC2.Label { text: "LOAD   " + root.load; color: root.hudMuted; font.family: root.mono; font.pixelSize: 11 }
-                    QQC2.Label { text: "UPTIME " + root.uptime; color: root.hudMuted; font.family: root.mono; font.pixelSize: 11 }
-                    QQC2.Label {
-                        text: "TOWER  " + (root.tower === "On Tower" ? "LINKED" : "OFFLINE")
-                        color: root.tower === "On Tower" ? "#46d39a" : root.hudDim
-                        font.family: root.mono; font.pixelSize: 11
+                    width: col.width
+                    y: root.hudRowY(col, 0) - height / 2
+                    Repeater {
+                        model: [
+                            { k: "STATE", v: root.netIp ? "ONLINE" : "OFFLINE", c: root.netIp ? "#3ee0a0" : "#ff6b5a", w: 0.25 },
+                            { k: "IPv4", v: root.netIp || "--", c: root.hudFg, w: 0.56 },
+                            { k: "PING", v: root.netPing || "--", c: root.hudFg, w: 0.19, end: true }
+                        ]
+                        Column {
+                            required property var modelData
+                            width: col.width * modelData.w
+                            spacing: 4
+                            QQC2.Label { width: parent.width; horizontalAlignment: modelData.end ? Text.AlignRight : Text.AlignLeft; text: modelData.k; color: root.hudMuted; font.family: root.mono; font.pixelSize: 10; font.letterSpacing: 1.6 }
+                            QQC2.Label { width: parent.width; horizontalAlignment: modelData.end ? Text.AlignRight : Text.AlignLeft; elide: Text.ElideRight; text: modelData.v; color: modelData.c; font.family: root.mono; font.pixelSize: 13 }
+                        }
                     }
+                }
+                HudReadout {
+                    id: tw
+                    width: col.width
+                    y: root.hudRowY(col, 1) - height / 2
+                    label: "TOWER"
+                    value: root.tower === "On Tower"
+                        ? root.towerPeers.filter((p) => p.online).length + " DEVICES ONLINE"
+                        : "NOT LINKED"
+                    valueColor: root.tower === "On Tower" ? root.hudMuted : root.hudDim
+                    // This computer in the middle, up to four of Tower's
+                    // devices round it (online ones first).
+                    Item {
+                        id: map
+                        width: col.width; height: 110
+                        readonly property var slots: [[0.22, 0.22], [0.78, 0.18], [0.2, 0.8], [0.78, 0.84]]
+                        Shape {
+                            anchors.fill: parent
+                            ShapePath {
+                                strokeColor: "#16264a"; strokeWidth: 1; fillColor: "transparent"
+                                PathAngleArc { centerX: map.width / 2; centerY: map.height / 2; radiusX: map.width * 0.45; radiusY: map.height * 0.46; sweepAngle: 360 }
+                            }
+                            ShapePath {
+                                strokeColor: "#16264a"; strokeWidth: 1; fillColor: "transparent"
+                                PathAngleArc { centerX: map.width / 2; centerY: map.height / 2; radiusX: map.width * 0.24; radiusY: map.height * 0.46; sweepAngle: 360 }
+                            }
+                        }
+                        Repeater {
+                            model: Math.min(4, root.towerPeers.length)
+                            Item {
+                                required property int index
+                                readonly property var peer: root.towerPeers[index]
+                                readonly property real px: map.width * map.slots[index][0]
+                                readonly property real py: map.height * map.slots[index][1]
+                                anchors.fill: parent
+                                Shape {
+                                    anchors.fill: parent
+                                    ShapePath {
+                                        strokeColor: peer.online ? (index === 0 ? root.hudAcc : "#3d5fa8") : "#1d2d55"
+                                        strokeWidth: 1.2; fillColor: "transparent"
+                                        strokeStyle: index === 0 && peer.online ? ShapePath.DashLine : ShapePath.SolidLine
+                                        dashPattern: [3, 4]
+                                        startX: map.width / 2; startY: map.height / 2
+                                        PathLine { x: px; y: py }
+                                    }
+                                }
+                                Hex { x: px - r; y: py - r; fill: "#050b1e"; edge: peer.online ? "#8fb4ee" : "#2a3d6e" }
+                                QQC2.Label {
+                                    x: index % 2 === 0 ? px + 12 : px - 12 - width
+                                    y: py - height / 2
+                                    text: peer.name
+                                    color: peer.online ? root.hudMuted : root.hudDim
+                                    font.family: root.mono; font.pixelSize: 9
+                                }
+                            }
+                        }
+                        Hex { x: map.width / 2 - r; y: map.height / 2 - r; r: 11; fill: root.hudAcc; edge: root.hudAcc }
+                    }
+                }
+                HudReadout {
+                    width: col.width
+                    y: root.hudRowY(col, 2) - height / 2
+                    label: "TRAFFIC"
+                    value: "\u2191 " + root.bytes(root.txTotal) + "   \u2193 " + root.bytes(root.rxTotal)
+                    valueColor: "#8fe6ff"
+                    Spark { width: col.width; implicitHeight: 28; values: root.netHist; ceiling: 1e5 }
                 }
             }
         }

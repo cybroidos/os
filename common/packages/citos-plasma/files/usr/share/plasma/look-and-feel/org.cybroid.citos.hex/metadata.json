@@ -3,7 +3,7 @@
     "KPlugin": {
         "Authors": [{ "Name": "Cybroid Institute of Technology", "Email": "citos@cybroid.com" }],
         "Category": "",
-        "Description": "CIT-OS Hex: the HUD design, graphite with one amber accent, bracketed frames and live readouts",
+        "Description": "CIT-OS Hex: the HUD design, deep navy and cyan, cut corners and live readouts",
         "Id": "org.cybroid.citos.hex",
         "License": "GPL-2.0-or-later",
         "Name": "CIT-OS Hex",

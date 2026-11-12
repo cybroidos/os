@@ -145,6 +145,12 @@ STYLES = {
         bar=((6, 12, 30), 0.94), bar_default=((6, 12, 30), 0.96), bar_solid=(6, 12, 30),
         hover=((28, 203, 255), 0.14), radius=14, tip_radius=8, bevel=True,
     ),
+    # Hex Light: the same shapes in daylight, a near-white bar, blue hovers.
+    "citos-hex-light": dict(
+        name="CIT-OS Hex Light", desc="CIT-OS Hex Light: the HUD design in daylight, white and CIT blue with cut corners",
+        bar=((250, 252, 255), 0.94), bar_default=((250, 252, 255), 0.96), bar_solid=(250, 252, 255),
+        hover=((31, 95, 224), 0.10), radius=14, tip_radius=8, bevel=True,
+    ),
 }
 S = STYLES["citos"]
 

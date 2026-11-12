@@ -319,13 +319,26 @@ PlasmoidItem {
 
 
     // ---- Hex, the HUD look (look "hud"): Hangar's HUD on the desktop. ----
-    // Hangar's HUD shapes in CIT's colours: deep navy, cyan, blue.
-    readonly property color hudAcc: "#1ccbff"
-    readonly property color hudBlue: "#3a7cff"
-    readonly property color hudLine: "#2a3d6e"
-    readonly property color hudFg: "#e8eefc"
-    readonly property color hudMuted: "#8fa3c8"
-    readonly property color hudDim: "#4a5b85"
+    // Hangar's HUD shapes in CIT's colours: deep navy, cyan, blue; in Hex
+    // Light (a light colour scheme), navy ink, CIT blue and teal.
+    readonly property bool hudLight: !dark
+    readonly property color hudAcc: hudLight ? "#1f5fe0" : "#1ccbff"
+    readonly property color hudBlue: hudLight ? "#0b8fc4" : "#3a7cff"
+    readonly property color hudLine: hudLight ? "#c9d5ea" : "#2a3d6e"
+    readonly property color hudFg: hudLight ? "#0b1634" : "#e8eefc"
+    readonly property color hudMuted: hudLight ? "#4a5b85" : "#8fa3c8"
+    readonly property color hudDim: hudLight ? "#9db0d6" : "#4a5b85"
+    readonly property color hudLabel: hudLight ? "#33405f" : root.hudLabel
+    readonly property color hudBright: hudLight ? "#0b8fc4" : root.hudBright
+    readonly property color hudOk: hudLight ? "#0f7a4b" : root.hudOk
+    readonly property color hudBad: hudLight ? "#e5534b" : root.hudBad
+    readonly property color hudTrack: hudLight ? "#d3e0f6" : root.hudTrack
+    readonly property color hudFaint: hudLight ? "#dfe8f7" : root.hudFaint
+    readonly property color hudRule: hudLight ? "#b8c8e6" : root.hudRule
+    readonly property color hudLink: hudLight ? "#9db0d6" : root.hudLink
+    readonly property color hudOff: hudLight ? "#dfe8f7" : root.hudOff
+    readonly property color hudHole: hudLight ? "#ffffff" : root.hudHole
+    readonly property color hudNode: hudLight ? "#4a5b85" : root.hudNode
     readonly property string mono: "JetBrains Mono"
 
     // A column's heading: PANEL at the left, its name at the right, over a
@@ -369,7 +382,7 @@ PlasmoidItem {
         spacing: 8
         Item {
             width: ro.width; height: 16
-            QQC2.Label { text: ro.label; color: "#c4d0ea"; font.family: root.mono; font.pixelSize: 11; font.letterSpacing: 1.8 }
+            QQC2.Label { text: ro.label; color: root.hudLabel; font.family: root.mono; font.pixelSize: 11; font.letterSpacing: 1.8 }
             QQC2.Label { anchors.right: parent.right; text: ro.value; color: ro.valueColor; font.family: root.mono; font.pixelSize: 12 }
         }
     }
@@ -381,15 +394,17 @@ PlasmoidItem {
         implicitHeight: 34
         onValuesChanged: requestPaint()
         onWidthChanged: requestPaint()
+        property color ink: root.hudAcc
+        onInkChanged: requestPaint()
         onPaint: {
             const c = getContext("2d")
             c.reset()
-            c.strokeStyle = "#2a4686"; c.lineWidth = 1
+            c.strokeStyle = root.hudRule; c.lineWidth = 1
             c.beginPath(); c.moveTo(0, height - 0.5); c.lineTo(width, height - 0.5); c.stroke()
             const v = values || [], n = 48
             if (v.length < 2) return
             const hi = Math.max(ceiling, ...v)
-            c.strokeStyle = "#1ccbff"; c.lineWidth = 1.5
+            c.strokeStyle = root.hudAcc; c.lineWidth = 1.5
             c.beginPath()
             for (let i = 0; i < v.length; i++) {
                 const x = width * (n - v.length + i) / (n - 1)
@@ -405,7 +420,7 @@ PlasmoidItem {
         id: hx
         property real r: 7
         property color fill: "transparent"
-        property color edge: "#8fb4ee"
+        property color edge: root.hudNode
         width: 2 * r; height: 2 * r
         preferredRendererType: Shape.CurveRenderer
         ShapePath {
@@ -483,7 +498,7 @@ PlasmoidItem {
                     y: root.hudRowY(col, 1) - height / 2
                     label: "CPU"
                     value: Math.round(root.cpuShare * 100) + "%"
-                    valueColor: "#8fe6ff"
+                    valueColor: root.hudBright
                     Spark { width: col.width; values: root.cpuHist; ceiling: 0.25 }
                 }
                 HudReadout {
@@ -501,7 +516,7 @@ PlasmoidItem {
                             Rectangle {
                                 required property int index
                                 width: dots.cell; height: 6
-                                color: index < Math.round(root.memShare * 48) ? (root.memShare > 0.85 ? "#ff6b5a" : root.hudAcc) : "#1b2f63"
+                                color: index < Math.round(root.memShare * 48) ? (root.memShare > 0.85 ? root.hudBad : root.hudAcc) : root.hudTrack
                                 Behavior on color { ColorAnimation { duration: 600 } }
                             }
                         }
@@ -521,7 +536,7 @@ PlasmoidItem {
                     y: root.hudRowY(col, 0) - height / 2
                     Repeater {
                         model: [
-                            { k: "STATE", v: root.netIp ? "ONLINE" : "OFFLINE", c: root.netIp ? "#3ee0a0" : "#ff6b5a", w: 0.25 },
+                            { k: "STATE", v: root.netIp ? "ONLINE" : "OFFLINE", c: root.netIp ? root.hudOk : root.hudBad, w: 0.25 },
                             { k: "IPv4", v: root.netIp || "--", c: root.hudFg, w: 0.56 },
                             { k: "PING", v: root.netPing || "--", c: root.hudFg, w: 0.19, end: true }
                         ]
@@ -552,11 +567,11 @@ PlasmoidItem {
                         Shape {
                             anchors.fill: parent
                             ShapePath {
-                                strokeColor: "#16264a"; strokeWidth: 1; fillColor: "transparent"
+                                strokeColor: root.hudFaint; strokeWidth: 1; fillColor: "transparent"
                                 PathAngleArc { centerX: map.width / 2; centerY: map.height / 2; radiusX: map.width * 0.45; radiusY: map.height * 0.46; sweepAngle: 360 }
                             }
                             ShapePath {
-                                strokeColor: "#16264a"; strokeWidth: 1; fillColor: "transparent"
+                                strokeColor: root.hudFaint; strokeWidth: 1; fillColor: "transparent"
                                 PathAngleArc { centerX: map.width / 2; centerY: map.height / 2; radiusX: map.width * 0.24; radiusY: map.height * 0.46; sweepAngle: 360 }
                             }
                         }
@@ -571,7 +586,7 @@ PlasmoidItem {
                                 Shape {
                                     anchors.fill: parent
                                     ShapePath {
-                                        strokeColor: peer.online ? (index === 0 ? root.hudAcc : "#3d5fa8") : "#1d2d55"
+                                        strokeColor: peer.online ? (index === 0 ? root.hudAcc : root.hudLink) : root.hudOff
                                         strokeWidth: 1.2; fillColor: "transparent"
                                         strokeStyle: index === 0 && peer.online ? ShapePath.DashLine : ShapePath.SolidLine
                                         dashPattern: [3, 4]
@@ -584,7 +599,7 @@ PlasmoidItem {
                                         PathLine { x: px; y: py }
                                     }
                                 }
-                                Hex { x: px - r; y: py - r; fill: "#050b1e"; edge: peer.online ? "#8fb4ee" : "#2a3d6e" }
+                                Hex { x: px - r; y: py - r; fill: root.hudHole; edge: peer.online ? root.hudNode : root.hudLine }
                                 QQC2.Label {
                                     x: index % 2 === 0 ? px + 12 : px - 12 - width
                                     y: py - height / 2
@@ -616,7 +631,7 @@ PlasmoidItem {
                     y: root.hudRowY(col, 2) - height / 2
                     label: "TRAFFIC"
                     value: "\u2191 " + root.bytes(root.txTotal) + "   \u2193 " + root.bytes(root.rxTotal)
-                    valueColor: "#8fe6ff"
+                    valueColor: root.hudBright
                     Spark { width: col.width; implicitHeight: 28; values: root.netHist; ceiling: 1e5 }
                 }
             }

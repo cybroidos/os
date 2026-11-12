@@ -224,9 +224,10 @@ def wallpaper(ctx: Context) -> None:
         rasterise(lsrc, lsrc.with_name(f"{ctx.id}-light-{w}x{h}.png"), w, h)
     # Hex, the HUD design: a notched frame, the mark in its dial, leaders out
     # to the readouts. Each screen shape gets its own drawing, never cropped.
-    for w, h in HEX_SIZES:
-        hsrc = ctx.write(f"usr/share/backgrounds/{ctx.id}/{ctx.id}-hex-{w}x{h}.svg", hex_wallpaper(w, h))
-        rasterise(hsrc, hsrc.with_name(f"{ctx.id}-hex-{w}x{h}.png"), w, h)
+    for name, light in (("hex", False), ("hex-light", True)):
+        for w, h in HEX_SIZES:
+            hsrc = ctx.write(f"usr/share/backgrounds/{ctx.id}/{ctx.id}-{name}-{w}x{h}.svg", hex_wallpaper(w, h, light))
+            rasterise(hsrc, hsrc.with_name(f"{ctx.id}-{name}-{w}x{h}.png"), w, h)
 
 
 # Hex's layout, in units of the picture's height (u = H / 1080). The desktop
@@ -240,11 +241,12 @@ HEX_SIDE = 300    # where the two level leaders leave it
 HEX_END = 440     # where every leader ends, from the centre line
 
 
-def hex_wallpaper(W: int = 1920, H: int = 1080) -> str:
+def hex_wallpaper(W: int = 1920, H: int = 1080, light: bool = False) -> str:
     """CIT-OS Hex's wallpaper: a notched frame round the screen, the CIT mark
     alone in a dial, and six leaders out to where the desktop's readouts
     sit. Drawn here rather than from a template: it is all geometry, and each
-    screen shape (16:9, 16:10) gets its own so nothing is cropped."""
+    screen shape (16:9, 16:10) gets its own so nothing is cropped. Hex Light
+    is the same drawing in the light palette (HEX_LIGHT)."""
     u = H / 1080
     cx, cy = W / 2, HEX_CY * u
     f = lambda v: f"{v:.1f}"
@@ -257,7 +259,9 @@ def hex_wallpaper(W: int = 1920, H: int = 1080) -> str:
         f'<path d="M{f(32 * u)} 0H0V{f(32 * u)}" fill="none" stroke="#1ccbff" stroke-opacity=".035" stroke-width="1"/></pattern>',
         '<linearGradient id="cy" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8fe6ff"/><stop offset="1" stop-color="#1ccbff"/></linearGradient>',
         '<linearGradient id="mk" gradientUnits="userSpaceOnUse" x1="170" y1="640" x2="640" y2="110">'
-        '<stop offset="0" stop-color="#3a7cff"/><stop offset=".55" stop-color="#2c9dff"/><stop offset="1" stop-color="#1ccbff"/></linearGradient>',
+        # The mark keeps its own colours in both appearances (upper case, so
+        # Hex Light's colour map below passes them by).
+        '<stop offset="0" stop-color="#3A7CFF"/><stop offset=".55" stop-color="#2C9DFF"/><stop offset="1" stop-color="#1CCBFF"/></linearGradient>',
         '<radialGradient id="floor"><stop offset="0" stop-color="#3a7cff" stop-opacity=".55"/>'
         '<stop offset=".4" stop-color="#1ccbff" stop-opacity=".12"/><stop offset="1" stop-color="#1ccbff" stop-opacity="0"/></radialGradient>',
         '<radialGradient id="core" cx=".5" cy=".4" r=".7"><stop offset="0" stop-color="#0f2152"/><stop offset="1" stop-color="#050b1e"/></radialGradient>',
@@ -377,7 +381,22 @@ def hex_wallpaper(W: int = 1920, H: int = 1080) -> str:
         x += w
         i += 1
     out.append("</svg>")
-    return "\n".join(out) + "\n"
+    svg = "\n".join(out) + "\n"
+    if light:
+        svg = svg.replace('stroke-opacity=".035"', 'stroke-opacity=".07"')
+        svg = re.sub("|".join(HEX_LIGHT), lambda m: HEX_LIGHT[m.group(0)], svg)
+    return svg
+
+
+# Hex Light: each of Hex's colours and its light counterpart (the design's
+# Hex // Light palette: ink #0b1634, accent #1f5fe0, hairlines #c9d5ea).
+HEX_LIGHT = {
+    "#0d1c44": "#f6f9ff", "#071027": "#e6eef9", "#030713": "#e9eff9",  # ground
+    "#1ccbff": "#1f5fe0", "#8fe6ff": "#0b8fc4", "#18d8ff": "#0b8fc4",  # accents
+    "#0f2152": "#ffffff", "#050b1e": "#eef3fb",  # the dial's core
+    "#1d3266": "#b8c8e6", "#2a4686": "#c9d5ea", "#3d5fa8": "#9db0d6", "#0f1e45": "#dfe8f7",  # lines
+    "#0a1532": "#fbfdff", "#5f8fe0": "#1f5fe0", "#8fb4ee": "#4a5b85",  # tab, dots
+}
 
 
 def dart_color(hex_value: str) -> str:

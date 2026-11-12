@@ -8,7 +8,7 @@ Priority: optional
 Depends: citos-base (>= @VERSION@), citos-artwork (>= @VERSION@), citos-plymouth-theme (>= @VERSION@),
  plasma-desktop, plasma-workspace, kwin-x11, plasma-integration, kde-cli-tools, kscreen, powerdevil,
  polkit-kde-agent-1, kactivitymanagerd, milou, kinfocenter, systemsettings, xdg-desktop-portal-kde,
- breeze, breeze-cursor-theme, papirus-icon-theme, fonts-inter, fonts-jetbrains-mono, appmenu-gtk3-module,
+ breeze, breeze-cursor-theme, papirus-icon-theme, fonts-inter, fonts-jetbrains-mono, appmenu-gtk3-module, x11-utils,
  sddm, qml6-module-qtquick, qml6-module-qtquick-controls, qml6-module-qtquick-templates,
  qml6-module-qtquick-layouts, qml6-module-qtquick-window, qml6-module-qtqml-workerscript,
  qml6-module-org-kde-desktop, qt-style-kvantum,

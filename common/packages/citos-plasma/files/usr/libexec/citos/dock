@@ -39,7 +39,14 @@ fi
 # Float the dock a little above the screen's edge, as macOS does (our
 # Plank build reads this; tools/plank-edge-gap.py). In Hex, running apps
 # are marked by a small cyan hexagon instead of a glowing dot.
+# Hex's dock stands on the wallpaper's frame, just above the notch in its
+# foot: 46 px up on a screen 1080 high (render-brand.py, hex_wallpaper).
+gap=8
 case "$(kreadconfig6 --file kdeglobals --group General --key ColorScheme 2>/dev/null)" in
-*Hex) export PLANK_INDICATOR="#1ccbff" ;;
+*Hex)
+	export PLANK_INDICATOR="#1ccbff"
+	h="$(xdpyinfo 2>/dev/null | sed -n 's/^ *dimensions: *[0-9]*x\([0-9]*\) pixels.*/\1/p' | head -1)"
+	[ -n "$h" ] && gap=$((46 * h / 1080))
+	;;
 esac
-PLANK_EDGE_GAP=8 exec plank
+PLANK_EDGE_GAP=$gap exec plank

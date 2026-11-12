@@ -18,8 +18,6 @@
  *           (network, Tower, traffic). citos-appearance sizes and places
  *           them; each readout sits level with its leader, worked out from
  *           the screen as the wallpaper is drawn (render-brand.py, HEX_*).
- *           A third copy, card "title", writes "CIT-OS | <the app in
- *           front>" in the tab that hangs under the top bar.
  */
 import QtQuick
 import QtQuick.Effects
@@ -31,7 +29,6 @@ import org.kde.plasma.plasmoid
 import org.kde.plasma.core as PlasmaCore
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.plasma5support as P5Support
-import org.kde.taskmanager as TaskManager
 
 PlasmoidItem {
     id: root
@@ -91,7 +88,7 @@ PlasmoidItem {
     }
     // Machine facts every 15 s; the weather every 20 minutes.
     Timer {
-        interval: root.hud ? 3000 : 15000; running: (root.card === "system" || root.hud) && root.card !== "title"; repeat: true; triggeredOnStart: true
+        interval: root.hud ? 3000 : 15000; running: root.card === "system" || root.hud; repeat: true; triggeredOnStart: true
         onTriggered: root.refresh()
     }
     Timer {
@@ -445,30 +442,6 @@ PlasmoidItem {
         const at = item.mapToGlobal(0, 0).y - Screen.virtualY
         return g.oy + [242, 530, 818][i] * g.U - at
     }
-    // The title tab: midway between the top bar and the tab's foot, which
-    // the wallpaper draws at 30 + HEX_TAB (42) in the picture's units.
-    function hudTabY(item) {
-        void root.now
-        if (!Screen.height) return 0
-        const g = hudGeom()
-        const bar = 2 * Math.floor(Kirigami.Units.gridUnit * 1.7 / 2)
-        const foot = g.oy + 30 * g.s + 42 * g.U
-        return (bar + foot) / 2 - (item.mapToGlobal(0, 0).y - Screen.virtualY)
-    }
-    function hudTabX(item) {
-        void root.now
-        return Screen.width / 2 - (item.mapToGlobal(0, 0).x - Screen.virtualX)
-    }
-
-    // The app in front, for the title tab.
-    TaskManager.TasksModel { id: tasks }
-    readonly property string frontApp: {
-        if (card !== "title") return ""
-        const i = tasks.activeTask
-        const n = i && i.valid ? String(tasks.data(i, TaskManager.AbstractTasksModel.AppName) || "") : ""
-        return n || "Desktop"
-    }
-
     fullRepresentation: Item {
         Layout.preferredWidth: view.implicitWidth
         Layout.preferredHeight: view.implicitHeight
@@ -480,28 +453,8 @@ PlasmoidItem {
             width: root.hud ? parent.width : implicitWidth
             height: root.hud ? parent.height : implicitHeight
             sourceComponent: root.hud
-                ? (root.card === "system" ? systemHud : root.card === "title" ? titleHud : todayHud)
+                ? (root.card === "system" ? systemHud : todayHud)
                 : root.card === "system" ? (root.look === "gauges" ? systemGauges : systemCard) : todayCard
-        }
-
-        // Hex, the tab under the top bar: CIT-OS, then the app in front.
-        Component {
-            id: titleHud
-            Item {
-                id: tab
-                Row {
-                    x: root.hudTabX(tab) - width / 2
-                    y: root.hudTabY(tab) - height / 2
-                    spacing: 10
-                    QQC2.Label { text: "CIT-OS"; color: "#8fe6ff"; font.family: root.mono; font.pixelSize: 12; font.weight: Font.DemiBold; font.letterSpacing: 2.4 }
-                    QQC2.Label { text: "|"; color: "#3d5fa8"; font.family: root.mono; font.pixelSize: 12 }
-                    QQC2.Label {
-                        text: root.frontApp.toUpperCase()
-                        width: Math.min(implicitWidth, 150 * root.hudGeom().U); elide: Text.ElideRight
-                        color: "#c4d0ea"; font.family: root.mono; font.pixelSize: 12; font.letterSpacing: 2.4
-                    }
-                }
-            }
         }
 
         // Hex, left: the time, the processor, memory.

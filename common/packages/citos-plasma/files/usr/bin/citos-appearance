@@ -34,17 +34,17 @@ esac
 case "$mode" in
 light)
 	kv=CIT-OSLight style_engine=kvantum scheme=CITOSHorizonLight style=citos-light icons=WhiteSur-light
-	deco=CIT-OS-Light lnf=org.cybroid.citos.desktop.light dock=CIT-OS-Light wall=citos-light
+	deco=__aurorae__svg__CIT-OS-Light lnf=org.cybroid.citos.desktop.light dock=CIT-OS-Light wall=citos-light
 	radius=18 look=card cw=300 ch=176
 	;;
 dark)
 	kv=CIT-OS style_engine=kvantum scheme=CITOSHorizon style=citos icons=WhiteSur-dark
-	deco=CIT-OS lnf=org.cybroid.citos.desktop dock=CIT-OS wall=citos
+	deco=__aurorae__svg__CIT-OS lnf=org.cybroid.citos.desktop dock=CIT-OS wall=citos
 	radius=18 look=card cw=300 ch=176
 	;;
 hex)
 	kv=CIT-OS style_engine=Breeze scheme=CITOSHex style=citos-hex icons=CIT-OS-Hex
-	deco=CIT-OS-Hex lnf=org.cybroid.citos.hex dock=CIT-OS-Hex wall=citos-hex
+	deco=org.cybroid.citos.hex lnf=org.cybroid.citos.hex dock=CIT-OS-Hex wall=citos-hex
 	radius=2 look=hud cw=320 ch=196
 	;;
 status)
@@ -71,9 +71,10 @@ for c in /usr/lib/*/libexec/plasma-changeicons /usr/libexec/plasma-changeicons; 
 		break
 	fi
 done
-# Window title bars, and the corners the rounded-corners effect cuts to match.
+# Window title bars (Horizon's are Aurorae SVG themes; Hex's is QML, for the
+# tab its title sits in), and the corners the rounded-corners effect cuts.
 kwriteconfig6 --file kwinrc --group org.kde.kdecoration2 --key library org.kde.kwin.aurorae
-kwriteconfig6 --file kwinrc --group org.kde.kdecoration2 --key theme "__aurorae__svg__$deco"
+kwriteconfig6 --file kwinrc --group org.kde.kdecoration2 --key theme "$deco"
 kwriteconfig6 --file kwinrc --group Round-Corners --key Size "$radius"
 kwriteconfig6 --file kwinrc --group Round-Corners --key InactiveCornerRadius "$radius"
 qdbus6 org.kde.KWin /KWin reconfigure >/dev/null 2>&1 || true
@@ -118,19 +119,12 @@ for (var i = 0; i < ds.length; i++) {
     }
     var all = d.widgets('org.cybroid.citos.widgets');
     if (all.length == 0) continue;
-    // Hex's title tab (card 'title'): added in Hex, taken away in Horizon.
-    var ws = [], title = null;
+    // A title widget (card 'title') from an earlier build is taken away.
+    var ws = [];
     for (var j = 0; j < all.length; j++) {
         all[j].currentConfigGroup = ['General'];
-        if (all[j].readConfig('card') != 'title') ws.push(all[j]);
-        else if (hex && title == null) title = all[j];
-        else all[j].remove();
-    }
-    if (hex && title == null) {
-        title = d.addWidget('org.cybroid.citos.widgets', Math.round(g.width / 2 - 200), 0, 400, 64);
-        title.currentConfigGroup = ['General'];
-        title.writeConfig('card', 'title');
-        title.writeConfig('look', 'hud');
+        if (all[j].readConfig('card') == 'title') all[j].remove();
+        else ws.push(all[j]);
     }
     // Hex: two columns between the screen's edge and the ends of the dial's
     // leaders (render-brand.py, HEX_*: in units of the picture's height,
@@ -148,7 +142,6 @@ for (var i = 0; i < ds.length; i++) {
         var r = hex ? [right ? rx : lx, top, right ? rw : lw, colH] : [right ? g.width - $cw - 40 : 40, 56, $cw, $ch];
         places += 'Applet-' + ws[j].id + ':' + r.join(',') + ',0;';
     }
-    if (title) places += 'Applet-' + title.id + ':' + Math.round(g.width / 2 - 200) + ',0,400,64,0;';
     d.currentConfigGroup = [];
     d.writeConfig('ItemGeometries-' + g.width + 'x' + g.height, places);
     d.writeConfig('ItemGeometriesHorizontal', places);

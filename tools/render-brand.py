@@ -383,7 +383,9 @@ def hex_wallpaper(W: int = 1920, H: int = 1080, light: bool = False) -> str:
     out.append("</svg>")
     svg = "\n".join(out) + "\n"
     if light:
-        svg = svg.replace('stroke-opacity=".035"', 'stroke-opacity=".07"')
+        svg = svg.replace('stroke-opacity=".035"', 'stroke-opacity=".09"')
+        # A softer light under the dial: on a light ground it read as a shadow.
+        svg = svg.replace('stop-color="#3a7cff" stop-opacity=".55"', 'stop-color="#ffffff" stop-opacity=".55"')
         svg = re.sub("|".join(HEX_LIGHT), lambda m: HEX_LIGHT[m.group(0)], svg)
     return svg
 
@@ -391,11 +393,13 @@ def hex_wallpaper(W: int = 1920, H: int = 1080, light: bool = False) -> str:
 # Hex Light: each of Hex's colours and its light counterpart (the design's
 # Hex // Light palette: ink #0b1634, accent #1f5fe0, hairlines #c9d5ea).
 HEX_LIGHT = {
-    "#0d1c44": "#f6f9ff", "#071027": "#e6eef9", "#030713": "#e9eff9",  # ground
+    # ground: a clear sky blue, deeper at the edges (Horizon Light's lesson:
+    # near-white looked washed out)
+    "#0d1c44": "#e3ecfc", "#071027": "#b4cbf3", "#030713": "#86a9e6",
     "#1ccbff": "#1f5fe0", "#8fe6ff": "#0b8fc4", "#18d8ff": "#0b8fc4",  # accents
-    "#0f2152": "#ffffff", "#050b1e": "#eef3fb",  # the dial's core
-    "#1d3266": "#b8c8e6", "#2a4686": "#c9d5ea", "#3d5fa8": "#9db0d6", "#0f1e45": "#dfe8f7",  # lines
-    "#0a1532": "#fbfdff", "#5f8fe0": "#1f5fe0", "#8fb4ee": "#4a5b85",  # tab, dots
+    "#0f2152": "#ffffff", "#050b1e": "#e6eefc",  # the dial's core
+    "#1d3266": "#7d9bd3", "#2a4686": "#9fb8e6", "#3d5fa8": "#6f8cc4", "#0f1e45": "#d6e3fa",  # lines
+    "#0a1532": "#f4f8ff", "#5f8fe0": "#1f5fe0", "#8fb4ee": "#33405f",  # tab, dots
 }
 
 

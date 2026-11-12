@@ -143,13 +143,13 @@ STYLES = {
     "citos-hex": dict(
         name="CIT-OS Hex", desc="CIT-OS Hex: the HUD design, deep navy and cyan with cut corners",
         bar=((6, 12, 30), 0.94), bar_default=((6, 12, 30), 0.96), bar_solid=(6, 12, 30),
-        hover=((28, 203, 255), 0.14), radius=14, tip_radius=8, bevel=True,
+        hover=((28, 203, 255), 0.14), radius=14, tip_radius=8, bevel=True, shadow=0.14,
     ),
     # Hex Light: the same shapes in daylight, a near-white bar, blue hovers.
     "citos-hex-light": dict(
         name="CIT-OS Hex Light", desc="CIT-OS Hex Light: the HUD design in daylight, white and CIT blue with cut corners",
         bar=((250, 252, 255), 0.94), bar_default=((250, 252, 255), 0.96), bar_solid=(250, 252, 255),
-        hover=((31, 95, 224), 0.10), radius=14, tip_radius=8, bevel=True,
+        hover=((31, 95, 224), 0.10), radius=14, tip_radius=8, bevel=True, shadow=0.08,
     ),
 }
 S = STYLES["citos"]
@@ -339,8 +339,10 @@ def write(out, sid):
         files[f"{base}widgets/panel-background.svg"] = panel(variant or "default")
         # Popups at the radius of Control Centre's tiles and the cards (14),
         # tooltips a little tighter; both follow the colour scheme.
-        files[f"{base}dialogs/background.svg"] = popup(S.get("radius", 14), (10, 10, 10, 10), 12, 0.30, S.get("bevel", False))
-        files[f"{base}widgets/tooltip.svg"] = popup(S.get("tip_radius", 10), (6, 10, 10, 6), 8, 0.22, S.get("bevel", False))
+        # Hex keeps its shadows light (shadow): heavy ones muddied the design.
+        sh = S.get("shadow", 0.30)
+        files[f"{base}dialogs/background.svg"] = popup(S.get("radius", 14), (10, 10, 10, 10), 12, sh, S.get("bevel", False))
+        files[f"{base}widgets/tooltip.svg"] = popup(S.get("tip_radius", 10), (6, 10, 10, 6), 8, sh * 0.7, S.get("bevel", False))
     files["widgets/tasks.svg"] = tasks()
     files["widgets/viewitem.svg"] = viewitem()
     for name, text in files.items():

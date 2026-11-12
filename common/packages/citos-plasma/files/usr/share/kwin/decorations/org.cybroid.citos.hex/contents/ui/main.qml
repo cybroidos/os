@@ -60,20 +60,20 @@ Decoration {
         deco: decoration
     }
 
-    // The shadow: soft layers round the window, lighter below a window that
-    // isn't in front.
+    // The shadow: a few faint layers close round the window (heavy shadows
+    // muddied the design), lighter below a window that isn't in front.
     Repeater {
-        model: root.max ? 0 : 9
+        model: root.max ? 0 : 6
         Rectangle {
             required property int index
-            readonly property real k: (index + 1) * 2.6
+            readonly property real k: (index + 1) * 2
             x: root.fx - k
-            y: root.fy - k + 6
+            y: root.fy - k + 3
             width: root.fw + 2 * k
             height: root.fh + 2 * k
             radius: k
             color: "#000000"
-            opacity: (root.act ? 0.028 : 0.016) * (root.light ? 0.6 : 1)
+            opacity: (root.act ? 0.016 : 0.009) * (root.light ? 0.7 : 1)
         }
     }
 

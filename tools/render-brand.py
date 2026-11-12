@@ -264,7 +264,6 @@ def hex_wallpaper(W: int = 1920, H: int = 1080, light: bool = False) -> str:
         '<stop offset="0" stop-color="#3A7CFF"/><stop offset=".55" stop-color="#2C9DFF"/><stop offset="1" stop-color="#1CCBFF"/></linearGradient>',
         '<radialGradient id="floor"><stop offset="0" stop-color="#3a7cff" stop-opacity=".55"/>'
         '<stop offset=".4" stop-color="#1ccbff" stop-opacity=".12"/><stop offset="1" stop-color="#1ccbff" stop-opacity="0"/></radialGradient>',
-        '<radialGradient id="core" cx=".5" cy=".4" r=".7"><stop offset="0" stop-color="#0f2152"/><stop offset="1" stop-color="#050b1e"/></radialGradient>',
         "</defs>",
         f'<rect width="{W}" height="{H}" fill="url(#bg)"/>',
         f'<rect width="{W}" height="{H}" fill="url(#grid)"/>',
@@ -324,7 +323,8 @@ def hex_wallpaper(W: int = 1920, H: int = 1080, light: bool = False) -> str:
     out.append(f'<path d="{" ".join(lead)}" fill="none" stroke="#3d5fa8" stroke-width="{f(1.5 * u)}"/>')
     for x, y in ends:
         out.append(f'<circle cx="{f(x)}" cy="{f(y)}" r="{f(4 * u)}" fill="#5f8fe0"/>')
-    # The dial: rings and a hexagon for ornament, the mark alone inside.
+    # The dial: rings and a hexagon for ornament, the mark alone inside with
+    # nothing behind it.
     k2 = 1.2 * u
     g = [f'<g transform="translate({f(cx)} {f(cy)}) scale({k2:.4f})" fill="none">']
     g += [
@@ -337,15 +337,17 @@ def hex_wallpaper(W: int = 1920, H: int = 1080, light: bool = False) -> str:
         '<circle r="212" stroke="#1ccbff" stroke-width="2" stroke-dasharray="250 1082" transform="rotate(-110)"/>',
         '<circle r="166" stroke="#2a4686" stroke-width="1.5" stroke-dasharray="120 54"/>',
         '<polygon points="0,-150 130,-75 130,75 0,150 -130,75 -130,-75" stroke="#1d3266" stroke-width="1.5"/>',
-        '<circle r="124" fill="url(#core)" stroke="#2a4686" stroke-width="1.5"/>',
         "</g>",
     ]
     out += g
     for x, y, r in starts:
         out.append(f'<circle cx="{f(x)}" cy="{f(y)}" r="{f(r * u)}" fill="#8fb4ee"/>')
-    # The CIT mark (784 units), in its own colours.
+    # The CIT mark (784 units), in its own colours, straight on the
+    # wallpaper. Centred by eye: its outline is centred at (374, 383) in the
+    # mark's units, its C's circle at (420, 378); centring the outline made it
+    # look to the right, centring the circle to the left, so it sits halfway.
     s = 0.3 * k2
-    out.append(f'<g transform="translate({f(cx - 111.3 * k2)} {f(cy - 114.9 * k2)}) scale({s:.4f})" fill="none">')
+    out.append(f'<g transform="translate({f(cx - 397 * s)} {f(cy - 380 * s)}) scale({s:.4f})" fill="none">')
     for dd in ("M447.8 151.7 A228 228 0 0 0 253.3 533.5", "M264.5 544.7 A228 228 0 0 0 584.0 536.4", "M463.5 154.2 A228 228 0 0 1 589.4 225.4"):
         out.append(f'<path d="{dd}" stroke="url(#mk)" stroke-width="85"/>')
     out.append(
@@ -397,9 +399,8 @@ HEX_LIGHT = {
     # near-white looked washed out)
     "#0d1c44": "#e3ecfc", "#071027": "#b4cbf3", "#030713": "#86a9e6",
     "#1ccbff": "#1f5fe0", "#8fe6ff": "#0b8fc4", "#18d8ff": "#0b8fc4",  # accents
-    "#0f2152": "#ffffff", "#050b1e": "#e6eefc",  # the dial's core
     "#1d3266": "#7d9bd3", "#2a4686": "#9fb8e6", "#3d5fa8": "#6f8cc4", "#0f1e45": "#d6e3fa",  # lines
-    "#0a1532": "#f4f8ff", "#5f8fe0": "#1f5fe0", "#8fb4ee": "#33405f",  # tab, dots
+    "#0a1532": "#d6e4fa", "#5f8fe0": "#1f5fe0", "#8fb4ee": "#33405f",  # tab (the bar's blue), dots
 }
 
 

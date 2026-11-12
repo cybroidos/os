@@ -110,6 +110,9 @@ PlasmoidItem {
     }
 
     function refresh() {
+        sh.run("kreadconfig6 --file kdeglobals --group General --key ColorScheme", (out) => {
+            root.hudLight = /Light/.test(out)
+        })
         sh.run("sh -c 'hostname; nproc; grep -E \"^(MemTotal|MemAvailable):\" /proc/meminfo; df -B1 --output=avail,size / | tail -1'", (out) => {
             const l = out.trim().split("\n")
             root.host = l[0] || ""
@@ -321,24 +324,26 @@ PlasmoidItem {
     // ---- Hex, the HUD look (look "hud"): Hangar's HUD on the desktop. ----
     // Hangar's HUD shapes in CIT's colours: deep navy, cyan, blue; in Hex
     // Light (a light colour scheme), navy ink, CIT blue and teal.
-    readonly property bool hudLight: !dark
+    // From the colour scheme's name (as Control Centre reads it): Plasma's
+    // theme colours lagged behind a switch and gave Hex the light palette.
+    property bool hudLight: false
     readonly property color hudAcc: hudLight ? "#1f5fe0" : "#1ccbff"
     readonly property color hudBlue: hudLight ? "#0b8fc4" : "#3a7cff"
     readonly property color hudLine: hudLight ? "#7d9bd3" : "#2a3d6e"
     readonly property color hudFg: hudLight ? "#0b1634" : "#e8eefc"
     readonly property color hudMuted: hudLight ? "#4a5b85" : "#8fa3c8"
     readonly property color hudDim: hudLight ? "#6f8cc4" : "#4a5b85"
-    readonly property color hudLabel: hudLight ? "#33405f" : root.hudLabel
-    readonly property color hudBright: hudLight ? "#0b8fc4" : root.hudBright
-    readonly property color hudOk: hudLight ? "#0f7a4b" : root.hudOk
-    readonly property color hudBad: hudLight ? "#e5534b" : root.hudBad
-    readonly property color hudTrack: hudLight ? "#a9c0ea" : root.hudTrack
-    readonly property color hudFaint: hudLight ? "#9fb8e6" : root.hudFaint
-    readonly property color hudRule: hudLight ? "#7d9bd3" : root.hudRule
-    readonly property color hudLink: hudLight ? "#6f8cc4" : root.hudLink
-    readonly property color hudOff: hudLight ? "#b4cbf3" : root.hudOff
-    readonly property color hudHole: hudLight ? "#ffffff" : root.hudHole
-    readonly property color hudNode: hudLight ? "#4a5b85" : root.hudNode
+    readonly property color hudLabel: hudLight ? "#33405f" : "#c4d0ea"
+    readonly property color hudBright: hudLight ? "#0b8fc4" : "#8fe6ff"
+    readonly property color hudOk: hudLight ? "#0f7a4b" : "#3ee0a0"
+    readonly property color hudBad: hudLight ? "#e5534b" : "#ff6b5a"
+    readonly property color hudTrack: hudLight ? "#a9c0ea" : "#1b2f63"
+    readonly property color hudFaint: hudLight ? "#9fb8e6" : "#16264a"
+    readonly property color hudRule: hudLight ? "#7d9bd3" : "#2a4686"
+    readonly property color hudLink: hudLight ? "#6f8cc4" : "#3d5fa8"
+    readonly property color hudOff: hudLight ? "#b4cbf3" : "#1d2d55"
+    readonly property color hudHole: hudLight ? "#ffffff" : "#050b1e"
+    readonly property color hudNode: hudLight ? "#4a5b85" : "#8fb4ee"
     readonly property string mono: "JetBrains Mono"
 
     // A column's heading: PANEL at the left, its name at the right, over a

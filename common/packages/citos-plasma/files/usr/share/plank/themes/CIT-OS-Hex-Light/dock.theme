@@ -1,12 +1,12 @@
-# CIT-OS Hex Light dock (citos-plasma): a near-white strip with a hairline edge and
+# CIT-OS Hex Light dock (citos-plasma): a translucent pale blue strip with a hairline edge and
 # near-square corners (Plank cannot cut them), CIT blue badges (the HUD design in daylight).
 [PlankTheme]
 TopRoundness=2
 BottomRoundness=2
 LineWidth=1
 OuterStrokeColor=157;;176;;214;;255
-FillStartColor=251;;253;;255;;245
-FillEndColor=237;;242;;251;;245
+FillStartColor=214;;228;;250;;150
+FillEndColor=196;;214;;246;;150
 InnerStrokeColor=31;;95;;224;;50
 
 [PlankDockTheme]

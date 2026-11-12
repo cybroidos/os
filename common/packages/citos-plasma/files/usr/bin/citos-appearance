@@ -5,7 +5,7 @@
 #
 #   dark, light   Horizon, the clean design, in Dark or Light
 #   horizon       Horizon (Dark)
-#   hex           Hex, the HUD design (graphite, amber, live readouts)
+#   hex           Hex, the HUD design (navy and cyan, a dial and live readouts)
 #   toggle        Horizon's Dark <-> Light (Hex stays Hex)
 #   status        prints dark, light or hex
 #
@@ -45,7 +45,7 @@ dark)
 hex)
 	kv=CIT-OS style_engine=Breeze scheme=CITOSHex style=citos-hex icons=WhiteSur-dark
 	deco=CIT-OS-Hex lnf=org.cybroid.citos.hex dock=CIT-OS-Hex wall=citos-hex
-	radius=6 look=hud cw=320 ch=196
+	radius=2 look=hud cw=320 ch=196
 	;;
 status)
 	echo "$was"
@@ -93,26 +93,48 @@ if pkill -x plank 2>/dev/null; then
 fi
 
 # The wallpaper (where it is CIT-OS's own: a picture someone chose stays) and
-# the desktop widgets' look, kept as a matching pair at the top corners.
+# the desktop widgets: Horizon's two cards at the top corners, or Hex's two
+# readout columns beside the wallpaper's dial.
 img="file:///usr/share/backgrounds/citos/$wall-1920x1080.png"
 qdbus6 org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript "
+var hex = '$mode' == 'hex';
 var ds = desktops();
 for (var i = 0; i < ds.length; i++) {
     var d = ds[i];
+    var g = screenGeometry(d.screen);
+    // Hex draws a picture for each screen shape (16:9, 16:10), so its frame
+    // is never cropped; the readouts are placed to the same numbers.
+    var tall = g.width / g.height < 1.7;
+    var Wp = 1920, Hp = tall ? 1200 : 1080;
+    var big = g.width > 2200 ? (tall ? '2560x1600' : (g.width > 3000 ? '3840x2160' : '2560x1440')) : '1920x' + Hp;
+    var img = hex ? 'file:///usr/share/backgrounds/citos/$wall-' + big + '.png' : '$img';
     if (d.wallpaperPlugin == 'org.kde.image') {
         d.currentConfigGroup = ['Wallpaper', 'org.kde.image', 'General'];
         var cur = String(d.readConfig('Image'));
-        if (cur == '' || cur.indexOf('/backgrounds/citos/') >= 0) d.writeConfig('Image', '$img');
+        if (cur == '' || cur.indexOf('/backgrounds/citos/') >= 0) {
+            d.writeConfig('Image', img);
+            d.writeConfig('FillMode', 2);
+        }
     }
-    var g = screenGeometry(d.screen);
     var ws = d.widgets('org.cybroid.citos.widgets');
     if (ws.length == 0) continue;
+    // Hex: two columns between the screen's edge and the ends of the dial's
+    // leaders (render-brand.py, HEX_*: in units of the picture's height,
+    // the column from 96 to 860, the leaders ending 440 from the centre).
+    var s = Math.max(g.width / Wp, g.height / Hp);
+    var ox = (g.width - Wp * s) / 2, oy = (g.height - Hp * s) / 2, U = s * Hp / 1080;
+    var top = Math.round(oy + 96 * U), colH = Math.round(764 * U);
+    var lx = Math.max(16, Math.round(ox + 80 * U)), lw = Math.round(g.width / 2 - 456 * U) - lx;
+    var rx = Math.round(g.width / 2 + 456 * U), rw = Math.min(g.width - 16, Math.round(ox + Wp * s - 80 * U)) - rx;
     var places = '';
     for (var j = 0; j < ws.length; j++) {
         ws[j].currentConfigGroup = ['General'];
         ws[j].writeConfig('look', '$look');
         var right = ws[j].readConfig('card') == 'system';
-        places += 'Applet-' + ws[j].id + ':' + (right ? g.width - $cw - 40 : 40) + ',56,$cw,$ch,0;';
+        if (hex)
+            places += 'Applet-' + ws[j].id + ':' + (right ? rx + ',' + top + ',' + rw : lx + ',' + top + ',' + lw) + ',' + colH + ',0;';
+        else
+            places += 'Applet-' + ws[j].id + ':' + (right ? g.width - $cw - 40 : 40) + ',56,$cw,$ch,0;';
     }
     d.currentConfigGroup = [];
     d.writeConfig('ItemGeometries-' + g.width + 'x' + g.height, places);

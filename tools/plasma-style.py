@@ -138,17 +138,18 @@ STYLES = {
         bar=((246, 248, 252), 0.82), bar_default=((246, 248, 252), 0.9), bar_solid=(240, 243, 248),
         hover=((14, 24, 58), 0.06),
     ),
-    # Hex, the HUD design: a graphite bar, crisp 6 px popups, amber hovers.
+    # Hex, the HUD design in CIT's colours: a deep navy bar, popups cut at
+    # the top-left and bottom-right corners (Hangar's panels), cyan hovers.
     "citos-hex": dict(
-        name="CIT-OS Hex", desc="CIT-OS Hex: the HUD design, graphite with one amber accent",
-        bar=((12, 17, 20), 0.92), bar_default=((12, 17, 20), 0.95), bar_solid=(12, 17, 20),
-        hover=((240, 166, 60), 0.12), radius=6, tip_radius=4,
+        name="CIT-OS Hex", desc="CIT-OS Hex: the HUD design, deep navy and cyan with cut corners",
+        bar=((6, 12, 30), 0.94), bar_default=((6, 12, 30), 0.96), bar_solid=(6, 12, 30),
+        hover=((28, 203, 255), 0.14), radius=14, tip_radius=8, bevel=True,
     ),
 }
 S = STYLES["citos"]
 
 
-def popup(r, margins, pad, shadow_alpha):
+def popup(r, margins, pad, shadow_alpha, bevel=False):
     """Popups and tooltips at CIT-OS's radius, with a soft shadow.
 
     The layout follows Plasma's own Breeze dialog: a nine-piece frame with
@@ -171,7 +172,15 @@ def popup(r, margins, pad, shadow_alpha):
         # (cx, cy): the corner's centre of curvature; sx, sy: outwards.
         sweep = 1 if sx * sy > 0 else 0
         ox, oy = cx + sx * r, cy + sy * r
-        shape = f"M{cx},{cy} L{ox},{cy} A{r},{r} 0 0 {sweep} {cx},{oy} Z"
+        if not bevel:
+            shape = f"M{cx},{cy} L{ox},{cy} A{r},{r} 0 0 {sweep} {cx},{oy} Z"
+        elif sx * sy > 0:
+            # Hex: Hangar's cut panels, the top-left and bottom-right corners
+            # chamfered...
+            shape = f"M{cx},{cy} L{ox},{cy} L{cx},{oy} Z"
+        else:
+            # ...the other two square.
+            shape = f"M{cx},{cy} L{ox},{cy} L{ox},{oy} L{cx},{oy} Z"
         if mask:
             return f'<path id="{pid}" d="{shape}" fill="#000000"/>'
         return f'<path id="{pid}" d="{shape}" {fill}/>'
@@ -223,7 +232,11 @@ def popup(r, margins, pad, shadow_alpha):
 
         def q(t):
             R = r + t
-            return f"M{cx},{cy} L{cx + sx * R},{cy} A{R},{R} 0 0 {sweep} {cx},{cy + sy * R} Z"
+            if not bevel:
+                return f"M{cx},{cy} L{cx + sx * R},{cy} A{R},{R} 0 0 {sweep} {cx},{cy + sy * R} Z"
+            if sx * sy > 0:
+                return f"M{cx},{cy} L{cx + sx * R},{cy} L{cx},{cy + sy * R} Z"
+            return f"M{cx},{cy} L{cx + sx * R},{cy} L{cx + sx * R},{cy + sy * R} L{cx},{cy + sy * R} Z"
 
         add(f'<g id="{pid}">{layers(q)}</g>')
 
@@ -320,8 +333,8 @@ def write(out, sid):
         files[f"{base}widgets/panel-background.svg"] = panel(variant or "default")
         # Popups at the radius of Control Centre's tiles and the cards (14),
         # tooltips a little tighter; both follow the colour scheme.
-        files[f"{base}dialogs/background.svg"] = popup(S.get("radius", 14), (10, 10, 10, 10), 12, 0.30)
-        files[f"{base}widgets/tooltip.svg"] = popup(S.get("tip_radius", 10), (6, 10, 10, 6), 8, 0.22)
+        files[f"{base}dialogs/background.svg"] = popup(S.get("radius", 14), (10, 10, 10, 10), 12, 0.30, S.get("bevel", False))
+        files[f"{base}widgets/tooltip.svg"] = popup(S.get("tip_radius", 10), (6, 10, 10, 6), 8, 0.22, S.get("bevel", False))
     files["widgets/tasks.svg"] = tasks()
     files["widgets/viewitem.svg"] = viewitem()
     for name, text in files.items():

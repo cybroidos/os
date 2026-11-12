@@ -11,6 +11,7 @@
 import QtQuick
 import QtQuick.Controls as QQC2
 import QtQuick.Layouts
+import QtQuick.Shapes
 import org.kde.plasma.plasmoid
 import org.kde.plasma.core as PlasmaCore
 import org.kde.kirigami as Kirigami
@@ -144,18 +145,39 @@ PlasmoidItem {
         property bool on: false
         property bool big: false
         signal clicked()
-        radius: 16
-        color: area.pressed ? Qt.alpha(root.ink, 0.17) : area.containsMouse ? Qt.alpha(root.ink, 0.12) : base
+        // Horizon: a rounded tile. Hex: Hangar's cut panel (top-left and
+        // bottom-right corners cut), drawn by the shape below.
+        radius: root.hex ? 0 : 16
+        readonly property color fill: area.pressed ? Qt.alpha(root.ink, 0.17) : area.containsMouse ? Qt.alpha(root.ink, 0.12) : base
+        color: root.hex ? "transparent" : fill
         readonly property color base: root.tile
         implicitHeight: big ? 64 : 76
         Behavior on color { ColorAnimation { duration: 120 } }
+        Shape {
+            visible: root.hex
+            anchors.fill: parent
+            preferredRendererType: Shape.CurveRenderer
+            ShapePath {
+                readonly property real c: 12
+                strokeWidth: 1
+                strokeColor: t.on ? Qt.alpha(root.accent, 0.7) : Qt.alpha(root.ink, 0.16)
+                fillColor: t.fill
+                startX: c; startY: 0.5
+                PathLine { x: t.width - 0.5; y: 0.5 }
+                PathLine { x: t.width - 0.5; y: t.height - 12 }
+                PathLine { x: t.width - 12; y: t.height - 0.5 }
+                PathLine { x: 0.5; y: t.height - 0.5 }
+                PathLine { x: 0.5; y: 12 }
+                PathLine { x: 12; y: 0.5 }
+            }
+        }
         MouseArea { id: area; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: t.clicked() }
         RowLayout {
             visible: t.big
             anchors.fill: parent; anchors.margins: 12
             spacing: 10
             Rectangle {
-                Layout.preferredWidth: 34; Layout.preferredHeight: 34; radius: 17
+                Layout.preferredWidth: 34; Layout.preferredHeight: 34; radius: root.hex ? 3 : 17
                 color: t.on ? root.tileOn : Qt.alpha(root.ink, 0.12)
                 Kirigami.Icon { anchors.centerIn: parent; width: 18; height: 18; source: t.icon; color: t.on ? root.onAccent : root.ink; isMask: true }
             }
@@ -171,7 +193,7 @@ PlasmoidItem {
             spacing: 6
             Rectangle {
                 Layout.alignment: Qt.AlignHCenter
-                Layout.preferredWidth: 34; Layout.preferredHeight: 34; radius: 17
+                Layout.preferredWidth: 34; Layout.preferredHeight: 34; radius: root.hex ? 3 : 17
                 color: t.on ? root.tileOn : Qt.alpha(root.ink, 0.12)
                 Kirigami.Icon { anchors.centerIn: parent; width: 18; height: 18; source: t.icon; color: t.on ? root.onAccent : root.ink; isMask: true }
             }

@@ -46,12 +46,14 @@ VARIANTS = {
     "CIT-OS": ((17, 27, 61), (14, 22, 52), (232, 238, 252), (138, 156, 196), 0.12, (255, 255, 255, 0.10)),
     # [WM] of CITOSHorizonLight
     "CIT-OS-Light": ((236, 239, 245), (245, 246, 249), (22, 30, 52), (120, 130, 150), 0.07, (255, 255, 255, 0.9)),
-    # Hex, the HUD design: graphite, crisp 6 px corners, square status keys.
-    "CIT-OS-Hex": ((12, 17, 20), (10, 14, 17), (223, 231, 234), (134, 148, 156), 0.14, (255, 255, 255, 0.05)),
+    # Hex, the HUD design in CIT's navy, a cyan line along the bar's top.
+    "CIT-OS-Hex": ((8, 15, 36), (7, 13, 31), (232, 238, 252), (143, 163, 200), 0.14, (28, 203, 255, 0.55)),
 }
 # Per variant: corner radius and button shape (the defaults are Horizon's).
-SHAPES = {"CIT-OS-Hex": (6, "square")}
+# Hex: the top-left corner cut at 14 px (Hangar's bevelled panels), square status keys.
+SHAPES = {"CIT-OS-Hex": (14, "square", True)}
 BUTTON = "circle"
+BEVEL = False  # straight cuts instead of round corners
 
 BUTTONS = {  # file: (colour, symbol)
     "close": ((255, 98, 89), "x"),
@@ -161,9 +163,17 @@ def frame(doc, prefix, bar, strength):
         # Path goes: (px, inner_y) -> (px, cy) -> arc -> (cx, py) -> (inner_x, py) -> (inner_x, inner_y)
         return (
             f"M{px:.2f},{inner_y:.2f} L{px:.2f},{cy:.2f} "
-            f"A{rx:.2f},{ry:.2f} 0 0 {arc_sweep(sx, sy)} {cx:.2f},{py:.2f} "
-            f"L{inner_x:.2f},{py:.2f} L{inner_x:.2f},{inner_y:.2f} Z"
+            + turn(sx, sy, f"L{cx:.2f},{py:.2f} ", f"L{px:.2f},{py:.2f} L{cx:.2f},{py:.2f} ",
+                   f"A{rx:.2f},{ry:.2f} 0 0 {arc_sweep(sx, sy)} {cx:.2f},{py:.2f} ")
+            + f"L{inner_x:.2f},{py:.2f} L{inner_x:.2f},{inner_y:.2f} Z"
         )
+
+    def turn(sx, sy, cut, square, round_):
+        # Horizon rounds every corner; Hex cuts the top-left one, as Hangar's
+        # panels are cut, and leaves the other three square.
+        if not BEVEL:
+            return round_
+        return cut if (sx, sy) == (-1, -1) else square
 
     def arc_sweep(sx, sy):
         # From the vertical edge to the horizontal one, going round outside.
@@ -174,6 +184,9 @@ def frame(doc, prefix, bar, strength):
         return quarter(cx, cy, R, R, sx, sy, X0, Y0, X1, Y1)
 
     hl = f'fill="none" stroke="{rgb(HIGHLIGHT[:3])}" stroke-opacity="{HIGHLIGHT[3] * strength:.3f}" stroke-width="1"'
+    # Hex: the cut corner is lit in full, down its edge and along the top,
+    # where the line along the bar then fades to the hairline.
+    hl_lit = f'fill="none" stroke="{rgb(HIGHLIGHT[:3])}" stroke-opacity="{min(1.0, 2.6 * HIGHLIGHT[3]) * strength:.3f}" stroke-width="1"'
 
     def bar_corner(cx, cy, sx, X0, X1, y_top, y_bot):
         """The title bar's fill in a top corner piece: rounded at the top,
@@ -184,13 +197,17 @@ def frame(doc, prefix, bar, strength):
         r2 = R - 0.5
         return (
             f'<path d="M{edge_x:.2f},{y_bot:.2f} L{edge_x:.2f},{cy:.2f} '
-            f"A{R},{R} 0 0 {sweep} {cx:.2f},{y_top:.2f} L{inner_x:.2f},{y_top:.2f} "
+            + turn(sx, -1, f"L{cx:.2f},{y_top:.2f} ", f"L{edge_x:.2f},{y_top:.2f} L{cx:.2f},{y_top:.2f} ",
+                   f"A{R},{R} 0 0 {sweep} {cx:.2f},{y_top:.2f} ")
+            + f"L{inner_x:.2f},{y_top:.2f} "
             f'L{inner_x:.2f},{y_bot:.2f} Z" fill="{rgb(bar)}"/>'
             # The highlight stops half a pixel inside the piece: its stroke
             # reaching past the edge made the piece measure half a pixel
             # wider, and the shifted piece left a line at the seam.
-            f'<path d="M{cx + sx * r2:.2f},{cy + 4:.2f} L{cx + sx * r2:.2f},{cy:.2f} '
-            f'A{r2},{r2} 0 0 {sweep} {cx:.2f},{y_top + 0.5:.2f} L{inner_x + sx * 0.5:.2f},{y_top + 0.5:.2f}" {hl}/>'
+            f'<path d="M{cx + sx * r2:.2f},{cy + (14 if BEVEL and sx < 0 else 4):.2f} L{cx + sx * r2:.2f},{cy:.2f} '
+            + turn(sx, -1, f"L{cx:.2f},{y_top + 0.5:.2f} ", f"L{cx + sx * r2:.2f},{y_top + 0.5:.2f} L{cx:.2f},{y_top + 0.5:.2f} ",
+                   f"A{r2},{r2} 0 0 {sweep} {cx:.2f},{y_top + 0.5:.2f} ")
+            + f'L{inner_x + sx * 0.5:.2f},{y_top + 0.5:.2f}" {hl_lit if BEVEL and sx < 0 else hl}/>'
         )
 
     # --- top-left: rings around the corner, the window cut out, the bar.
@@ -385,9 +402,9 @@ PaddingRight={PR}
 
 
 def main(out):
-    global NAME, ACTIVE_BAR, INACTIVE_BAR, ACTIVE_TEXT, INACTIVE_TEXT, SHADOW, HIGHLIGHT, R, BUTTON
+    global NAME, ACTIVE_BAR, INACTIVE_BAR, ACTIVE_TEXT, INACTIVE_TEXT, SHADOW, HIGHLIGHT, R, BUTTON, BEVEL
     for NAME, (ACTIVE_BAR, INACTIVE_BAR, ACTIVE_TEXT, INACTIVE_TEXT, SHADOW, HIGHLIGHT) in VARIANTS.items():
-        R, BUTTON = SHAPES.get(NAME, (18, "circle"))
+        R, BUTTON, BEVEL = SHAPES.get(NAME, (18, "circle", False))
         write(out)
 
 

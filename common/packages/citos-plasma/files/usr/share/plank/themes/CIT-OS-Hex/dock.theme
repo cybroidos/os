@@ -1,13 +1,13 @@
-# CIT-OS Hex dock (citos-plasma): a graphite strip with a hairline edge and
-# crisp corners, amber marks under running apps (the HUD design).
+# CIT-OS Hex dock (citos-plasma): a deep navy strip with a hairline edge and
+# near-square corners (Plank cannot cut them), cyan badges (the HUD design).
 [PlankTheme]
-TopRoundness=6
-BottomRoundness=6
+TopRoundness=2
+BottomRoundness=2
 LineWidth=1
-OuterStrokeColor=51;;66;;74;;255
-FillStartColor=15;;21;;25;;235
-FillEndColor=10;;14;;17;;235
-InnerStrokeColor=255;;255;;255;;14
+OuterStrokeColor=42;;61;;110;;255
+FillStartColor=10;;19;;44;;240
+FillEndColor=6;;12;;30;;240
+InnerStrokeColor=28;;203;;255;;40
 
 [PlankDockTheme]
 HorizPadding=3
@@ -32,4 +32,4 @@ GlowPulseTime=2000
 UrgentHueShift=150
 ItemMoveTime=450
 CascadeHide=true
-BadgeColor=240;;166;;60;;255
+BadgeColor=28;;203;;255;;255

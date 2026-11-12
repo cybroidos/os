@@ -93,6 +93,8 @@ grub-pc-bin
 efibootmgr
 os-prober
 cryptsetup
+cryptsetup-initramfs
+keyutils
 dosfstools
 ntfs-3g
 EOF
@@ -168,6 +170,11 @@ EOF
 # (screenshots of the system while it installs) and the welcome picture.
 cp "${here}/installer/stylesheet.qss" "${here}/installer/show.qml" "${brand}/"
 cp -r "${here}/installer/slides" "${brand}/slides"
+# GRUB's preparation without apt (Debian's helper installed it with apt-get,
+# which a live ISO without a package source can't).
+mkdir -p "${lb}/config/includes.chroot/usr/share/calamares/helpers"
+install -m 0755 "${here}/installer/calamares-bootloader-config" \
+	"${lb}/config/includes.chroot/usr/share/calamares/helpers/calamares-bootloader-config"
 # The logo and welcome pictures, rasterised here (Qt's SVG can't draw the mark).
 rsvg-convert -w 256 -h 256 "${brand}/mark.svg" -o "${brand}/logo.png"
 python3 - "${here}/installer/slides/1-horizon.jpg" "${brand}/welcome.png" <<'PY'

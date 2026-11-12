@@ -74,6 +74,29 @@ unpack:
 EOF
 fi
 
+# GRUB: Debian's helper installed it with apt-get, which this ISO has no
+# source for ("grub-efi has no installation candidate"). The image has GRUB;
+# this only gives the new system its settings and menu.
+helper=/usr/share/calamares/helpers/calamares-bootloader-config
+if [ -f "${helper}" ] && grep -q 'apt-get -y install grub' "${helper}"; then
+	cat > "${helper}" <<'HELPER'
+#!/bin/bash
+CHROOT=$(mount | grep proc | grep calamares | awk '{print $3}' | sed -e "s#/proc##g")
+[ -n "${CHROOT}" ] || exit 1
+echo "Running bootloader-config (CybroidOS)..."
+if [ ! -f "${CHROOT}/etc/default/grub" ] && [ -f "${CHROOT}/usr/share/grub/default/grub" ]; then
+	cp "${CHROOT}/usr/share/grub/default/grub" "${CHROOT}/etc/default/grub"
+fi
+if [ -f "${CHROOT}/etc/default/grub" ] && ! grep -q '^GRUB_DISABLE_OS_PROBER=' "${CHROOT}/etc/default/grub"; then
+	echo 'GRUB_DISABLE_OS_PROBER=false' >> "${CHROOT}/etc/default/grub"
+fi
+mkdir -p "${CHROOT}/boot/grub"
+chroot "${CHROOT}" /usr/sbin/update-grub || true
+exit 0
+HELPER
+	chmod 0755 "${helper}"
+fi
+
 # The installed system: the same drop-in goes, and the live-only sign-in.
 if [ -f /etc/calamares/settings.conf ] && ! grep -q "shellprocess@citos" /etc/calamares/settings.conf; then
 	cat > /etc/calamares/modules/shellprocess-citos.conf <<'EOF'

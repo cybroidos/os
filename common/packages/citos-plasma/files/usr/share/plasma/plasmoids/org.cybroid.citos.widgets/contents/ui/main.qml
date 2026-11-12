@@ -324,19 +324,19 @@ PlasmoidItem {
     readonly property bool hudLight: !dark
     readonly property color hudAcc: hudLight ? "#1f5fe0" : "#1ccbff"
     readonly property color hudBlue: hudLight ? "#0b8fc4" : "#3a7cff"
-    readonly property color hudLine: hudLight ? "#c9d5ea" : "#2a3d6e"
+    readonly property color hudLine: hudLight ? "#7d9bd3" : "#2a3d6e"
     readonly property color hudFg: hudLight ? "#0b1634" : "#e8eefc"
     readonly property color hudMuted: hudLight ? "#4a5b85" : "#8fa3c8"
-    readonly property color hudDim: hudLight ? "#9db0d6" : "#4a5b85"
+    readonly property color hudDim: hudLight ? "#6f8cc4" : "#4a5b85"
     readonly property color hudLabel: hudLight ? "#33405f" : root.hudLabel
     readonly property color hudBright: hudLight ? "#0b8fc4" : root.hudBright
     readonly property color hudOk: hudLight ? "#0f7a4b" : root.hudOk
     readonly property color hudBad: hudLight ? "#e5534b" : root.hudBad
-    readonly property color hudTrack: hudLight ? "#d3e0f6" : root.hudTrack
-    readonly property color hudFaint: hudLight ? "#dfe8f7" : root.hudFaint
-    readonly property color hudRule: hudLight ? "#b8c8e6" : root.hudRule
-    readonly property color hudLink: hudLight ? "#9db0d6" : root.hudLink
-    readonly property color hudOff: hudLight ? "#dfe8f7" : root.hudOff
+    readonly property color hudTrack: hudLight ? "#a9c0ea" : root.hudTrack
+    readonly property color hudFaint: hudLight ? "#9fb8e6" : root.hudFaint
+    readonly property color hudRule: hudLight ? "#7d9bd3" : root.hudRule
+    readonly property color hudLink: hudLight ? "#6f8cc4" : root.hudLink
+    readonly property color hudOff: hudLight ? "#b4cbf3" : root.hudOff
     readonly property color hudHole: hudLight ? "#ffffff" : root.hudHole
     readonly property color hudNode: hudLight ? "#4a5b85" : root.hudNode
     readonly property string mono: "JetBrains Mono"

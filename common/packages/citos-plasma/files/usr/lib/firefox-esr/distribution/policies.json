@@ -1,12 +1,18 @@
 {
   "policies": {
     "Homepage": {
-      "URL": "https://cybroid.com",
-      "StartPage": "homepage"
+      "URL": "file:///usr/share/citos/start/index.html",
+      "StartPage": "homepage",
+      "Locked": false
     },
     "NoDefaultBookmarks": true,
     "DisplayBookmarksToolbar": "always",
     "Bookmarks": [
+      {
+        "Title": "Google",
+        "URL": "https://www.google.com",
+        "Placement": "toolbar"
+      },
       {
         "Title": "Cybroid",
         "URL": "https://cybroid.com",
@@ -32,6 +38,18 @@
         "Value": 0,
         "Status": "default"
       }
+    },
+    "SearchEngines": {
+      "Default": "Google"
+    },
+    "FirefoxHome": {
+      "Search": true,
+      "TopSites": true,
+      "SponsoredTopSites": false,
+      "Highlights": false,
+      "Pocket": false,
+      "SponsoredPocket": false,
+      "Snippets": false
     }
   }
 }

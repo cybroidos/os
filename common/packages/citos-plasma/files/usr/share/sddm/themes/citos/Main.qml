@@ -52,7 +52,7 @@ Rectangle {
         Text {
             id: timeText
             anchors.horizontalCenter: parent.horizontalCenter
-            text: Qt.formatTime(new Date(), "HH:mm")
+            text: Qt.formatTime(new Date(), "h:mm AP")
             color: root.ink
             font.family: "Inter"
             font.weight: Font.DemiBold
@@ -62,7 +62,7 @@ Rectangle {
     Timer {
         interval: 1000; running: true; repeat: true
         onTriggered: {
-            timeText.text = Qt.formatTime(new Date(), "HH:mm")
+            timeText.text = Qt.formatTime(new Date(), "h:mm AP")
             dateText.text = Qt.formatDate(new Date(), "dddd d MMMM")
         }
     }
@@ -258,7 +258,7 @@ Rectangle {
             anchors.verticalCenter: parent.verticalCenter
         }
         Text {
-            text: "CIT-OS · " + sddm.hostName
+            text: "CybroidOS · " + sddm.hostName
             color: "#9fb3d9"
             font.family: "Inter"; font.pixelSize: 13
             anchors.verticalCenter: parent.verticalCenter

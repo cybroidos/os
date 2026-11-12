@@ -1,6 +1,6 @@
 [Desktop Entry]
 Type=Application
-Name=CIT-OS look
+Name=CybroidOS look
 Comment=Applies the CIT-OS Horizon style once, at a person's first sign-in
 Exec=/usr/libexec/citos/plasma-look
 OnlyShowIn=KDE;

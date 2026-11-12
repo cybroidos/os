@@ -13,7 +13,29 @@ var launchpad = bar.addWidget("org.cybroid.citos.launchpad");
 launchpad.globalShortcut = "Alt+F1";
 bar.addWidget("org.kde.plasma.appmenu");
 bar.addWidget("org.kde.plasma.panelspacer");
-bar.addWidget("org.kde.plasma.systemtray");
+var tray = bar.addWidget("org.kde.plasma.systemtray");
+// The tray keeps only what Control Centre doesn't show, and each of those
+// only while it has something to say: notifications (they bring up their own
+// pop-ups), a USB drive while one is plugged in, the battery on laptops, the
+// keyboard layout when there are two, what's playing, a camera in use. Wi-Fi,
+// sound and brightness live in Control Centre. Items left out of the known
+// list would be added by Plasma later, so every one is named.
+var trayContainment = desktopById(tray.readConfig("SystrayContainmentId"));
+if (trayContainment) {
+    trayContainment.currentConfigGroup = ["General"];
+    trayContainment.writeConfig("extraItems", [
+        "org.kde.plasma.notifications", "org.kde.plasma.devicenotifier", "org.kde.plasma.battery",
+        "org.kde.plasma.keyboardlayout", "org.kde.plasma.mediacontroller", "org.kde.plasma.cameraindicator"]);
+    trayContainment.writeConfig("knownItems", [
+        "org.kde.plasma.notifications", "org.kde.plasma.devicenotifier", "org.kde.plasma.battery",
+        "org.kde.plasma.keyboardlayout", "org.kde.plasma.mediacontroller", "org.kde.plasma.cameraindicator",
+        "org.kde.plasma.volume", "org.kde.plasma.brightness", "org.kde.plasma.networkmanagement",
+        "org.kde.plasma.bluetooth", "org.kde.kscreen", "org.kde.plasma.clipboard",
+        "org.kde.plasma.keyboardindicator", "org.kde.plasma.manage-inputmethod", "org.kde.plasma.printmanager",
+        "org.kde.plasma.vault", "org.kde.kdeconnect", "org.kde.plasma.weather", "org.kde.plasma.nightcolorcontrol",
+        "org.kde.plasma.kclock_1x2", "org.kde.plasma.mediacontroller"]);
+    trayContainment.writeConfig("hiddenItems", ["org.kde.plasma.notifications"]);
+}
 // Control Centre (network, Tower, Do Not Disturb, sound), then the date and
 // time, which opens notifications and the Today widgets, as on macOS.
 bar.addWidget("org.cybroid.citos.controlcentre");

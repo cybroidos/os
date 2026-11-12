@@ -4,12 +4,12 @@
         "Authors": [
             {
                 "Email": "citos@cybroid.com",
-                "Name": "CIT-OS"
+                "Name": "CybroidOS"
             }
         ],
-        "Description": "CIT-OS Hex: the window's title in a tab the top line bends round, the top-left corner cut",
+        "Description": "CybroidOS Hex: the window's title in a tab the top line bends round, the top-left corner cut",
         "Id": "org.cybroid.citos.hex",
         "License": "GPL-3.0-or-later",
-        "Name": "CIT-OS Hex"
+        "Name": "CybroidOS Hex"
     }
 }

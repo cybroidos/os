@@ -14,6 +14,12 @@ if [ -f /usr/share/citos/10-uname ] && [ -d /etc/update-motd.d ]; then
 	install -m 0755 /usr/share/citos/10-uname /etc/update-motd.d/10-uname
 fi
 
+# /etc/os-release points at ours now, not only from the next boot
+# (usr/lib/tmpfiles.d/citos-os-release.conf keeps it so).
+if command -v systemd-tmpfiles >/dev/null 2>&1; then
+	systemd-tmpfiles --create citos-os-release.conf >/dev/null 2>&1 || true
+fi
+
 # The boot menu says CIT-OS (/etc/default/grub.d/50-citos.cfg).
 if command -v update-grub >/dev/null 2>&1 && [ -f /boot/grub/grub.cfg ]; then
 	update-grub >/dev/null 2>&1 || true

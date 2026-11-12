@@ -77,6 +77,17 @@ jobs:
             cp kwin4_effect_shapecorners*.deb /out/citos-kwin-effects_amd64.deb'
           ls -la dist/extra
 
+      # Office for the live and installer ISO: ONLYOFFICE Desktop Editors
+      # (AGPL-3.0, onlyoffice.com), the vendor's own .deb (Debian has none).
+      # About 280 MB; the ISO only, not the VM images.
+      - name: Fetch ONLYOFFICE (ISO)
+        if: matrix.image == 'iso'
+        run: |
+          mkdir -p dist/extra
+          curl -fsSL --retry 3 -o dist/extra/onlyoffice-desktopeditors_amd64.deb \
+            https://download.onlyoffice.com/install/desktop/editors/linux/onlyoffice-desktopeditors_amd64.deb
+          dpkg-deb -f dist/extra/onlyoffice-desktopeditors_amd64.deb Package Version
+
       # The dock floats above the screen's edge like macOS's: Debian's own
       # Plank, rebuilt with tools/plank-edge-gap.py (PLANK_EDGE_GAP), as
       # 0.11.89-6+citos1 so it takes Debian's place.

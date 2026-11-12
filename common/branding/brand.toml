@@ -1,4 +1,4 @@
-# CIT-OS brand identity
+# CybroidOS brand identity (the OS was CIT-OS until 0.1.1)
 #
 # Single source of truth for branding values. tools/render-brand.py reads this
 # file and renders a filesystem overlay per target (see targets.toml), so
@@ -10,13 +10,13 @@
 # treat these as v0 defaults.
 
 [identity]
-name            = "CIT-OS"
+name            = "CybroidOS"
 id              = "citos"                 # os-release ID, hostname, package prefix, install paths
-vendor          = "Cybroid Institute of Technology"
-vendor_short    = "CIT"
-pretty_name     = "CIT-OS"
+vendor          = "Cybroid"
+vendor_short    = "Cybroid"
+pretty_name     = "CybroidOS"
 version         = "0.1.1"
-default_hostname = "citos"
+default_hostname = "cybroid"
 support_url     = "https://cybroid.com"
 home_url        = "https://cybroid.com"
 documentation   = "https://github.com/cybroidinstitute/cit-os"

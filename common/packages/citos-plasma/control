@@ -1,7 +1,7 @@
 Package: citos-plasma
 Version: @VERSION@
 Architecture: all
-Maintainer: CIT-OS maintainers <citos@cybroid.com>
+Maintainer: CybroidOS maintainers <citos@cybroid.com>
 Homepage: https://github.com/cybroidinstitute/cit-os
 Section: kde
 Priority: optional
@@ -14,14 +14,28 @@ Depends: citos-base (>= @VERSION@), citos-artwork (>= @VERSION@), citos-plymouth
  qml6-module-org-kde-desktop, qt-style-kvantum, xdg-user-dirs,
  plasma-widgets-addons, plank, dbus-bin, breeze-gtk-theme, kde-config-gtk-style, librsvg2-common, pipewire, wireplumber, upower,
  dolphin, konsole, kwrite, ark, gwenview, firefox-esr,
- xrdp, xorgxrdp, dbus-x11, plymouth, plymouth-themes
+ xrdp, xorgxrdp, dbus-x11, plymouth, plymouth-themes,
+ network-manager, plasma-nm, wpasupplicant, iw, wireless-regdb, modemmanager, usb-modeswitch,
+ bluez, bluedevil, xserver-xorg-input-libinput, pipewire-pulse, pipewire-alsa, plasma-pa,
+ udisks2, kio-extras, ffmpegthumbs, kdegraphics-thumbnailers, exfatprogs, ntfs-3g, dosfstools,
+ power-profiles-daemon, brightnessctl, xdg-utils,
+ vlc, okular, kcalc, kde-spectacle, kate, plasma-systemmonitor,
+ plasma-discover, plasma-discover-backend-flatpak, flatpak, fwupd,
+ gstreamer1.0-plugins-good, gstreamer1.0-plugins-bad, gstreamer1.0-libav,
+ fonts-noto-color-emoji, fonts-liberation2,
+ zsh, zsh-autosuggestions, zsh-syntax-highlighting, bash-completion,
+ cups, cups-filters, print-manager, zram-tools, unzip, p7zip-full, git, cracklib-runtime
 Recommends: citos-icons
 Conflicts: citos-desktop
-Description: CIT-OS Desktop: KDE Plasma 6 in the CIT-OS Horizon look
- A modern desktop for CIT-OS: KDE Plasma 6 on X11 with a slim top bar (menu,
- the app's own menu, tray, clock) and a floating dock, the CIT-OS Horizon
+Description: CybroidOS Desktop: KDE Plasma 6 in the CybroidOS Horizon look
+ A modern desktop for CybroidOS: KDE Plasma 6 on X11 with a slim top bar (menu,
+ the app's own menu, tray, clock) and a floating dock, the CybroidOS Horizon
  colours (navy, cyan and blue), WhiteSur app icons (citos-icons; Papirus
  as the fallback), Inter and JetBrains Mono,
- a CIT-OS sign-in screen (SDDM) and splash, the CIT-OS boot splash
- (Plymouth), Firefox ESR with CIT-OS's home page and bookmarks, and xrdp
- for Remote Desktop. Defaults only: each person can change them.
+ a CybroidOS sign-in screen (SDDM) and splash, the CybroidOS boot splash
+ (Plymouth), Firefox ESR with CybroidOS's start page and bookmarks, and xrdp
+ for Remote Desktop. With what a computer needs day to day: Wi-Fi, mobile
+ broadband and Bluetooth, the touchpad, sound, USB drives and phones,
+ printing, media playback (VLC), documents (Okular), an app centre (Discover
+ with Flathub), zsh with suggestions from history, and zram for small
+ memory. Defaults only: each person can change them.

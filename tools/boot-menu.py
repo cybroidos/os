@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""The CIT-OS boot menus of the live and installer ISO, in place of
+"""The CybroidOS boot menus of the live and installer ISO, in place of
 live-build's stock Debian ones: GRUB (UEFI) and syslinux (BIOS).
 
     tools/boot-menu.py <dir with the ISO's boot/grub and isolinux folders>
+    tools/boot-menu.py --installed <package root>   (the installed system's GRUB)
 
 Draws the background pictures (deep navy, the CIT mark, the name, a hairline
 with a small hexagon: Hex's language) and writes GRUB's theme and syslinux's
@@ -58,7 +59,7 @@ def background(w, h, mark_y, mark_size, word_y, word_size, rule_y):
         f'<rect width="{w}" height="{h}" fill="url(#bg)"/><rect width="{w}" height="{h}" fill="url(#grid)"/>'
         f'<g transform="translate({cx - 397 * s:.1f} {mark_y - 380 * s:.1f}) scale({s:.4f})">{MARK[1]}</g>'
         f'<text x="{cx}" y="{word_y}" text-anchor="middle" font-family="DejaVu Sans, sans-serif" font-weight="bold" '
-        f'font-size="{word_size}" letter-spacing="{word_size * 0.32:.1f}" fill="{INK}">CIT-OS</text>'
+        f'font-size="{word_size}" letter-spacing="{word_size * 0.32:.1f}" fill="{INK}">CYBROIDOS</text>'
         f'<path d="M{cx - 120} {rule_y} H{cx - 14} M{cx + 14} {rule_y} H{cx + 120}" stroke="{LINE}" stroke-width="1.5"/>'
         f'<polygon points="{hexagon}" fill="{ACC}"/>'
         "</svg>"
@@ -78,13 +79,16 @@ def solid(out, w, h, colour, alpha):
 
 
 # GRUB (UEFI): 800 x 600, the theme in live-theme/.
-GRUB_THEME = f"""# CIT-OS boot menu (tools/boot-menu.py): deep navy, the mark, the entries
+GRUB_THEME = f"""# CybroidOS boot menu (tools/boot-menu.py): deep navy, the mark, the entries
 # under it with the chosen one lit from its left edge (Hex's lists).
 desktop-image: "../splash.png"
 title-text: ""
 message-font: "Unifont Regular 16"
 message-color: "{MUTED}"
 terminal-font: "Unifont Regular 16"
+# GRUB's terminal (where it loads the system) without its black box: after
+# an entry is chosen the picture stays until the boot splash.
+terminal-box: "clear_*.png"
 
 + boot_menu {{
         left = 30%
@@ -106,7 +110,7 @@ terminal-font: "Unifont Regular 16"
 }}
 
 # The countdown: GRUB fills in its text only on a progress bar, so this is
-# one drawn as text alone (its bar in the background's colour).
+# one drawn as text alone (its bar pictures are transparent).
 + progress_bar {{
         id = "__timeout__"
         top = 100%-60
@@ -115,9 +119,8 @@ terminal-font: "Unifont Regular 16"
         height = 20
         font = "Unifont Regular 16"
         text_color = "{MUTED}"
-        fg_color = "{NAVY_OUT}"
-        bg_color = "{NAVY_OUT}"
-        border_color = "{NAVY_OUT}"
+        bar_style = "clear_*.png"
+        highlight_style = "clear_*.png"
         text = "@TIMEOUT_NOTIFICATION_SHORT@"
 }}
 
@@ -162,25 +165,49 @@ menu tabmsg Enter to start, Tab to edit the options
 """
 
 
+def grub_theme(d, w, h):
+    """GRUB's theme in folder d over a w x h picture: the background, the
+    theme, the chosen entry's pictures and the transparent ones."""
+    d.mkdir(parents=True, exist_ok=True)
+    k = h / 600
+    png(background(w, h, mark_y=round(168 * k), mark_size=round(170 * k), word_y=round(292 * k),
+                   word_size=round(26 * k), rule_y=round(314 * k)), d / "splash.png")
+    (d / "theme.txt").write_text(GRUB_THEME.replace('"../splash.png"', '"splash.png"'))
+    # The chosen entry: a cyan wash with a lit left edge (Hex's selected row).
+    solid(d / "select_c.png", 8, 8, ACC, 0.16)
+    solid(d / "select_w.png", 3, 8, ACC, 1.0)
+    for side in ("n", "s", "e", "nw", "ne", "sw", "se"):
+        (d / f"select_{side}.png").unlink(missing_ok=True)
+    for side in ("c", "n", "s", "e", "w", "nw", "ne", "sw", "se"):
+        solid(d / f"clear_{side}.png", 1, 1, "#000000", 0)
+
+
+def installed(out):
+    """The installed system's GRUB theme (usr/share/grub/themes/cybroidos):
+    the same menu at 1920 x 1080. /etc/default/grub.d/61-cybroidos-theme.cfg
+    names it."""
+    grub_theme(pathlib.Path(out) / "usr/share/grub/themes/cybroidos", 1920, 1080)
+    print(f"wrote the CybroidOS GRUB theme in {out}")
+
+
 def main(root):
     root = pathlib.Path(root)
     grub, lin = root / "grub", root / "isolinux"
     # GRUB: 800 x 600 (config.cfg sets that mode); the menu starts at 54 %.
-    png(background(800, 600, mark_y=168, mark_size=170, word_y=292, word_size=26, rule_y=314), grub / "splash.png")
-    (grub / "live-theme").mkdir(parents=True, exist_ok=True)
+    grub_theme(grub / "live-theme", 800, 600)
+    # live-build's theme.cfg finds the picture at /boot/grub/splash.png.
+    (grub / "splash.png").write_bytes((grub / "live-theme" / "splash.png").read_bytes())
     (grub / "live-theme" / "theme.txt").write_text(GRUB_THEME)
-    # The chosen entry: a cyan wash with a lit left edge (Hex's selected row).
-    solid(grub / "live-theme" / "select_c.png", 8, 8, ACC, 0.16)
-    solid(grub / "live-theme" / "select_w.png", 3, 8, ACC, 1.0)
-    for side in ("n", "s", "e", "nw", "ne", "sw", "se"):
-        (grub / "live-theme" / f"select_{side}.png").unlink(missing_ok=True)
     # syslinux: 640 x 480; the menu's first row is row 16 (256 px).
     png(background(640, 480, mark_y=118, mark_size=128, word_y=212, word_size=21, rule_y=230), lin / "splash.png")
     (lin / "stdmenu.cfg").write_text(SYSLINUX_STD)
-    print(f"wrote the CIT-OS boot menus in {root}")
+    print(f"wrote the CybroidOS boot menus in {root}")
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
+    if len(sys.argv) == 3 and sys.argv[1] == "--installed":
+        installed(sys.argv[2])
+    elif len(sys.argv) == 2:
+        main(sys.argv[1])
+    else:
         sys.exit(__doc__)
-    main(sys.argv[1])

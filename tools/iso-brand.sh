@@ -4,7 +4,7 @@
 # without unpacking or rebuilding it. Needs xorriso, python3, rsvg-convert;
 # no root. BIOS (syslinux) and UEFI (GRUB) booting are kept as they were.
 #
-#   GRUB and syslinux: "Try or install CIT-OS", "Try CIT-OS with safe
+#   GRUB and syslinux: "Try or install CybroidOS", "Try CIT-OS with safe
 #   graphics" (nomodeset), Utilities; the first starts by itself after 5 s.
 #
 # With hook.sh, the script is put on the medium at /live/config-hooks/ and
@@ -37,8 +37,8 @@ s = g.read_text()
 live = re.search(r'menuentry "Live system \(amd64\)".*?\n\s*linux\s+(\S+)\s+(.*?)\n\s*initrd\s+(\S+)', s, re.S)
 kernel, opts, initrd = live.group(1), live.group(2), live.group(3)
 opts = opts.replace(hookarg.strip(), "").rstrip() + hookarg
-main = (f'menuentry "Try or install CIT-OS" --hotkey=t {{\n\tlinux\t{kernel} {opts}\n\tinitrd\t{initrd}\n}}\n'
-        f'menuentry "Try CIT-OS with safe graphics" --hotkey=s {{\n\tlinux\t{kernel} {opts} nomodeset\n\tinitrd\t{initrd}\n}}\n')
+main = (f'menuentry "Try or install CybroidOS" --hotkey=t {{\n\tlinux\t{kernel} {opts}\n\tinitrd\t{initrd}\n}}\n'
+        f'menuentry "Try CybroidOS with safe graphics" --hotkey=s {{\n\tlinux\t{kernel} {opts} nomodeset\n\tinitrd\t{initrd}\n}}\n')
 s = re.sub(r'# Live boot\n.*?(?=\n# You can add more entries)', "# Live boot\n" + main, s, flags=re.S)
 g.write_text(s)
 
@@ -53,9 +53,9 @@ l = root / "isolinux" / "live.cfg"
 s = l.read_text()
 append = re.search(r"label live-amd64\n.*?append ([^\n]*)", s, re.S).group(1)
 append = append.replace(hookarg.strip(), "").rstrip() + hookarg
-s = ("label live-amd64\n\tmenu label ^Try or install CIT-OS\n\tmenu default\n\tlinux /live/vmlinuz\n"
+s = ("label live-amd64\n\tmenu label ^Try or install CybroidOS\n\tmenu default\n\tlinux /live/vmlinuz\n"
      f"\tinitrd /live/initrd.img\n\tappend {append}\n\n"
-     "label live-amd64-safe\n\tmenu label Try CIT-OS with ^safe graphics\n\tlinux /live/vmlinuz\n"
+     "label live-amd64-safe\n\tmenu label Try CybroidOS with ^safe graphics\n\tlinux /live/vmlinuz\n"
      f"\tinitrd /live/initrd.img\n\tappend {append} nomodeset\n")
 l.write_text(s)
 
@@ -72,7 +72,11 @@ PY
 # The medium's checksums ("Verify integrity" in Utilities) for what changed.
 maps=""
 changed="boot/grub/grub.cfg boot/grub/config.cfg boot/grub/splash.png boot/grub/live-theme/theme.txt
-boot/grub/live-theme/select_c.png boot/grub/live-theme/select_w.png isolinux/live.cfg isolinux/isolinux.cfg
+boot/grub/live-theme/select_c.png boot/grub/live-theme/select_w.png
+boot/grub/live-theme/clear_c.png boot/grub/live-theme/clear_n.png boot/grub/live-theme/clear_s.png
+boot/grub/live-theme/clear_e.png boot/grub/live-theme/clear_w.png boot/grub/live-theme/clear_nw.png
+boot/grub/live-theme/clear_ne.png boot/grub/live-theme/clear_sw.png boot/grub/live-theme/clear_se.png
+isolinux/live.cfg isolinux/isolinux.cfg
 isolinux/menu.cfg isolinux/stdmenu.cfg isolinux/splash.png"
 mkdir -p "${work}/tree/boot" "${work}/tree/live/config-hooks"
 mv "${work}/grub" "${work}/tree/boot/grub"

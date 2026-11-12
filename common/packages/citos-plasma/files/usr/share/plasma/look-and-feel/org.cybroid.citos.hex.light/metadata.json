@@ -3,10 +3,10 @@
     "KPlugin": {
         "Authors": [{ "Name": "Cybroid Institute of Technology", "Email": "citos@cybroid.com" }],
         "Category": "",
-        "Description": "CIT-OS Hex Light: the HUD design in daylight, white and CIT blue, cut corners and live readouts",
+        "Description": "CybroidOS Hex Light: the HUD design in daylight, white and CIT blue, cut corners and live readouts",
         "Id": "org.cybroid.citos.hex.light",
         "License": "GPL-2.0-or-later",
-        "Name": "CIT-OS Hex Light",
+        "Name": "CybroidOS Hex Light",
         "Version": "1.0",
         "Website": "https://cybroid.com"
     },

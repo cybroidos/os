@@ -130,25 +130,25 @@ VARIANTS = {"translucent": 0.72, "": 0.9, "opaque": 1.0}
 # maximised and the tint for hovered rows. main() writes one style per entry.
 STYLES = {
     "citos": dict(
-        name="CIT-OS Horizon", desc="CIT-OS Horizon: a clear top bar, solid navy popups",
+        name="CybroidOS Horizon", desc="CybroidOS Horizon: a clear top bar, solid navy popups",
         bar=(WHITE, 0.05), bar_default=(NAVY, 0.55), bar_solid=NAVY, hover=(WHITE, 0.08),
     ),
     "citos-light": dict(
-        name="CIT-OS Horizon Light", desc="CIT-OS Horizon Light: a frosted white top bar, white popups",
+        name="CybroidOS Horizon Light", desc="CybroidOS Horizon Light: a frosted white top bar, white popups",
         bar=((246, 248, 252), 0.82), bar_default=((246, 248, 252), 0.9), bar_solid=(240, 243, 248),
         hover=((14, 24, 58), 0.06),
     ),
     # Hex, the HUD design in CIT's colours: a deep navy bar, popups cut at
     # the top-left and bottom-right corners (Hangar's panels), cyan hovers.
     "citos-hex": dict(
-        name="CIT-OS Hex", desc="CIT-OS Hex: the HUD design, deep navy and cyan with cut corners",
+        name="CybroidOS Hex", desc="CybroidOS Hex: the HUD design, deep navy and cyan with cut corners",
         bar=((6, 12, 30), 0.94), bar_default=((6, 12, 30), 0.96), bar_solid=(6, 12, 30),
         hover=((28, 203, 255), 0.14), radius=14, tip_radius=8, bevel=True, shadow=0.14,
     ),
     # Hex Light: the same shapes in daylight, a pale blue bar that lets the
     # wallpaper through a little (white looked glaring), blue hovers.
     "citos-hex-light": dict(
-        name="CIT-OS Hex Light", desc="CIT-OS Hex Light: the HUD design in daylight, white and CIT blue with cut corners",
+        name="CybroidOS Hex Light", desc="CybroidOS Hex Light: the HUD design in daylight, white and CIT blue with cut corners",
         bar=((214, 228, 250), 0.86), bar_default=((214, 228, 250), 0.9), bar_solid=(214, 228, 250),
         hover=((31, 95, 224), 0.10), radius=14, tip_radius=8, bevel=True, shadow=0.08,
     ),

@@ -1,6 +1,4 @@
 # CIT-OS app names: <desktop file id> <name shown in the Launchpad, dock and menus>
-# Plain names for what an app does, as macOS and phones use. "hide" leaves an
-# app installed but out of the Launchpad. Read by /usr/libexec/citos/app-names.
 org.kde.dolphin.desktop            Files
 org.kde.konsole.desktop            Terminal
 org.kde.kwrite.desktop             Text Editor
@@ -26,3 +24,12 @@ debian-xterm.desktop               hide
 debian-uxterm.desktop              hide
 display-im6.q16.desktop            hide
 kvantummanager.desktop             hide
+onlyoffice-desktopeditors.desktop  Office
+vlc.desktop                        VLC
+org.kde.bluedevilwizard.desktop    hide
+org.kde.bluedevilsendfile.desktop  hide
+org.kde.kdeconnect.app.desktop     hide
+org.kde.discover.urlhandler.desktop hide
+org.kde.discover.notifier.desktop  hide
+org.kde.print-queue.desktop        hide
+zsh.desktop                        hide

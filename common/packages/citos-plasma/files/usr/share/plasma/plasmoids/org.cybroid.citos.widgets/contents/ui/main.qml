@@ -489,12 +489,12 @@ PlasmoidItem {
                     spacing: 6
                     Row {
                         spacing: 6
-                        QQC2.Label { id: hhmm; text: Qt.formatTime(root.now, "HH:mm"); color: root.hudFg; font.family: root.mono; font.pixelSize: 60; font.weight: Font.Medium; font.letterSpacing: 2 }
-                        QQC2.Label { anchors.baseline: hhmm.baseline; text: Qt.formatTime(root.now, "ss"); color: root.hudAcc; font.family: root.mono; font.pixelSize: 26; font.weight: Font.Light }
+                        QQC2.Label { id: hhmm; text: Qt.formatTime(root.now, "h:mm"); color: root.hudFg; font.family: root.mono; font.pixelSize: 60; font.weight: Font.Medium; font.letterSpacing: 2 }
+                        QQC2.Label { anchors.baseline: hhmm.baseline; text: Qt.formatTime(root.now, "AP"); color: root.hudAcc; font.family: root.mono; font.pixelSize: 26; font.weight: Font.Light }
                     }
                     QQC2.Label {
                         width: col.width; elide: Text.ElideRight
-                        text: (Qt.formatDate(root.now, "ddd d MMM") + (root.weather ? " · " + root.weather.replace(/,.*/, "") : "")).toUpperCase()
+                        text: (Qt.formatDate(root.now, "ddd d MMM") + " · " + (root.weather ? root.weather.replace(/,.*/, "") : "Kampala")).toUpperCase()
                         color: root.hudMuted; font.family: root.mono; font.pixelSize: 11; font.letterSpacing: 1.8
                     }
                 }
@@ -647,15 +647,27 @@ PlasmoidItem {
             Surface {
                 width: root.look === "open" ? 360 : root.cardWidth
                 QQC2.Label { text: Qt.formatDate(root.now, "dddd"); color: root.accent; font.pixelSize: root.look === "open" ? 20 : 14; font.weight: Font.DemiBold }
-                QQC2.Label {
-                    text: Qt.formatTime(root.now, "HH:mm")
-                    color: root.ink
-                    font.pixelSize: root.look === "open" ? 104 : root.look === "gauges" ? 44 : 56
-                    font.weight: root.look === "open" ? Font.Light : Font.DemiBold
+                RowLayout {
+                    spacing: 8
                     Layout.topMargin: -6; Layout.bottomMargin: -6
+                    QQC2.Label {
+                        text: Qt.formatTime(root.now, "h:mm")
+                        color: root.ink
+                        font.pixelSize: root.look === "open" ? 104 : root.look === "gauges" ? 44 : 56
+                        font.weight: root.look === "open" ? Font.Light : Font.DemiBold
+                    }
+                    // AM or PM, small, beside the time.
+                    QQC2.Label {
+                        Layout.alignment: Qt.AlignBaseline
+                        text: Qt.formatTime(root.now, "AP")
+                        color: root.soft
+                        font.pixelSize: root.look === "open" ? 28 : 20
+                        font.weight: Font.DemiBold
+                    }
                 }
                 QQC2.Label {
-                    text: Qt.formatDate(root.now, "d MMMM") + (root.weather ? " · " + root.weather : "")
+                    // The place always shows; the temperature and sky when online.
+                    text: Qt.formatDate(root.now, "d MMMM") + " · " + (root.weather || "Kampala")
                     color: root.soft; font.pixelSize: root.look === "open" ? 16 : 13; wrapMode: Text.Wrap; Layout.fillWidth: true
                 }
             }

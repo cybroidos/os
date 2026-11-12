@@ -1,7 +1,7 @@
 Package: citos-desktop
 Version: @VERSION@
 Architecture: all
-Maintainer: CIT-OS maintainers <citos@cybroid.com>
+Maintainer: CybroidOS maintainers <citos@cybroid.com>
 Homepage: https://github.com/cybroidinstitute/cit-os
 Section: x11
 Priority: optional
@@ -14,10 +14,10 @@ Depends: citos-base (>= @VERSION@), citos-artwork (>= @VERSION@),
  orchis-gtk-theme, papirus-icon-theme, fonts-inter, fonts-jetbrains-mono, fonts-dejavu-core,
  dbus-x11, dbus-user-session, polkitd, at-spi2-core, xdg-user-dirs,
  firefox-esr, xrdp, xorgxrdp
-Description: CIT-OS Desktop Lite: Xfce with the CIT-OS look
+Description: CybroidOS Desktop Lite: Xfce with the CybroidOS look
  A light, modern desktop for servers and VMs: Xfce with a slim top bar
  (menu, clock, tray) and a dock, the Orchis dark theme, Papirus icons, the
- Inter and JetBrains Mono fonts, Firefox ESR, a terminal in CIT-OS colours,
- and slick-greeter's sign-in screen with the CIT-OS wallpaper and logo; xrdp
+ Inter and JetBrains Mono fonts, Firefox ESR, a terminal in CybroidOS colours,
+ and slick-greeter's sign-in screen with the CybroidOS wallpaper and logo; xrdp
  lets Remote Desktop clients sign in. About 400 MB of memory when idle.
  These are defaults: each person can change them.

@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # CIT-OS Desktop as a live and installer ISO (hybrid: DVD or USB stick, BIOS
-# and UEFI). It boots silently into the live CIT-OS Desktop (Horizon), signed
-# in as "student"; "Install CIT-OS" in the dock starts Calamares, which puts
+# and UEFI). It boots silently into the live CybroidOS Desktop (Horizon), signed
+# in as "cybroid" (password "cybroid", to try the sign-in screen); "Install
+# CybroidOS" in the dock starts Calamares, which puts
 # the same system on the disk. Built by Debian's live-build in a Debian 13
 # container, from the same packages as the VM image. Built by CI
 # (.github/workflows/server-images.yml, the "iso" image).
@@ -68,6 +69,12 @@ firmware-misc-nonfree
 firmware-iwlwifi
 firmware-realtek
 firmware-atheros
+firmware-brcm80211
+firmware-mediatek
+firmware-libertas
+firmware-ti-connectivity
+firmware-intel-sound
+firmware-intel-graphics
 firmware-amd-graphics
 firmware-sof-signed
 intel-microcode
@@ -76,6 +83,9 @@ qemu-guest-agent
 spice-vdagent
 calamares
 calamares-settings-debian
+cracklib-runtime
+squashfs-tools
+rsync
 grub-efi-amd64-bin
 grub-efi-amd64-signed
 shim-signed
@@ -95,41 +105,46 @@ cat > "${lb}/config/includes.chroot/usr/lib/live/config/2000-citos-autologin" <<
 # CIT-OS live: sign the live user in to Plasma (X11) at once. Written to
 # /etc/sddm.conf as well: live-config's own sddm step writes the Wayland
 # session there, and that file outranks sddm.conf.d.
-user=student
+user=cybroid
 for a in $(cat /proc/cmdline); do
 	case "$a" in username=* | live-config.username=*) user="${a#*username=}" ;; esac
 done
 mkdir -p /etc/sddm.conf.d
 printf '[Autologin]\nUser=%s\nSession=plasmax11\n' "${user}" > /etc/sddm.conf.d/zz-citos-live.conf
 printf '[Autologin]\nUser=%s\nSession=plasmax11\n' "${user}" > /etc/sddm.conf
-# A live session has no password to unlock with: no screen lock.
+# An easy password, to try the sign-in screen (sign out): the user's name.
+echo "${user}:cybroid" | chpasswd
+# sudo and the installer without asking.
+printf '%s ALL=(ALL) NOPASSWD: ALL\n' "${user}" > /etc/sudoers.d/live
+chmod 0440 /etc/sudoers.d/live
+# A live session has nothing to protect: no screen lock.
 mkdir -p /etc/xdg
 printf '[Daemon]\nAutolock=false\nLockOnResume=false\n' > /etc/xdg/kscreenlockerrc
 EOF
 chmod 0755 "${lb}/config/includes.chroot/usr/lib/live/config/2000-citos-autologin"
 
-# Calamares in CIT-OS's colours and words.
+# Calamares in CybroidOS's colours and words.
 brand="${lb}/config/includes.chroot/etc/calamares/branding/citos"
 mkdir -p "${brand}"
 cp "${repo}/common/packages/citos-plasma/files/usr/share/icons/hicolor/scalable/apps/citos-mark.svg" "${brand}/mark.svg"
 cat > "${brand}/branding.desc" <<EOF
 ---
 componentName: citos
-welcomeStyleCalamares: true
+welcomeStyleCalamares: false
 welcomeExpandingLogo: true
 windowExpanding: normal
-windowSize: 900px,620px
+windowSize: 960px,620px
 windowPlacement: center
 sidebar: widget
 navigation: widget
 strings:
-    productName: CIT-OS
-    shortProductName: CIT-OS
+    productName: CybroidOS
+    shortProductName: CybroidOS
     version: ${VERSION}
     shortVersion: ${VERSION}
-    versionedName: CIT-OS ${VERSION}
-    shortVersionedName: CIT-OS ${VERSION}
-    bootloaderEntryName: CIT-OS
+    versionedName: CybroidOS ${VERSION}
+    shortVersionedName: CybroidOS ${VERSION}
+    bootloaderEntryName: CybroidOS
     productUrl: https://cybroid.com
     supportUrl: https://cybroid.com
     knownIssuesUrl: https://cybroid.com
@@ -146,58 +161,81 @@ style:
     SidebarText: "#eef3ff"
     SidebarTextCurrent: "#ffffff"
     SidebarBackgroundCurrent: "#1f5fe0"
+uploadServer:
+    type: none
 EOF
-cat > "${brand}/show.qml" <<'EOF'
-/* CIT-OS installer slideshow: one calm slide while files copy. */
-import QtQuick 2.0
-import calamares.slideshow 1.0
-
-Presentation {
-    id: presentation
-    function onActivate() {}
-    function onLeave() {}
-    Slide {
-        Rectangle { anchors.fill: parent; color: "#0d1530" }
-        Image {
-            id: mark
-            source: "logo.png"
-            width: 140; height: 140
-            fillMode: Image.PreserveAspectFit
-            anchors.centerIn: parent
-            anchors.verticalCenterOffset: -40
-        }
-        Text {
-            anchors.top: mark.bottom; anchors.topMargin: 24
-            anchors.horizontalCenter: parent.horizontalCenter
-            text: "Installing CIT-OS"
-            color: "#eef3ff"; font.pixelSize: 24
-        }
-        Text {
-            anchors.top: mark.bottom; anchors.topMargin: 62
-            anchors.horizontalCenter: parent.horizontalCenter
-            text: "Your apps, labs and Hangar, ready when this finishes."
-            color: "#a9b8da"; font.pixelSize: 15
-        }
-    }
-}
-EOF
+# Its look: the stylesheet (every page in the Horizon look), the slideshow
+# (screenshots of the system while it installs) and the welcome picture.
+cp "${here}/installer/stylesheet.qss" "${here}/installer/show.qml" "${brand}/"
+cp -r "${here}/installer/slides" "${brand}/slides"
 # The logo and welcome pictures, rasterised here (Qt's SVG can't draw the mark).
 rsvg-convert -w 256 -h 256 "${brand}/mark.svg" -o "${brand}/logo.png"
-python3 "${repo}/tools/render-brand.py" --target desktop --only wallpaper --out "${work}/wall" >/dev/null
-python3 - "${work}/wall/usr/share/backgrounds/${ID:-citos}/citos-1920x1080.png" "${brand}/welcome.png" <<'PY'
+python3 - "${here}/installer/slides/1-horizon.jpg" "${brand}/welcome.png" <<'PY'
 import sys
 from PIL import Image
-Image.open(sys.argv[1]).resize((640, 360), Image.LANCZOS).save(sys.argv[2])
+Image.open(sys.argv[1]).convert("RGB").resize((640, 400), Image.LANCZOS).save(sys.argv[2])
 PY
 rm -f "${brand}/mark.svg"
+
+# Calamares' place: Kampala, without moving the live session's clock.
+mkdir -p "${lb}/config/includes.chroot/etc/calamares/modules"
+cat > "${lb}/config/includes.chroot/etc/calamares/modules/locale.conf" <<'EOF'
+---
+region: "Africa"
+zone: "Kampala"
+adjustLiveTimezone: false
+localeGenPath: "/etc/locale.gen"
+EOF
+# Disks made easy: "Erase disk" is chosen from the start (manual partitioning
+# stays, one click away), swap is a file (a 6 GB partition took a quarter of
+# a small disk), ext4.
+cat > "${lb}/config/includes.chroot/etc/calamares/modules/partition.conf" <<'EOF'
+---
+efi:
+    mountPoint: "/boot/efi"
+    recommendedSize: 300MiB
+    minimumSize: 32MiB
+    label: "EFI"
+efiSystemPartition: "/boot/efi"
+userSwapChoices: [ none, file ]
+initialSwapChoice: file
+initialPartitioningChoice: erase
+allowManualPartitioning: true
+drawNestedPartitions: false
+alwaysShowPartitionLabels: true
+defaultFileSystemType: "ext4"
+availableFileSystemTypes: [ "ext4", "btrfs", "xfs" ]
+enableLuksAutomatedPartitioning: true
+EOF
+# A step on the installed system: numbers and dates in British English where
+# Calamares picked Luganda's lg_UG from the zone (it isn't generated).
+cat > "${lb}/config/includes.chroot/etc/calamares/modules/shellprocess-citos.conf" <<'EOF'
+---
+dontChroot: false
+timeout: 60
+script:
+    - "-sed -i s/lg_UG.UTF-8/en_GB.UTF-8/g /etc/default/locale"
+EOF
 
 # After the packages: Calamares uses the CIT-OS branding; its launcher is
 # "Install CIT-OS" with the CIT-OS mark.
 cat > "${lb}/config/hooks/normal/9000-citos.hook.chroot" <<'EOF'
 #!/bin/sh
 set -e
+# New accounts start in zsh (citos-plasma's /etc/skel/.zshrc).
+if [ -f /etc/calamares/modules/users.conf ]; then
+	if grep -q '^userShell:' /etc/calamares/modules/users.conf; then
+		sed -i 's|^userShell:.*|userShell: /usr/bin/zsh|' /etc/calamares/modules/users.conf
+	else
+		echo 'userShell: /usr/bin/zsh' >> /etc/calamares/modules/users.conf
+	fi
+fi
 if [ -f /etc/calamares/settings.conf ]; then
 	sed -i 's/^branding:.*/branding: citos/' /etc/calamares/settings.conf
+	if ! grep -q "shellprocess@citos" /etc/calamares/settings.conf; then
+		sed -i 's/^  - displaymanager$/  - displaymanager\n  - shellprocess@citos/' /etc/calamares/settings.conf
+		printf '\ninstances:\n- id: citos\n  module: shellprocess\n  config: shellprocess-citos.conf\n' >> /etc/calamares/settings.conf
+	fi
 fi
 # Debian 13 names Calamares' launcher calamares-install-debian.desktop; the
 # dock looks for install-debian.desktop, so the CIT-OS one is made under that
@@ -208,9 +246,9 @@ if [ -f "$src" ] && [ ! -f /usr/share/applications/install-debian.desktop ]; the
 fi
 for f in /usr/share/applications/install-debian.desktop /etc/skel/Desktop/install-debian.desktop; do
 	[ -f "$f" ] || continue
-	sed -i -e 's/^Name=.*/Name=Install CIT-OS/' -e '/^Name\[/d' \
-		-e 's/^GenericName=.*/GenericName=Put CIT-OS on this computer/' -e '/^GenericName\[/d' \
-		-e 's/^Comment=.*/Comment=Put CIT-OS on this computer/' -e '/^Comment\[/d' \
+	sed -i -e 's/^Name=.*/Name=Install CybroidOS/' -e '/^Name\[/d' \
+		-e 's/^GenericName=.*/GenericName=Put CybroidOS on this computer/' -e '/^GenericName\[/d' \
+		-e 's/^Comment=.*/Comment=Put CybroidOS on this computer/' -e '/^Comment\[/d' \
 		-e 's/^Icon=.*/Icon=citos-mark/' "$f"
 done
 if [ -f "$src" ] && ! grep -q '^NoDisplay=true' "$src"; then
@@ -251,10 +289,10 @@ lb config \
 	--apt-recommends false \
 	--apt-indices false \
 	--chroot-squashfs-compression-type zstd \
-	--iso-application "CIT-OS" \
-	--iso-publisher "Cybroid Institute of Technology" \
-	--iso-volume "CIT-OS ${VERSION}" \
-	--bootappend-live "boot=live components quiet splash loglevel=3 rd.udev.log_level=3 systemd.show_status=false vt.global_cursor_default=0 username=student user-fullname=Student hostname=citos locales=en_GB.UTF-8 timezone=Africa/Kampala"
+	--iso-application "CybroidOS" \
+	--iso-publisher "Cybroid" \
+	--iso-volume "CybroidOS ${VERSION}" \
+	--bootappend-live "boot=live components quiet splash loglevel=3 rd.udev.log_level=3 systemd.show_status=false vt.global_cursor_default=0 username=cybroid user-fullname=Cybroid hostname=cybroid keyboard-layouts=us locales=en_GB.UTF-8 timezone=Africa/Kampala"
 lb build 2>&1 | tail -n 200
 iso=\$(ls /build/lb/*.iso | head -1)
 sh /build/tools/iso-brand.sh "\$iso" "/out/citos-desktop-${VERSION}-amd64.iso"

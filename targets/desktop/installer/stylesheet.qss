@@ -1,0 +1,101 @@
+/* CybroidOS installer (Calamares branding "citos"): the Horizon look on
+ * every page. Deep navy surfaces, CIT blue for the way on, cyan focus, the
+ * rounded fields and buttons of the desktop. Calamares draws the sidebar
+ * from branding.desc; this styles the pages. */
+
+QWidget {
+	font-family: "Inter", "DejaVu Sans", sans-serif;
+	font-size: 10pt;
+	color: #eef3ff;
+	background-color: #0f1a3a;
+	selection-background-color: #1f5fe0;
+	selection-color: #ffffff;
+}
+QLabel, QRadioButton, QCheckBox, QGroupBox { background: transparent; }
+QLabel:disabled, QRadioButton:disabled, QCheckBox:disabled { color: #6b7a9c; }
+QToolTip { background: #16224a; color: #eef3ff; border: 1px solid #2a3d6e; padding: 4px 8px; border-radius: 6px; }
+
+/* Fields */
+QLineEdit, QComboBox, QSpinBox, QTextEdit, QPlainTextEdit {
+	background: #16224a;
+	border: 1px solid #2a3d6e;
+	border-radius: 8px;
+	padding: 6px 10px;
+	min-height: 22px;
+	color: #eef3ff;
+}
+QLineEdit:focus, QComboBox:focus, QSpinBox:focus, QTextEdit:focus { border: 1px solid #1ccbff; }
+QLineEdit:disabled, QComboBox:disabled { color: #6b7a9c; background: #121c3d; }
+QComboBox::drop-down { border: 0; width: 26px; }
+QComboBox QAbstractItemView {
+	background: #16224a; border: 1px solid #2a3d6e; border-radius: 8px; padding: 4px; outline: 0;
+}
+
+/* Buttons: Next and Install in CIT blue (the way on), the rest quiet. */
+QPushButton {
+	background: #16224a;
+	border: 1px solid #2a3d6e;
+	border-radius: 9px;
+	padding: 7px 20px;
+	min-height: 20px;
+	color: #eef3ff;
+}
+QPushButton:hover { border-color: #1ccbff; }
+QPushButton:pressed { background: #1b2a5a; }
+QPushButton:disabled { color: #6b7a9c; border-color: #1d2a52; background: #121c3d; }
+QPushButton#view-button-next, QPushButton:default {
+	background: #1f5fe0; border: 1px solid #1f5fe0; color: #ffffff; font-weight: 600;
+}
+QPushButton#view-button-next:hover, QPushButton:default:hover { background: #2b6cf0; }
+QPushButton#view-button-next:disabled { background: #1a2c5c; border-color: #1a2c5c; color: #8fa3c8; }
+QPushButton#view-button-cancel { background: transparent; border: 1px solid #2a3d6e; }
+QToolButton { background: transparent; border: 0; border-radius: 6px; padding: 4px; }
+QToolButton:hover { background: #1b2a5a; }
+
+/* Choices */
+QRadioButton, QCheckBox { spacing: 10px; }
+QRadioButton::indicator, QCheckBox::indicator { width: 18px; height: 18px; }
+QRadioButton::indicator { border-radius: 9px; border: 2px solid #4a5b85; background: #0f1a3a; }
+QRadioButton::indicator:checked { border: 5px solid #1ccbff; background: #0f1a3a; }
+QCheckBox::indicator { border-radius: 5px; border: 2px solid #4a5b85; background: #0f1a3a; }
+QCheckBox::indicator:checked { border: 2px solid #1ccbff; background: #1ccbff; }
+
+/* Lists, trees and tables (keyboards, locales, partitions) */
+QListView, QTreeView, QTableView, QListWidget, QTreeWidget, QTableWidget {
+	background: #0b1430;
+	alternate-background-color: #101b3e;
+	border: 1px solid #2a3d6e;
+	border-radius: 10px;
+	padding: 4px;
+	outline: 0;
+}
+QListView::item, QTreeView::item { padding: 4px 6px; border-radius: 6px; }
+QListView::item:hover, QTreeView::item:hover { background: #16224a; }
+QListView::item:selected, QTreeView::item:selected, QTableView::item:selected { background: #1f5fe0; color: #ffffff; }
+QHeaderView::section { background: #16224a; color: #a9b8da; border: 0; padding: 6px; }
+
+/* Progress (installing) */
+QProgressBar {
+	background: #16224a; border: 0; border-radius: 7px; min-height: 14px; max-height: 14px;
+	text-align: center; color: #eef3ff; font-size: 8pt;
+}
+QProgressBar::chunk {
+	border-radius: 7px;
+	background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #3a7cff, stop:1 #1ccbff);
+}
+
+/* Scroll bars: thin, rounded */
+QScrollBar:vertical { background: transparent; width: 10px; margin: 2px; }
+QScrollBar:horizontal { background: transparent; height: 10px; margin: 2px; }
+QScrollBar::handle { background: #2a3d6e; border-radius: 4px; min-height: 24px; min-width: 24px; }
+QScrollBar::handle:hover { background: #3d5fa8; }
+QScrollBar::add-line, QScrollBar::sub-line, QScrollBar::add-page, QScrollBar::sub-page { background: none; border: 0; height: 0; width: 0; }
+
+/* Group boxes and frames */
+QGroupBox { border: 1px solid #2a3d6e; border-radius: 10px; margin-top: 14px; padding-top: 8px; }
+QGroupBox::title { subcontrol-origin: margin; left: 12px; padding: 0 4px; color: #a9b8da; }
+QFrame[frameShape="4"], QFrame[frameShape="5"] { color: #2a3d6e; }
+
+/* Message boxes */
+QMessageBox { background: #0f1a3a; }
+QDialog { background: #0f1a3a; }

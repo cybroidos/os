@@ -84,8 +84,8 @@ def main(out):
             f.write_text(svg(top, bottom, path))
         (root / "index.theme").write_text(
             "[Icon Theme]\n"
-            f"Name={theme.replace('-', ' ').replace('CIT OS', 'CIT-OS')}\n"
-            "Comment=CIT-OS Hex: the dock's apps as tiles, the rest from WhiteSur\n"
+            f"Name={theme.replace('CIT-OS-', 'CybroidOS ').replace('-', ' ')}\n"
+            "Comment=CybroidOS Hex: the dock's apps as tiles, the rest from WhiteSur\n"
             f"Inherits={inherits},hicolor\n"
             "Directories=apps/scalable,places/scalable\n\n"
             "[apps/scalable]\nContext=Applications\nSize=128\nMinSize=16\nMaxSize=512\nType=Scalable\n\n"

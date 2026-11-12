@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>New tab</title>
+<!-- CybroidOS start page (citos-plasma): Firefox's home page. Search goes
+     to Google; the tiles are the places people open most. Local, so it
+     shows at once and needs no connection until you search. -->
+<style>
+:root {
+	--bg1: #0f2152; --bg2: #071027; --ink: #eef3ff; --soft: #a9b8da;
+	--field: rgba(255,255,255,.08); --line: rgba(255,255,255,.14); --acc: #1ccbff; --tile: rgba(255,255,255,.06);
+	color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+	:root {
+		--bg1: #eef4ff; --bg2: #bcd2fa; --ink: #0b1634; --soft: #4a5b85;
+		--field: rgba(255,255,255,.8); --line: rgba(13,21,48,.12); --acc: #1f5fe0; --tile: rgba(255,255,255,.55);
+		color-scheme: light;
+	}
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+	background: radial-gradient(ellipse at 50% 30%, var(--bg1), var(--bg2) 75%) fixed;
+	color: var(--ink); font: 15px/1.4 "Inter", system-ui, sans-serif;
+	display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px;
+	padding: 24px 16px;
+}
+.mark { width: 92px; height: 92px; }
+.clock { font-size: 15px; color: var(--soft); letter-spacing: .3px; }
+.clock b { color: var(--ink); font-weight: 600; font-size: 40px; display: block; text-align: center; letter-spacing: 0; }
+form { width: min(620px, 100%); }
+.search {
+	display: flex; align-items: center; gap: 10px; height: 54px; padding: 0 20px;
+	background: var(--field); border: 1px solid var(--line); border-radius: 27px;
+}
+.search:focus-within { border-color: var(--acc); box-shadow: 0 0 0 3px color-mix(in srgb, var(--acc) 25%, transparent); }
+.search svg { flex: none; opacity: .7; }
+.search input {
+	flex: 1; border: 0; outline: 0; background: transparent; color: var(--ink); font: inherit; font-size: 17px;
+}
+.search input::placeholder { color: var(--soft); }
+.tiles { display: grid; grid-template-columns: repeat(6, 92px); gap: 14px; }
+@media (max-width: 680px) { .tiles { grid-template-columns: repeat(3, 92px); } }
+.tiles a {
+	display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 14px 6px 10px;
+	border-radius: 16px; background: var(--tile); border: 1px solid var(--line);
+	color: var(--ink); text-decoration: none; font-size: 12.5px;
+}
+.tiles a:hover, .tiles a:focus-visible { border-color: var(--acc); outline: 0; }
+.tiles .ic {
+	width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center;
+	font-weight: 700; font-size: 17px; color: #fff;
+}
+footer { color: var(--soft); font-size: 12px; }
+</style>
+</head>
+<body>
+<svg class="mark" viewBox="80 60 600 660" aria-label="CybroidOS">
+	<defs><linearGradient id="mk" gradientUnits="userSpaceOnUse" x1="170" y1="640" x2="640" y2="110">
+		<stop offset="0" stop-color="#3a7cff"/><stop offset=".55" stop-color="#2c9dff"/><stop offset="1" stop-color="#1ccbff"/></linearGradient></defs>
+	<g fill="none">
+		<path d="M447.8 151.7 A228 228 0 0 0 253.3 533.5" stroke="url(#mk)" stroke-width="85"/>
+		<path d="M264.5 544.7 A228 228 0 0 0 584.0 536.4" stroke="url(#mk)" stroke-width="85"/>
+		<path d="M463.5 154.2 A228 228 0 0 1 589.4 225.4" stroke="url(#mk)" stroke-width="85"/>
+		<g stroke="#18d8ff" stroke-width="8" stroke-linecap="round">
+			<path d="M215.9 151.3 A305 305 0 0 1 624.1 151.3"/><path d="M167.1 207.4 A305 305 0 0 0 115.2 367.4"/>
+			<path d="M120.6 436.2 A305 305 0 0 0 377.6 680.0"/><path d="M446.6 681.8 A305 305 0 0 0 628.0 601.1"/>
+			<path d="M368.0 235.2 A152 152 0 0 0 363.1 518.9"/></g>
+		<g fill="#18d8ff"><circle cx="215.9" cy="151.3" r="16"/><circle cx="624.1" cy="151.3" r="16"/><circle cx="167.1" cy="207.4" r="16"/>
+			<circle cx="120.6" cy="436.2" r="16"/><circle cx="377.6" cy="680" r="16"/><circle cx="446.6" cy="681.8" r="16"/>
+			<circle cx="628" cy="601.1" r="16"/><circle cx="368" cy="235.2" r="16"/><circle cx="363.1" cy="518.9" r="16"/></g>
+	</g>
+</svg>
+<div class="clock" id="clock"><b id="time"></b><span id="date"></span></div>
+<form action="https://www.google.com/search" method="get" role="search">
+	<label class="search">
+		<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M20 20l-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+		<input name="q" placeholder="Search Google or type a web address" autocomplete="off" autofocus aria-label="Search Google">
+	</label>
+</form>
+<nav class="tiles" aria-label="Places">
+	<a href="https://cybroid.com"><span class="ic" style="background:#1f5fe0">C</span>Cybroid</a>
+	<a href="https://hub.cybroid.com"><span class="ic" style="background:#0b8fc4">H</span>CIT Hub</a>
+	<a href="https://mail.google.com"><span class="ic" style="background:#c5402f">M</span>Gmail</a>
+	<a href="https://www.youtube.com"><span class="ic" style="background:#d42b2b">▶</span>YouTube</a>
+	<a href="https://www.wikipedia.org"><span class="ic" style="background:#4a5b85">W</span>Wikipedia</a>
+	<a href="https://maps.google.com"><span class="ic" style="background:#2f8f5b">⌖</span>Maps</a>
+</nav>
+<footer>CybroidOS</footer>
+<script>
+// A typed address opens the site; anything else is a Google search.
+document.querySelector('form').addEventListener('submit', (e) => {
+	const q = e.target.q.value.trim();
+	if (/^[a-z0-9-]+(\.[a-z0-9-]+)+(\/\S*)?$/i.test(q) && !/\s/.test(q)) {
+		e.preventDefault();
+		location.href = 'https://' + q;
+	}
+});
+function tick() {
+	const d = new Date();
+	document.getElementById('time').textContent =
+		d.toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true }).toUpperCase();
+	document.getElementById('date').textContent =
+		d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+}
+tick(); setInterval(tick, 10000);
+</script>
+</body>
+</html>

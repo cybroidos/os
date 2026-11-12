@@ -1,12 +1,12 @@
 Package: citos-artwork
 Version: @VERSION@
 Architecture: all
-Maintainer: CIT-OS maintainers <citos@cybroid.com>
+Maintainer: CybroidOS maintainers <citos@cybroid.com>
 Homepage: https://github.com/cybroidinstitute/cit-os
 Section: graphics
 Priority: optional
 Depends: citos-base (>= @VERSION@)
-Description: CIT-OS icons and wallpapers
- The CIT-OS logo as hicolor theme icons and PNGs, and the CIT-OS
+Description: CybroidOS icons and wallpapers
+ The CybroidOS logo as hicolor theme icons and PNGs, and the CybroidOS
  wallpapers at 1080p, 1440p and 2160p. For desktops, servers with a
  desktop, and any screen that shows the brand.

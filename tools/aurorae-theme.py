@@ -420,7 +420,7 @@ def write(out):
             "Description": "Round coloured buttons, a centred title and a soft shadow",
             "Id": NAME,
             "License": "GPL-2.0-or-later",
-            "Name": NAME,
+            "Name": NAME.replace("CIT-OS", "CybroidOS"),
             "Version": "1.0",
             "Website": "https://cybroid.com",
         },

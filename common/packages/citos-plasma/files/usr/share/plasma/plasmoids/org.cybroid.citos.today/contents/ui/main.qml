@@ -69,7 +69,7 @@ PlasmoidItem {
             anchors.centerIn: parent
             spacing: 6
             QQC2.Label {
-                text: Qt.formatDate(root.now, "ddd d MMM") + "   " + Qt.formatTime(root.now, "HH:mm")
+                text: Qt.formatDate(root.now, "ddd d MMM") + "   " + Qt.formatTime(root.now, "h:mm AP")
                 color: root.ink
                 font.pixelSize: Math.max(12, Math.round(button.height * 0.46))
                 font.weight: Font.Medium
@@ -109,7 +109,7 @@ PlasmoidItem {
         const s = Math.max(0, (root.now - d) / 1000)
         if (s < 60) return "now"
         if (s < 3600) return Math.floor(s / 60) + " min"
-        if (s < 86400) return Qt.formatTime(d, "HH:mm")
+        if (s < 86400) return Qt.formatTime(d, "h:mm AP")
         return Qt.formatDate(d, "d MMM")
     }
 
@@ -318,9 +318,15 @@ PlasmoidItem {
                     Layout.fillWidth: true
                     Layout.topMargin: 6
                     QQC2.Label { text: Qt.formatDate(root.now, "dddd"); color: root.accent; font.pixelSize: 13; font.weight: Font.DemiBold }
-                    QQC2.Label { text: Qt.formatTime(root.now, "HH:mm"); color: root.ink; font.pixelSize: root.hex ? 38 : 44; font.weight: root.hex ? Font.Medium : Font.DemiBold; font.family: root.hex ? "JetBrains Mono" : Kirigami.Theme.defaultFont.family; Layout.topMargin: root.hex ? -6 : -4; Layout.bottomMargin: root.hex ? -8 : -4 }
+                    RowLayout {
+                        spacing: 6
+                        Layout.topMargin: root.hex ? -6 : -4; Layout.bottomMargin: root.hex ? -8 : -4
+                        QQC2.Label { id: bigTime; text: Qt.formatTime(root.now, "h:mm"); color: root.ink; font.pixelSize: root.hex ? 38 : 44; font.weight: root.hex ? Font.Medium : Font.DemiBold; font.family: root.hex ? "JetBrains Mono" : Kirigami.Theme.defaultFont.family }
+                        // AM or PM, small, beside the time (people read 1:40 as either).
+                        QQC2.Label { Layout.alignment: Qt.AlignBaseline; text: Qt.formatTime(root.now, "AP"); color: root.soft; font.pixelSize: root.hex ? 16 : 18; font.weight: Font.DemiBold; font.family: bigTime.font.family }
+                    }
                     QQC2.Label {
-                        text: Qt.formatDate(root.now, "d MMMM") + (root.weather ? " · " + root.weather : "")
+                        text: Qt.formatDate(root.now, "d MMMM") + " · " + (root.weather || "Kampala")
                         color: root.soft; font.pixelSize: 13; wrapMode: Text.Wrap; Layout.fillWidth: true
                     }
                 }

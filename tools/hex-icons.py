@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
-"""CIT-OS Hex's icon theme: the dock's apps as the design draws them, white
-line icons on navy tiles, each tile its own shade. Everything else comes
-from WhiteSur-dark (Inherits).
+"""CIT-OS Hex's icon themes: the dock's apps as the design draws them, white
+line icons on tiles, each tile its own shade: navy in CIT-OS-Hex, CIT blue
+and slate in CIT-OS-Hex-Light. Everything else comes from WhiteSur-dark or
+WhiteSur-light (Inherits).
 
     tools/hex-icons.py <package root>
 
-Writes usr/share/icons/CIT-OS-Hex. The icons are our own drawings (no other
-company's marks): a grid for Apps, a globe for the web browser, a folder,
-a prompt, code brackets, a gear and a bin.
+Writes usr/share/icons/CIT-OS-Hex and CIT-OS-Hex-Light. The icons are our
+own drawings (no other company's marks): a grid for Apps, a globe for the
+web browser, a folder, a prompt, code brackets, a gear and a bin.
 """
 
 import pathlib
@@ -40,6 +41,20 @@ ICONS = {  # name: (context, top, bottom, path)
 }
 
 
+# Hex Light's tiles (the design's Hex // Light dock), by the dark tile's
+# shade: each lit a little at the top.
+LIGHT = {
+    "#1a4cb0": "#1f5fe0", "#173a7a": "#2b4c8f", "#155083": "#0b8fc4", "#1c2746": "#1d2a4a",
+    "#243872": "#3a5aa8", "#27365f": "#4a5b85",
+}
+TRASH_LIGHT = "#6b7a9c"
+
+
+def lit(c, k=0.14):
+    r, g, b = (int(c[i:i + 2], 16) for i in (1, 3, 5))
+    return "#" + "".join(f"{round(v + (255 - v) * k):02x}" for v in (r, g, b))
+
+
 def svg(top, bottom, path):
     # A 128 tile, 4 px of air round it (as the dock's other icons have), the
     # corners rounded at the design's 10 of 48; the icon 26 of 48 across.
@@ -58,21 +73,25 @@ def svg(top, bottom, path):
 
 
 def main(out):
-    root = pathlib.Path(out) / "usr/share/icons/CIT-OS-Hex"
-    for name, (ctx, top, bottom, path) in ICONS.items():
-        f = root / ctx / "scalable" / f"{name}.svg"
-        f.parent.mkdir(parents=True, exist_ok=True)
-        f.write_text(svg(top, bottom, path))
-    (root / "index.theme").write_text(
-        "[Icon Theme]\n"
-        "Name=CIT-OS Hex\n"
-        "Comment=CIT-OS Hex: the dock's apps as navy tiles, the rest from WhiteSur\n"
-        "Inherits=WhiteSur-dark,breeze-dark,hicolor\n"
-        "Directories=apps/scalable,places/scalable\n\n"
-        "[apps/scalable]\nContext=Applications\nSize=128\nMinSize=16\nMaxSize=512\nType=Scalable\n\n"
-        "[places/scalable]\nContext=Places\nSize=128\nMinSize=16\nMaxSize=512\nType=Scalable\n"
-    )
-    print(f"wrote {len(ICONS)} icons to {root}")
+    for theme, light, inherits in (("CIT-OS-Hex", False, "WhiteSur-dark,breeze-dark"), ("CIT-OS-Hex-Light", True, "WhiteSur-light,breeze")):
+        root = pathlib.Path(out) / "usr/share/icons" / theme
+        for name, (ctx, top, bottom, path) in ICONS.items():
+            if light:
+                bottom = TRASH_LIGHT if ctx == "places" else LIGHT[top]
+                top = lit(bottom)
+            f = root / ctx / "scalable" / f"{name}.svg"
+            f.parent.mkdir(parents=True, exist_ok=True)
+            f.write_text(svg(top, bottom, path))
+        (root / "index.theme").write_text(
+            "[Icon Theme]\n"
+            f"Name={theme.replace('-', ' ').replace('CIT OS', 'CIT-OS')}\n"
+            "Comment=CIT-OS Hex: the dock's apps as tiles, the rest from WhiteSur\n"
+            f"Inherits={inherits},hicolor\n"
+            "Directories=apps/scalable,places/scalable\n\n"
+            "[apps/scalable]\nContext=Applications\nSize=128\nMinSize=16\nMaxSize=512\nType=Scalable\n\n"
+            "[places/scalable]\nContext=Places\nSize=128\nMinSize=16\nMaxSize=512\nType=Scalable\n"
+        )
+        print(f"wrote {len(ICONS)} icons to {root}")
 
 
 if __name__ == "__main__":

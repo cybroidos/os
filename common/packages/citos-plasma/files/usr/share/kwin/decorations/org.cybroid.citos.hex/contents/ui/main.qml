@@ -2,7 +2,8 @@
  * CIT-OS Hex's window title bar (citos-plasma), the HUD design's window: the
  * top-left corner cut as Hangar's panels are, the colour keys at the left,
  * and the title in a tab the bar's top line bends down round, as the
- * desktop's frame bends round "CIT-OS | HEX" under the top bar.
+ * desktop's frame bends round its tab under the top bar. Hex Light is the
+ * same bar in the light palette, chosen by the colour scheme.
  *
  * A QML decoration rather than an Aurorae SVG theme: Aurorae repeats one
  * slice across the bar, so it cannot hold a tab in the middle.
@@ -26,10 +27,27 @@ Decoration {
     readonly property int padR: max ? 0 : 24
     readonly property int padB: max ? 0 : 28
 
-    readonly property color acc: "#1ccbff"
-    readonly property color blue: "#3a7cff"
-    readonly property color line: act ? "#2a3d6e" : "#16264a"
-    readonly property color fg: act ? "#e8eefc" : "#8fa3c8"
+    // Hex or Hex Light: citos-appearance says which in the decoration's own
+    // settings (auroraerc, group org.cybroid.citos.hex, key light), which KWin
+    // reads again on every reconfigure; the colour scheme's title bar colour
+    // is the fallback (KWin kept the old palette after a switch).
+    property bool lightSetting: false
+    readonly property bool light: lightSetting || options.titleBarColor.hslLightness > 0.6
+    function readSettings() {
+        const v = decoration.readConfig("light", false)
+        root.lightSetting = v === true || String(v) === "true"
+    }
+    Connections {
+        target: decoration
+        function onConfigChanged() { root.readSettings() }
+    }
+    readonly property color acc: light ? "#1f5fe0" : "#1ccbff"
+    readonly property color blue: light ? "#0b8fc4" : "#3a7cff"
+    readonly property color line: act ? (light ? "#9db0d6" : "#2a3d6e") : (light ? "#c9d5ea" : "#16264a")
+    readonly property color fg: act ? (light ? "#0b1634" : "#e8eefc") : (light ? "#4a5b85" : "#8fa3c8")
+    readonly property color barTop: light ? (act ? "#ffffff" : "#eef3fb") : (act ? "#0c1734" : "#070e22")
+    readonly property color barFoot: light ? (act ? "#f6f9ff" : "#eef3fb") : (act ? "#080f24" : "#070e22")
+    readonly property color tabFill: light ? (act ? "#e9eff9" : "#e6eef9") : (act ? "#0a1532" : "#060c1e")
 
     // The window's own rectangle inside the shadow's room.
     readonly property real fx: padL
@@ -55,7 +73,7 @@ Decoration {
             height: root.fh + 2 * k
             radius: k
             color: "#000000"
-            opacity: root.act ? 0.028 : 0.016
+            opacity: (root.act ? 0.028 : 0.016) * (root.light ? 0.6 : 1)
         }
     }
 
@@ -68,8 +86,8 @@ Decoration {
             strokeWidth: 0; strokeColor: "transparent"
             fillGradient: LinearGradient {
                 x1: 0; y1: 0; x2: 0; y2: root.barH
-                GradientStop { position: 0; color: root.act ? "#0c1734" : "#070e22" }
-                GradientStop { position: 1; color: root.act ? "#080f24" : "#070e22" }
+                GradientStop { position: 0; color: root.barTop }
+                GradientStop { position: 1; color: root.barFoot }
             }
             startX: root.cut; startY: 0
             PathLine { x: root.fw; y: 0 }
@@ -94,7 +112,7 @@ Decoration {
         // The tab's fill, a shade deeper than the bar.
         ShapePath {
             strokeWidth: 0; strokeColor: "transparent"
-            fillColor: root.act ? "#0a1532" : "#060c1e"
+            fillColor: root.tabFill
             startX: root.tabL; startY: 0
             PathLine { x: root.tabR; y: 0 }
             PathLine { x: root.tabR - root.slant; y: root.tabH }
@@ -141,7 +159,7 @@ Decoration {
     Rectangle {
         x: root.fx; y: root.fy + root.barH - 1
         width: root.fw; height: 1
-        color: root.act ? "#13224a" : "#101c3c"
+        color: root.light ? (root.act ? "#c9d5ea" : "#d3e0f6") : (root.act ? "#13224a" : "#101c3c")
     }
 
     // The title, in the tab.
@@ -192,15 +210,15 @@ Decoration {
 
     Component {
         id: closeComponent
-        HexButton { buttonType: DecorationOptions.DecorationButtonClose; tint: "#ff6b5a"; glyph: "close" }
+        HexButton { light: root.light; buttonType: DecorationOptions.DecorationButtonClose; tint: "#ff6b5a"; glyph: "close" }
     }
     Component {
         id: minimizeComponent
-        HexButton { buttonType: DecorationOptions.DecorationButtonMinimize; tint: "#f2c14b"; glyph: "minimize" }
+        HexButton { light: root.light; buttonType: DecorationOptions.DecorationButtonMinimize; tint: "#f2c14b"; glyph: "minimize" }
     }
     Component {
         id: maximizeComponent
-        HexButton { buttonType: DecorationOptions.DecorationButtonMaximizeRestore; tint: "#3ee0a0"; glyph: "maximize" }
+        HexButton { light: root.light; buttonType: DecorationOptions.DecorationButtonMaximizeRestore; tint: "#3ee0a0"; glyph: "maximize" }
     }
 
     function place() {
@@ -214,5 +232,8 @@ Decoration {
         padding.bottom = root.padB
     }
     onMaxChanged: place()
-    Component.onCompleted: place()
+    Component.onCompleted: {
+        place()
+        readSettings()
+    }
 }

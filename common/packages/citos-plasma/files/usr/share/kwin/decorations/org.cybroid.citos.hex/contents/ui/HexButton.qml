@@ -11,14 +11,15 @@ DecorationButton {
     id: key
     property color tint
     property string glyph
+    property bool light: false
     width: 13
     height: 13
 
     Rectangle {
         anchors.fill: parent
         radius: 3
-        color: !key.enabled ? "#1d2d55"
-            : decoration.client.active || key.hovered ? key.tint : "#2a3d6e"
+        color: !key.enabled ? (key.light ? "#dfe8f7" : "#1d2d55")
+            : decoration.client.active || key.hovered ? key.tint : (key.light ? "#c9d5ea" : "#2a3d6e")
         opacity: key.pressed ? 0.7 : 1
     }
     Shape {

@@ -1,13 +1,14 @@
 #!/bin/sh
 # citos-appearance dark|light|hex|horizon|toggle|status: the CIT-OS design
 # and appearance, applied live through Plasma's own tools, as Control
-# Centre's Appearance and Design tiles do.
+# Centre's Appearance and Design tiles do. Two designs, each Dark or Light:
 #
-#   dark, light   Horizon, the clean design, in Dark or Light
-#   horizon       Horizon (Dark)
-#   hex           Hex, the HUD design (navy and cyan, a dial and live readouts)
-#   toggle        Horizon's Dark <-> Light (Hex stays Hex)
-#   status        prints dark, light or hex
+#   dark, light   Dark or Light, in the design in use
+#   horizon, hex  Horizon (the clean design) or Hex (the HUD: a dial and live
+#                 readouts), in the appearance in use
+#   horizon-dark, horizon-light, hex-dark, hex-light   both at once
+#   toggle        Dark <-> Light, in the design in use
+#   status        prints dark, light, hex or hex-light
 #
 # Each sets: colours, the Plasma style (top bar, popups), icons, window title
 # bars and corners, app controls (Kvantum for Horizon, Breeze for Hex), the
@@ -20,40 +21,55 @@
 set -eu
 current() {
 	case "$(kreadconfig6 --file kdeglobals --group General --key ColorScheme)" in
-	*Hex) echo hex ;;
-	*Light) echo light ;;
-	*) echo dark ;;
+	*HexLight) echo "hex light" ;;
+	*Hex) echo "hex dark" ;;
+	*Light) echo "horizon light" ;;
+	*) echo "horizon dark" ;;
 	esac
 }
-was="$(current)"
-mode="${1:-status}"
-case "$mode" in
-toggle) if [ "$was" = light ]; then mode=dark; elif [ "$was" = dark ]; then mode=light; else mode=hex; fi ;;
-horizon) mode=dark ;;
-esac
-case "$mode" in
-light)
-	kv=CIT-OSLight style_engine=kvantum scheme=CITOSHorizonLight style=citos-light icons=WhiteSur-light
-	deco=__aurorae__svg__CIT-OS-Light lnf=org.cybroid.citos.desktop.light dock=CIT-OS-Light wall=citos-light
-	radius=18 look=card cw=300 ch=176
-	;;
-dark)
-	kv=CIT-OS style_engine=kvantum scheme=CITOSHorizon style=citos icons=WhiteSur-dark
-	deco=__aurorae__svg__CIT-OS lnf=org.cybroid.citos.desktop dock=CIT-OS wall=citos
-	radius=18 look=card cw=300 ch=176
-	;;
-hex)
-	kv=CIT-OS style_engine=Breeze scheme=CITOSHex style=citos-hex icons=CIT-OS-Hex
-	deco=org.cybroid.citos.hex lnf=org.cybroid.citos.hex dock=CIT-OS-Hex wall=citos-hex
-	radius=2 look=hud cw=320 ch=196
-	;;
+set -- "${1:-status}"
+read -r was_design was_tone <<EOF_
+$(current)
+EOF_
+design="$was_design" tone="$was_tone"
+case "$1" in
+dark | light) tone="$1" ;;
+horizon | hex) design="$1" ;;
+horizon-dark | horizon-light | hex-dark | hex-light) design="${1%-*}" tone="${1#*-}" ;;
+toggle) if [ "$tone" = light ]; then tone=dark; else tone=light; fi ;;
 status)
-	echo "$was"
+	if [ "$was_design" = hex ]; then
+		[ "$was_tone" = light ] && echo hex-light || echo hex
+	else
+		echo "$was_tone"
+	fi
 	exit 0
 	;;
 *)
 	echo "usage: citos-appearance dark|light|hex|horizon|toggle|status" >&2
 	exit 2
+	;;
+esac
+case "$design-$tone" in
+horizon-light)
+	kv=CIT-OSLight style_engine=kvantum scheme=CITOSHorizonLight style=citos-light icons=WhiteSur-light
+	deco=__aurorae__svg__CIT-OS-Light lnf=org.cybroid.citos.desktop.light dock=CIT-OS-Light wall=citos-light
+	radius=18 look=card cw=300 ch=176
+	;;
+horizon-dark)
+	kv=CIT-OS style_engine=kvantum scheme=CITOSHorizon style=citos icons=WhiteSur-dark
+	deco=__aurorae__svg__CIT-OS lnf=org.cybroid.citos.desktop dock=CIT-OS wall=citos
+	radius=18 look=card cw=300 ch=176
+	;;
+hex-dark)
+	kv=CIT-OS style_engine=Breeze scheme=CITOSHex style=citos-hex icons=CIT-OS-Hex
+	deco=org.cybroid.citos.hex lnf=org.cybroid.citos.hex dock=CIT-OS-Hex wall=citos-hex
+	radius=2 look=hud cw=320 ch=196
+	;;
+hex-light)
+	kv=CIT-OSLight style_engine=Breeze scheme=CITOSHexLight style=citos-hex-light icons=CIT-OS-Hex-Light
+	deco=org.cybroid.citos.hex lnf=org.cybroid.citos.hex.light dock=CIT-OS-Hex-Light wall=citos-hex-light
+	radius=2 look=hud cw=320 ch=196
 	;;
 esac
 kwriteconfig6 --file kdeglobals --group KDE --key LookAndFeelPackage "$lnf"
@@ -75,6 +91,8 @@ done
 # tab its title sits in), and the corners the rounded-corners effect cuts.
 kwriteconfig6 --file kwinrc --group org.kde.kdecoration2 --key library org.kde.kwin.aurorae
 kwriteconfig6 --file kwinrc --group org.kde.kdecoration2 --key theme "$deco"
+# Hex's title bar draws Dark or Light as its own setting says.
+kwriteconfig6 --file auroraerc --group org.cybroid.citos.hex --key light "$([ "$tone" = light ] && echo true || echo false)"
 kwriteconfig6 --file kwinrc --group Round-Corners --key Size "$radius"
 kwriteconfig6 --file kwinrc --group Round-Corners --key InactiveCornerRadius "$radius"
 qdbus6 org.kde.KWin /KWin reconfigure >/dev/null 2>&1 || true
@@ -98,7 +116,7 @@ fi
 # readout columns beside the wallpaper's dial.
 img="file:///usr/share/backgrounds/citos/$wall-1920x1080.png"
 places="$(qdbus6 org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript "
-var hex = '$mode' == 'hex';
+var hex = '$design' == 'hex';
 var ds = desktops();
 for (var i = 0; i < ds.length; i++) {
     var d = ds[i];
@@ -157,7 +175,7 @@ esac
 # Between designs the widgets change size, which the desktop takes only as it
 # starts. It also saves its own places as it stops, so it is stopped first,
 # the new places written, then started (a moment's blink).
-if { [ "$mode" = hex ] && [ "$was" != hex ]; } || { [ "$mode" != hex ] && [ "$was" = hex ]; }; then
+if [ "$design" != "$was_design" ]; then
 	if systemctl --user stop plasma-plasmashell >/dev/null 2>&1; then
 		printf '%s\n' "$places" | while read -r cid size where; do
 			[ -n "$where" ] || continue
@@ -168,4 +186,4 @@ if { [ "$mode" = hex ] && [ "$was" != hex ]; } || { [ "$mode" != hex ] && [ "$wa
 		systemctl --user start plasma-plasmashell >/dev/null 2>&1 || true
 	fi
 fi
-echo "$mode"
+"$0" status

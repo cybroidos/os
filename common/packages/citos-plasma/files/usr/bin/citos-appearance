@@ -43,7 +43,7 @@ dark)
 	radius=18 look=card cw=300 ch=176
 	;;
 hex)
-	kv=CIT-OS style_engine=Breeze scheme=CITOSHex style=citos-hex icons=WhiteSur-dark
+	kv=CIT-OS style_engine=Breeze scheme=CITOSHex style=citos-hex icons=CIT-OS-Hex
 	deco=CIT-OS-Hex lnf=org.cybroid.citos.hex dock=CIT-OS-Hex wall=citos-hex
 	radius=2 look=hud cw=320 ch=196
 	;;
@@ -96,7 +96,7 @@ fi
 # the desktop widgets: Horizon's two cards at the top corners, or Hex's two
 # readout columns beside the wallpaper's dial.
 img="file:///usr/share/backgrounds/citos/$wall-1920x1080.png"
-qdbus6 org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript "
+places="$(qdbus6 org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript "
 var hex = '$mode' == 'hex';
 var ds = desktops();
 for (var i = 0; i < ds.length; i++) {
@@ -116,8 +116,22 @@ for (var i = 0; i < ds.length; i++) {
             d.writeConfig('FillMode', 2);
         }
     }
-    var ws = d.widgets('org.cybroid.citos.widgets');
-    if (ws.length == 0) continue;
+    var all = d.widgets('org.cybroid.citos.widgets');
+    if (all.length == 0) continue;
+    // Hex's title tab (card 'title'): added in Hex, taken away in Horizon.
+    var ws = [], title = null;
+    for (var j = 0; j < all.length; j++) {
+        all[j].currentConfigGroup = ['General'];
+        if (all[j].readConfig('card') != 'title') ws.push(all[j]);
+        else if (hex && title == null) title = all[j];
+        else all[j].remove();
+    }
+    if (hex && title == null) {
+        title = d.addWidget('org.cybroid.citos.widgets', Math.round(g.width / 2 - 200), 0, 400, 64);
+        title.currentConfigGroup = ['General'];
+        title.writeConfig('card', 'title');
+        title.writeConfig('look', 'hud');
+    }
     // Hex: two columns between the screen's edge and the ends of the dial's
     // leaders (render-brand.py, HEX_*: in units of the picture's height,
     // the column from 96 to 860, the leaders ending 440 from the centre).
@@ -131,15 +145,15 @@ for (var i = 0; i < ds.length; i++) {
         ws[j].currentConfigGroup = ['General'];
         ws[j].writeConfig('look', '$look');
         var right = ws[j].readConfig('card') == 'system';
-        if (hex)
-            places += 'Applet-' + ws[j].id + ':' + (right ? rx + ',' + top + ',' + rw : lx + ',' + top + ',' + lw) + ',' + colH + ',0;';
-        else
-            places += 'Applet-' + ws[j].id + ':' + (right ? g.width - $cw - 40 : 40) + ',56,$cw,$ch,0;';
+        var r = hex ? [right ? rx : lx, top, right ? rw : lw, colH] : [right ? g.width - $cw - 40 : 40, 56, $cw, $ch];
+        places += 'Applet-' + ws[j].id + ':' + r.join(',') + ',0;';
     }
+    if (title) places += 'Applet-' + title.id + ':' + Math.round(g.width / 2 - 200) + ',0,400,64,0;';
     d.currentConfigGroup = [];
     d.writeConfig('ItemGeometries-' + g.width + 'x' + g.height, places);
     d.writeConfig('ItemGeometriesHorizontal', places);
-}" >/dev/null 2>&1 || true
+    print(d.id + ' ' + g.width + 'x' + g.height + ' ' + places);
+}" 2>/dev/null || true)"
 lock="$(kreadconfig6 --file kscreenlockerrc --group Greeter --group Wallpaper --group org.kde.image --group General --key Image)"
 case "$lock" in
 "" | *"/backgrounds/citos/"*)
@@ -147,9 +161,18 @@ case "$lock" in
 	kwriteconfig6 --file kscreenlockerrc --group Greeter --group Wallpaper --group org.kde.image --group General --key PreviewImage "$img"
 	;;
 esac
-# Between designs the widgets change size: the desktop takes the new places
-# when it starts again (a moment's blink).
+# Between designs the widgets change size, which the desktop takes only as it
+# starts. It also saves its own places as it stops, so it is stopped first,
+# the new places written, then started (a moment's blink).
 if { [ "$mode" = hex ] && [ "$was" != hex ]; } || { [ "$mode" != hex ] && [ "$was" = hex ]; }; then
-	systemctl --user restart plasma-plasmashell >/dev/null 2>&1 || true
+	if systemctl --user stop plasma-plasmashell >/dev/null 2>&1; then
+		printf '%s\n' "$places" | while read -r cid size where; do
+			[ -n "$where" ] || continue
+			for key in "ItemGeometries-$size" ItemGeometriesHorizontal; do
+				kwriteconfig6 --file plasma-org.kde.plasma.desktop-appletsrc --group Containments --group "$cid" --key "$key" "$where"
+			done
+		done
+		systemctl --user start plasma-plasmashell >/dev/null 2>&1 || true
+	fi
 fi
 echo "$mode"

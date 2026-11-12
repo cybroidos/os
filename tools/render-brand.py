@@ -238,6 +238,7 @@ HEX_DIAG = 127    # where the four slanting leaders leave the dial
 HEX_ELBOW = 288   # where they turn level
 HEX_SIDE = 300    # where the two level leaders leave it
 HEX_END = 440     # where every leader ends, from the centre line
+HEX_TAB = 42      # the title tab's foot, below the top bar's 30 px
 
 
 def hex_wallpaper(W: int = 1920, H: int = 1080) -> str:
@@ -268,7 +269,7 @@ def hex_wallpaper(W: int = 1920, H: int = 1080) -> str:
     # The frame: notched under the top bar's tab, at both sides and above the
     # dock, with lit corners. The top bar covers the top 30 or so pixels.
     e, top, bot = 20 * u, 30 + 22 * u, H - 20 * u
-    k, n = 24 * u, 20 * u  # corner cut, notch depth
+    k, n = 24 * u, 26 * u  # corner cut, notch depth
     tn, bn, sn = 200 * u, 264 * u, 45 * u  # half-widths of the notches
     frame = (
         f"M{f(e + k)} {f(top)} H{f(cx - tn - n)} L{f(cx - tn)} {f(top + n)} H{f(cx + tn)} L{f(cx + tn + n)} {f(top)} "
@@ -289,20 +290,15 @@ def hex_wallpaper(W: int = 1920, H: int = 1080) -> str:
     out.append(f'<path d="{lit}" fill="none" stroke="#1ccbff" stroke-width="{f(2 * u)}"/>')
     for x, y in ((e + 32 * u, top + 32 * u), (W - e - 32 * u, top + 32 * u), (e + 32 * u, bot - 32 * u), (W - e - 32 * u, bot - 32 * u)):
         out.append(f'<circle cx="{f(x)}" cy="{f(y)}" r="{f(6 * u)}" fill="#030713" stroke="#1ccbff" stroke-width="{f(1.5 * u)}"/>')
-    # The tab under the top bar, in the top notch: a small hexagon between two
-    # rules, the mark of the design.
-    tw, th = 136 * u, top + 10 * u
+    # The tab under the top bar, in the top notch: Hex's title widget writes
+    # "CIT-OS | <the app in front>" in it (the text is live, so not drawn
+    # here), midway between the top bar and the tab's foot.
+    tw, th = 136 * u, 30 + HEX_TAB * u
     out.append(
         f'<path d="M{f(cx - tw)} 0 H{f(cx + tw)} L{f(cx + tw - 16 * u)} {f(th)} H{f(cx - tw + 16 * u)} Z" fill="#0a1532"/>'
     )
-    hx = lambda r, x0, y0: " ".join(
-        f"{f(x0 + r * c)},{f(y0 + r * s)}" for c, s in ((0, -1), (0.866, -0.5), (0.866, 0.5), (0, 1), (-0.866, 0.5), (-0.866, -0.5))
-    )
-    ty = th - 14 * u
-    out.append(f'<polygon points="{hx(7 * u, cx, ty)}" fill="#1ccbff"/>')
     out.append(
-        f'<path d="M{f(cx - 80 * u)} {f(ty)} H{f(cx - 18 * u)} M{f(cx + 18 * u)} {f(ty)} H{f(cx + 80 * u)}" '
-        f'stroke="#3d5fa8" stroke-width="{f(1.5 * u)}"/>'
+        f'<path d="M{f(cx - tw + 16 * u)} {f(th)} H{f(cx + tw - 16 * u)}" stroke="#1d3266" stroke-width="{f(u)}"/>'
     )
     # A light on the floor under the dial.
     out.append(f'<ellipse cx="{f(cx)}" cy="{f(cy + 358 * u)}" rx="{f(480 * u)}" ry="{f(29 * u)}" fill="url(#floor)"/>')

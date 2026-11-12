@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Patches Plank's source so a bottom dock floats above the screen's edge.
+"""Patches Plank's source: a bottom dock floats above the screen's edge, and
+running apps can be marked by a flat hexagon (CIT-OS Hex).
 
 Plank always draws its strip flush with the edge. macOS's Dock (and Plasma's
 floating panels) sit a few pixels above it. This adds PLANK_EDGE_GAP (pixels,
@@ -7,6 +8,9 @@ read from the environment at start, bottom docks only): the gap counts as
 part of the dock's bottom padding, so the icons rise, the hidden dock still
 wakes at the very edge and the space under the strip still belongs to the
 dock, while the strip and the running-app dots are drawn above the gap.
+
+PLANK_INDICATOR (a colour, e.g. "#1ccbff") swaps the running-app glow for a
+small solid hexagon in that colour: Hex's mark.
 
     tools/plank-edge-gap.py <plank source dir>
 
@@ -45,6 +49,29 @@ EDITS = {
         (
             "\t\t\t\tx = (int) Math.round (center_first.x - padding_first);\n\t\t\t\ty += height - DockBackgroundHeight;\n",
             "\t\t\t\tx = (int) Math.round (center_first.x - padding_first);\n\t\t\t\ty += height - DockBackgroundHeight - EdgeGap;\n",
+        ),
+    ],
+    "lib/Drawing/DockTheme.vala": [
+        # CIT-OS Hex: running apps marked by a small solid hexagon in one
+        # colour (PLANK_INDICATOR, e.g. "#1ccbff") instead of the glow.
+        (
+            "\t\t\tvar x = size / 2;\n\t\t\tvar y = x;\n\t\t\t\n\t\t\tcr.move_to (x, y);\n",
+            "\t\t\tvar x = size / 2;\n\t\t\tvar y = x;\n\t\t\t\n"
+            "\t\t\tvar hex = Environment.get_variable (\"PLANK_INDICATOR\") ?? \"\";\n"
+            "\t\t\tGdk.RGBA flat = Gdk.RGBA ();\n"
+            "\t\t\tif (hex != \"\" && flat.parse (hex)) {\n"
+            "\t\t\t\tvar r = double.max (2.5, size * 0.19);\n"
+            "\t\t\t\tfor (var k = 0; k < 6; k++) {\n"
+            "\t\t\t\t\tvar a = Math.PI / 3.0 * k - Math.PI / 2.0;\n"
+            "\t\t\t\t\tif (k == 0) cr.move_to (x + r * Math.cos (a), y + r * Math.sin (a));\n"
+            "\t\t\t\t\telse cr.line_to (x + r * Math.cos (a), y + r * Math.sin (a));\n"
+            "\t\t\t\t}\n"
+            "\t\t\t\tcr.close_path ();\n"
+            "\t\t\t\tcr.set_source_rgba (flat.red, flat.green, flat.blue, flat.alpha);\n"
+            "\t\t\t\tcr.fill ();\n"
+            "\t\t\t\treturn surface;\n"
+            "\t\t\t}\n"
+            "\t\t\t\n\t\t\tcr.move_to (x, y);\n",
         ),
     ],
     "lib/DockRenderer.vala": [

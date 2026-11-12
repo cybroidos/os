@@ -43,6 +43,8 @@ if [ "$1" = "configure" ]; then
 	if [ -f /etc/default/zramswap ] && ! grep -q '^PERCENT=' /etc/default/zramswap; then
 		printf '\n# CybroidOS: half the memory as compressed swap.\nALGO=zstd\nPERCENT=50\n' >> /etc/default/zramswap
 	fi
+	# SSDs stay fast: a weekly trim (util-linux's timer).
+	systemctl enable fstrim.timer >/dev/null 2>&1 || true
 	# Start graphical, on the CybroidOS sign-in screen.
 	systemctl set-default graphical.target >/dev/null 2>&1 || true
 	if [ -f /etc/X11/default-display-manager ]; then

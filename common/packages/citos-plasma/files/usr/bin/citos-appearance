@@ -19,6 +19,18 @@
 # Not plasma-apply-lookandfeel: it writes the theme as defaults
 # (~/.config/kdedefaults), which the running shell and KWin don't reload.
 set -eu
+# Changing design restarts the desktop shell, and Control Centre runs this
+# from inside it: stopping the shell killed this script half way (Qt kills
+# the processes it started), before it started the shell again: a black
+# screen and no dock. So the work runs as a user service of its own, which
+# the shell never owned; --wait keeps it in step for whoever called it.
+if [ "${1:-status}" != status ] && [ -z "${CITOS_APPEARANCE_SERVICE:-}" ] && command -v systemd-run >/dev/null; then
+	exec systemd-run --user --wait --quiet --collect --unit="citos-appearance-$$" \
+		--setenv=CITOS_APPEARANCE_SERVICE=1 --setenv=DISPLAY --setenv=XAUTHORITY --setenv=PATH \
+		--setenv=XDG_CURRENT_DESKTOP --setenv=XDG_DATA_DIRS --setenv=XDG_CONFIG_DIRS --setenv=XDG_MENU_PREFIX \
+		--setenv=KDE_FULL_SESSION --setenv=KDE_SESSION_VERSION --setenv=DESKTOP_SESSION \
+		-- "$0" "$@"
+fi
 current() {
 	case "$(kreadconfig6 --file kdeglobals --group General --key ColorScheme)" in
 	*HexLight) echo "hex light" ;;
@@ -73,6 +85,15 @@ hex-light)
 	;;
 esac
 kwriteconfig6 --file kdeglobals --group KDE --key LookAndFeelPackage "$lnf"
+# System Settings' Quick Settings offers a light and a dark theme: the two of
+# the design in use, so it never swaps Hex for Horizon.
+if [ "$design" = hex ]; then
+	kwriteconfig6 --file kdeglobals --group KDE --key DefaultLightLookAndFeel org.cybroid.citos.hex.light
+	kwriteconfig6 --file kdeglobals --group KDE --key DefaultDarkLookAndFeel org.cybroid.citos.hex
+else
+	kwriteconfig6 --file kdeglobals --group KDE --key DefaultLightLookAndFeel org.cybroid.citos.desktop.light
+	kwriteconfig6 --file kdeglobals --group KDE --key DefaultDarkLookAndFeel org.cybroid.citos.desktop
+fi
 # App controls: Kvantum in CIT-OS's themes (Horizon) or Breeze (Hex); apps
 # already open take it when next opened.
 kwriteconfig6 --file kdeglobals --group KDE --key widgetStyle "$style_engine"
@@ -106,10 +127,14 @@ gsettings set org.gnome.desktop.interface icon-theme "$icons" 2>/dev/null || tru
 # The dock (Plank keeps its settings in dconf); it loads icons once, so it
 # starts again with the new ones.
 gsettings set net.launchpad.plank.dock.settings:/net/launchpad/plank/docks/dock1/ theme "$dock" 2>/dev/null || true
-if pkill -x plank 2>/dev/null; then
-	sleep 0.5
-	(setsid /usr/libexec/citos/dock >/dev/null 2>&1 &)
-fi
+# Started again in a unit of its own (this script's service would take it
+# down when it ends), and started too if it wasn't running.
+pkill -x plank 2>/dev/null && sleep 0.5
+systemctl --user stop citos-dock.service >/dev/null 2>&1 || true
+systemd-run --user --quiet --collect --unit=citos-dock \
+	--setenv=DISPLAY --setenv=XAUTHORITY --setenv=PATH --setenv=XDG_CURRENT_DESKTOP --setenv=XDG_DATA_DIRS \
+	--setenv=XDG_CONFIG_DIRS --setenv=XDG_MENU_PREFIX --setenv=KDE_FULL_SESSION \
+	/usr/libexec/citos/dock >/dev/null 2>&1 || (setsid /usr/libexec/citos/dock >/dev/null 2>&1 &)
 
 # The wallpaper (where it is CIT-OS's own: a picture someone chose stays) and
 # the desktop widgets: Horizon's two cards at the top corners, or Hex's two

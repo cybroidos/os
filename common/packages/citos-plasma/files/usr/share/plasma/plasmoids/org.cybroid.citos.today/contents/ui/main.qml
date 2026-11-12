@@ -5,6 +5,10 @@
  * design: Today (the day, the time, the date and Kampala's weather), This
  * computer (memory, disk, Tower) and the month. Weather is Open-Meteo's
  * (free, no key); without a connection the line simply leaves it out.
+ *
+ * In Hex (the colour scheme's name, read as it opens) the cards are Hex's
+ * panels: the top-left and bottom-right corners cut, a hairline lit at the
+ * cut, mono figures and a square mark on today.
  */
 import QtQuick
 import QtQuick.Controls as QQC2
@@ -14,6 +18,7 @@ import org.kde.plasma.core as PlasmaCore
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.plasma5support as P5Support
 import org.kde.notificationmanager as NotificationManager
+import QtQuick.Shapes
 
 PlasmoidItem {
     id: root
@@ -25,6 +30,8 @@ PlasmoidItem {
     readonly property color accent: Kirigami.Theme.focusColor
     readonly property color onAccent: Kirigami.ColorUtils.brightnessForColor(accent) === Kirigami.ColorUtils.Light ? "#06122e" : "#ffffff"
     readonly property color card: Qt.alpha(Kirigami.Theme.textColor, 0.06)
+
+    property bool hex: false
 
     property date now: new Date()
     property string weather: ""
@@ -120,6 +127,7 @@ PlasmoidItem {
     }
 
     function refresh() {
+        sh.run("kreadconfig6 --file kdeglobals --group General --key ColorScheme", (out) => { root.hex = /Hex/.test(out) })
         sh.run("sh -c 'hostname; nproc; grep -E \"^(MemTotal|MemAvailable):\" /proc/meminfo; df -h --output=avail,size / | tail -1'", (out) => {
             const l = out.trim().split("\n")
             root.host = l[0] || ""
@@ -170,12 +178,46 @@ PlasmoidItem {
         return "thunderstorms"
     }
 
-    component Card: Rectangle {
+    component Card: Item {
+        id: cardItem
         default property alias content: inner.data
-        radius: 18
-        color: root.card
-        border.color: Qt.alpha(root.ink, 0.07)
         implicitHeight: inner.implicitHeight + 28
+        // Horizon: a rounded card.
+        Rectangle {
+            anchors.fill: parent
+            visible: !root.hex
+            radius: 18
+            color: root.card
+            border.color: Qt.alpha(root.ink, 0.07)
+        }
+        // Hex: a panel with two corners cut, its hairline lit at the cut.
+        Shape {
+            anchors.fill: parent
+            visible: root.hex
+            preferredRendererType: Shape.CurveRenderer
+            ShapePath {
+                strokeWidth: 1
+                strokeColor: Qt.alpha(root.ink, 0.16)
+                fillColor: root.card
+                readonly property real c: 12
+                startX: c; startY: 0.5
+                PathLine { x: cardItem.width - 0.5; y: 0.5 }
+                PathLine { x: cardItem.width - 0.5; y: cardItem.height - 12 }
+                PathLine { x: cardItem.width - 12; y: cardItem.height - 0.5 }
+                PathLine { x: 0.5; y: cardItem.height - 0.5 }
+                PathLine { x: 0.5; y: 12 }
+                PathLine { x: 12; y: 0.5 }
+            }
+            ShapePath {
+                strokeWidth: 1.5
+                strokeColor: root.accent
+                fillColor: "transparent"
+                startX: 0.75; startY: 30
+                PathLine { x: 0.75; y: 12 }
+                PathLine { x: 12; y: 0.75 }
+                PathLine { x: 44; y: 0.75 }
+            }
+        }
         ColumnLayout {
             id: inner
             anchors { left: parent.left; right: parent.right; top: parent.top; margins: 14 }
@@ -187,7 +229,7 @@ PlasmoidItem {
         Layout.preferredWidth: 380
         Layout.minimumWidth: 380
         Layout.maximumWidth: 380
-        Layout.preferredHeight: Math.min(720, body.implicitHeight + 24)
+        Layout.preferredHeight: Math.min(720, body.implicitHeight + 32)
         Layout.minimumHeight: 320
 
         QQC2.ScrollView {
@@ -228,8 +270,10 @@ PlasmoidItem {
                         required property var model
                         Layout.fillWidth: true
                         implicitHeight: ncol.implicitHeight + 24
-                        radius: 16
+                        radius: root.hex ? 0 : 16
                         color: nArea.containsMouse ? Qt.alpha(root.ink, 0.11) : root.card
+                        // Hex: lit from its left edge, like Hex's list rows.
+                        Rectangle { visible: root.hex; width: 2; height: parent.height; color: root.accent }
                         MouseArea {
                             id: nArea
                             anchors.fill: parent
@@ -274,7 +318,7 @@ PlasmoidItem {
                     Layout.fillWidth: true
                     Layout.topMargin: 6
                     QQC2.Label { text: Qt.formatDate(root.now, "dddd"); color: root.accent; font.pixelSize: 13; font.weight: Font.DemiBold }
-                    QQC2.Label { text: Qt.formatTime(root.now, "HH:mm"); color: root.ink; font.pixelSize: 44; font.weight: Font.DemiBold; Layout.topMargin: -4; Layout.bottomMargin: -4 }
+                    QQC2.Label { text: Qt.formatTime(root.now, "HH:mm"); color: root.ink; font.pixelSize: root.hex ? 38 : 44; font.weight: root.hex ? Font.Medium : Font.DemiBold; font.family: root.hex ? "JetBrains Mono" : Kirigami.Theme.defaultFont.family; Layout.topMargin: root.hex ? -6 : -4; Layout.bottomMargin: root.hex ? -8 : -4 }
                     QQC2.Label {
                         text: Qt.formatDate(root.now, "d MMMM") + (root.weather ? " · " + root.weather : "")
                         color: root.soft; font.pixelSize: 13; wrapMode: Text.Wrap; Layout.fillWidth: true
@@ -344,7 +388,7 @@ PlasmoidItem {
                             color: today ? root.onAccent : month === root.now.getMonth() ? root.ink : Qt.alpha(root.ink, 0.3)
                             background: Rectangle {
                                 anchors.centerIn: parent
-                                width: 26; height: 26; radius: 13
+                                width: 26; height: 26; radius: root.hex ? 3 : 13
                                 color: today ? root.accent : "transparent"
                             }
                         }

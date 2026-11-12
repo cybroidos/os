@@ -3,6 +3,10 @@
  * desktop, with search as you type. Opened from its icon (the CIT-OS mark in
  * the top bar), the Meta key, Alt+F1 and the dock's Apps tile (it provides
  * the launcher menu). The app list comes from Plasma's own launcher model.
+ *
+ * It follows the design in use (from the colour scheme's name, read as it
+ * opens): Horizon or Hex, Dark or Light. Hex gets its wallpaper behind the
+ * grid, a cut-corner search field and tiles lit from their left edge.
  */
 import QtQuick
 import QtQuick.Window
@@ -12,6 +16,8 @@ import QtQml.Models
 import org.kde.plasma.plasmoid
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.private.kicker 0.1 as Kicker
+import org.kde.plasma.plasma5support as P5Support
+import QtQuick.Shapes
 
 PlasmoidItem {
     id: root
@@ -46,6 +52,27 @@ PlasmoidItem {
         function onActivated() { launchpad.toggle() }
     }
 
+    // The design in use: "CITOSHorizon", "CITOSHorizonLight", "CITOSHex" or
+    // "CITOSHexLight".
+    property string scheme: ""
+    readonly property bool hex: /Hex/.test(scheme)
+    readonly property bool light: /Light/.test(scheme)
+    readonly property color ink: light ? "#0b1634" : "#f2f6ff"
+    readonly property color soft: light ? "#4a5b85" : "#b6c4e4"
+    readonly property color acc: light ? "#1f5fe0" : "#1ccbff"
+    P5Support.DataSource {
+        id: sh
+        engine: "executable"
+        onNewData: (source, data) => {
+            disconnectSource(source)
+            root.scheme = String(data["stdout"] || "").trim()
+        }
+    }
+    function readScheme() {
+        sh.connectSource("kreadconfig6 --file kdeglobals --group General --key ColorScheme")
+    }
+    Component.onCompleted: readScheme()
+
     Kicker.RootModel {
         id: rootModel
         autoPopulate: false
@@ -75,6 +102,7 @@ PlasmoidItem {
                 close()
                 return
             }
+            root.readScheme()
             search.text = ""
             apps.refilter("")
             grid.positionViewAtBeginning()
@@ -98,11 +126,13 @@ PlasmoidItem {
         // (a live blur shows banding in software rendering on VMs).
         Image {
             anchors.fill: parent
-            source: Plasmoid.configuration.backdrop
+            source: root.hex
+                ? "file:///usr/share/backgrounds/citos/citos-" + (root.light ? "hex-light" : "hex") + "-1920x1080.png"
+                : root.light ? "file:///usr/share/backgrounds/citos/citos-light-1920x1080.png" : Plasmoid.configuration.backdrop
             fillMode: Image.PreserveAspectCrop
             asynchronous: true
         }
-        Rectangle { anchors.fill: parent; color: "#99050b20" }
+        Rectangle { anchors.fill: parent; color: root.light ? "#b3e6eefb" : "#99050b20" }
         MouseArea { anchors.fill: parent; onClicked: launchpad.close() }
 
         Item {
@@ -118,23 +148,48 @@ PlasmoidItem {
                 anchors.top: parent.top
                 anchors.topMargin: Math.round(parent.height * 0.06)
                 placeholderText: "Search"
-                color: "#ffffff"
-                placeholderTextColor: "#b6c4e4"
-                font.family: "Inter"
-                font.pixelSize: 15
+                color: root.ink
+                placeholderTextColor: root.soft
+                font.family: root.hex ? "JetBrains Mono" : "Inter"
+                font.pixelSize: root.hex ? 14 : 15
                 leftPadding: 40
                 horizontalAlignment: TextInput.AlignLeft
-                background: Rectangle {
-                    radius: 20
-                    color: "#2effffff"
-                    border.color: search.activeFocus ? "#661ccbff" : "#26ffffff"
-                    border.width: 1
+                background: Item {
+                    // Horizon: a soft pill.
+                    Rectangle {
+                        anchors.fill: parent
+                        visible: !root.hex
+                        radius: 20
+                        color: root.light ? "#b3ffffff" : "#2effffff"
+                        border.color: search.activeFocus ? Qt.alpha(root.acc, 0.4) : root.light ? "#33223a6e" : "#26ffffff"
+                        border.width: 1
+                    }
+                    // Hex: the corners cut (top-left and bottom-right), a
+                    // hairline that lights when it has the focus.
+                    Shape {
+                        anchors.fill: parent
+                        visible: root.hex
+                        preferredRendererType: Shape.CurveRenderer
+                        ShapePath {
+                            strokeWidth: 1
+                            strokeColor: search.activeFocus ? root.acc : root.light ? "#7d9bd3" : "#2a3d6e"
+                            fillColor: root.light ? "#d9ffffff" : "#cc060c1e"
+                            readonly property real c: 10
+                            startX: c; startY: 0.5
+                            PathLine { x: search.width - 0.5; y: 0.5 }
+                            PathLine { x: search.width - 0.5; y: search.height - 10 }
+                            PathLine { x: search.width - 10; y: search.height - 0.5 }
+                            PathLine { x: 0.5; y: search.height - 0.5 }
+                            PathLine { x: 0.5; y: 10 }
+                            PathLine { x: 10; y: 0.5 }
+                        }
+                    }
                     Kirigami.Icon {
                         source: "search"
                         width: 18; height: 18
                         anchors.left: parent.left; anchors.leftMargin: 14
                         anchors.verticalCenter: parent.verticalCenter
-                        color: "#b6c4e4"
+                        color: root.soft
                         isMask: true
                     }
                 }
@@ -165,12 +220,34 @@ PlasmoidItem {
                     height: grid.cellHeight
                     readonly property int sourceRow: DelegateModel.itemsIndex
 
+                    readonly property bool lit: hover.containsMouse || tile.GridView.isCurrentItem && grid.activeFocus
                     Rectangle {
                         anchors.centerIn: parent
                         width: grid.cellWidth - 18
                         height: grid.cellHeight - 14
+                        visible: !root.hex
                         radius: 18
-                        color: hover.containsMouse || tile.GridView.isCurrentItem && grid.activeFocus ? "#24ffffff" : "transparent"
+                        color: tile.lit ? (root.light ? "#33ffffff" : "#24ffffff") : "transparent"
+                    }
+                    // Hex: a wash of the accent, its left edge lit (Hex's
+                    // selected rows), the top-left corner cut.
+                    Shape {
+                        id: hexTile
+                        anchors.centerIn: parent
+                        width: grid.cellWidth - 18
+                        height: grid.cellHeight - 14
+                        visible: root.hex && tile.lit
+                        ShapePath {
+                            strokeWidth: 0; strokeColor: "transparent"
+                            fillColor: Qt.alpha(root.acc, root.light ? 0.14 : 0.16)
+                            startX: 12; startY: 0
+                            PathLine { x: hexTile.width; y: 0 }
+                            PathLine { x: hexTile.width; y: hexTile.height }
+                            PathLine { x: 0; y: hexTile.height }
+                            PathLine { x: 0; y: 12 }
+                            PathLine { x: 12; y: 0 }
+                        }
+                        Rectangle { x: 0; y: 12; width: 2; height: hexTile.height - 12; color: root.acc }
                     }
                     Column {
                         anchors.centerIn: parent
@@ -186,7 +263,7 @@ PlasmoidItem {
                             width: grid.cellWidth - 20
                             horizontalAlignment: Text.AlignHCenter
                             text: model.display
-                            color: "#f2f6ff"
+                            color: root.ink
                             font.family: "Inter"
                             font.pixelSize: 13
                             elide: Text.ElideRight
@@ -234,7 +311,7 @@ PlasmoidItem {
                 anchors.centerIn: grid
                 visible: apps.count === 0 && search.text.length > 0
                 text: "No apps match “" + search.text + "”"
-                color: "#b6c4e4"
+                color: root.soft
                 font.family: "Inter"
                 font.pixelSize: 16
             }

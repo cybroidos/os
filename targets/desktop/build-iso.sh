@@ -49,6 +49,7 @@ cat > "${lb}/config/package-lists/desktop.list.chroot" <<'EOF'
 live-boot
 live-config
 live-config-systemd
+user-setup
 sudo
 locales
 keyboard-configuration
@@ -91,10 +92,19 @@ EOF
 mkdir -p "${lb}/config/includes.chroot/usr/lib/live/config"
 cat > "${lb}/config/includes.chroot/usr/lib/live/config/2000-citos-autologin" <<'EOF'
 #!/bin/sh
-# CIT-OS live: sign the live user in to Plasma (X11) at once.
-user="${LIVE_USERNAME:-student}"
+# CIT-OS live: sign the live user in to Plasma (X11) at once. Written to
+# /etc/sddm.conf as well: live-config's own sddm step writes the Wayland
+# session there, and that file outranks sddm.conf.d.
+user=student
+for a in $(cat /proc/cmdline); do
+	case "$a" in username=* | live-config.username=*) user="${a#*username=}" ;; esac
+done
 mkdir -p /etc/sddm.conf.d
 printf '[Autologin]\nUser=%s\nSession=plasmax11\n' "${user}" > /etc/sddm.conf.d/zz-citos-live.conf
+printf '[Autologin]\nUser=%s\nSession=plasmax11\n' "${user}" > /etc/sddm.conf
+# A live session has no password to unlock with: no screen lock.
+mkdir -p /etc/xdg
+printf '[Daemon]\nAutolock=false\nLockOnResume=false\n' > /etc/xdg/kscreenlockerrc
 EOF
 chmod 0755 "${lb}/config/includes.chroot/usr/lib/live/config/2000-citos-autologin"
 
@@ -189,16 +199,33 @@ set -e
 if [ -f /etc/calamares/settings.conf ]; then
 	sed -i 's/^branding:.*/branding: citos/' /etc/calamares/settings.conf
 fi
+# Debian 13 names Calamares' launcher calamares-install-debian.desktop; the
+# dock looks for install-debian.desktop, so the CIT-OS one is made under that
+# name and Debian's is hidden (and its desktop shortcut left out).
+src=/usr/share/applications/calamares-install-debian.desktop
+if [ -f "$src" ] && [ ! -f /usr/share/applications/install-debian.desktop ]; then
+	cp "$src" /usr/share/applications/install-debian.desktop
+fi
 for f in /usr/share/applications/install-debian.desktop /etc/skel/Desktop/install-debian.desktop; do
 	[ -f "$f" ] || continue
 	sed -i -e 's/^Name=.*/Name=Install CIT-OS/' -e '/^Name\[/d' \
+		-e 's/^GenericName=.*/GenericName=Put CIT-OS on this computer/' -e '/^GenericName\[/d' \
 		-e 's/^Comment=.*/Comment=Put CIT-OS on this computer/' -e '/^Comment\[/d' \
 		-e 's/^Icon=.*/Icon=citos-mark/' "$f"
 done
+if [ -f "$src" ] && ! grep -q '^NoDisplay=true' "$src"; then
+	echo 'NoDisplay=true' >> "$src"
+fi
+rm -f /etc/xdg/autostart/calamares-desktop-icon.desktop
 # No stray blank wallpaper text on the desktop of the live user.
 rm -rf /etc/skel/Desktop
 EOF
 chmod 0755 "${lb}/config/hooks/normal/9000-citos.hook.chroot"
+
+# The boot menus (tools/boot-menu.py, put in by tools/iso-brand.sh after the
+# build): CIT-OS's own in place of live-build's stock Debian ones.
+mkdir -p "${work}/tools"
+cp "${repo}/tools/iso-brand.sh" "${repo}/tools/boot-menu.py" "${work}/tools/"
 
 # The live-build run itself, inside Debian 13.
 cat > "${work}/run.sh" <<EOF
@@ -208,7 +235,7 @@ export DEBIAN_FRONTEND=noninteractive
 apt-get update -q
 apt-get install -y -q --no-install-recommends live-build debootstrap squashfs-tools xorriso \
 	grub-pc-bin grub-efi-amd64-bin grub-efi-amd64-signed shim-signed mtools dosfstools \
-	syslinux syslinux-common isolinux ca-certificates >/dev/null
+	syslinux syslinux-common isolinux ca-certificates python3 librsvg2-bin fonts-dejavu-core >/dev/null
 cd /build/lb
 lb config \
 	--distribution trixie \
@@ -230,7 +257,7 @@ lb config \
 	--bootappend-live "boot=live components quiet splash loglevel=3 rd.udev.log_level=3 systemd.show_status=false vt.global_cursor_default=0 username=student user-fullname=Student hostname=citos locales=en_GB.UTF-8 timezone=Africa/Kampala"
 lb build 2>&1 | tail -n 200
 iso=\$(ls /build/lb/*.iso | head -1)
-cp "\$iso" "/out/citos-desktop-${VERSION}-amd64.iso"
+sh /build/tools/iso-brand.sh "\$iso" "/out/citos-desktop-${VERSION}-amd64.iso"
 EOF
 chmod 0755 "${work}/run.sh"
 

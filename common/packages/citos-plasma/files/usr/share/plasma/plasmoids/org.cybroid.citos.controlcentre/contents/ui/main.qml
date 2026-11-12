@@ -99,7 +99,9 @@ PlasmoidItem {
             root.dark = !/Light/.test(out)
             root.hex = /Hex/.test(out)
         })
-        sh.run("wpctl get-volume @DEFAULT_AUDIO_SINK@", (out, code) => {
+        // PipeWire's stand-in output ("auto_null", when there is no sound card)
+        // counts as no sound: the slider would move nothing.
+        sh.run("sh -c \"wpctl inspect @DEFAULT_AUDIO_SINK@ 2>/dev/null | grep -q auto_null && exit 1; wpctl get-volume @DEFAULT_AUDIO_SINK@\"", (out, code) => {
             const m = out.match(/Volume:\s*([\d.]+)/)
             root.volume = code === 0 && m ? Number(m[1]) : -1
             root.muted = /MUTED/.test(out)

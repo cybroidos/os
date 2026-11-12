@@ -60,7 +60,7 @@ EDITS = {
             "\t\t\tvar hex = Environment.get_variable (\"PLANK_INDICATOR\") ?? \"\";\n"
             "\t\t\tGdk.RGBA flat = Gdk.RGBA ();\n"
             "\t\t\tif (hex != \"\" && flat.parse (hex)) {\n"
-            "\t\t\t\tvar r = double.max (2.5, size * 0.19);\n"
+            "\t\t\t\tvar r = double.max (3.5, size * 0.26);\n"
             "\t\t\t\tfor (var k = 0; k < 6; k++) {\n"
             "\t\t\t\t\tvar a = Math.PI / 3.0 * k - Math.PI / 2.0;\n"
             "\t\t\t\t\tif (k == 0) cr.move_to (x + r * Math.cos (a), y + r * Math.sin (a));\n"

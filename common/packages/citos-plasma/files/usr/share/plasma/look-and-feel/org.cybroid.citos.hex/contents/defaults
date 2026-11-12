@@ -5,7 +5,7 @@ widgetStyle=Breeze
 ColorScheme=CITOSHex
 
 [kdeglobals][Icons]
-Theme=WhiteSur-dark
+Theme=CIT-OS-Hex
 
 [plasmarc][Theme]
 name=citos-hex
@@ -18,7 +18,7 @@ LayoutName=org.kde.breeze.desktop
 
 [kwinrc][org.kde.kdecoration2]
 library=org.kde.kwin.aurorae
-theme=__aurorae__svg__CIT-OS-Hex
+theme=org.cybroid.citos.hex
 
 [ksplashrc][KSplash]
 Theme=org.cybroid.citos.desktop

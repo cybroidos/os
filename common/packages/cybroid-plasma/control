@@ -8,7 +8,7 @@ Priority: optional
 Depends: cybroid-base (>= @VERSION@), cybroid-artwork (>= @VERSION@), cybroid-plymouth-theme (>= @VERSION@),
  plasma-desktop, plasma-workspace, kwin-x11, plasma-integration, kde-cli-tools, kscreen, powerdevil,
  polkit-kde-agent-1, kactivitymanagerd, milou, kinfocenter, systemsettings, xdg-desktop-portal-kde,
- breeze, breeze-cursor-theme, papirus-icon-theme, fonts-inter, fonts-jetbrains-mono, appmenu-gtk3-module, x11-utils,
+ breeze, breeze-cursor-theme, papirus-icon-theme, fonts-inter, fonts-jetbrains-mono, appmenu-gtk3-module, x11-utils, x11-xserver-utils,
  sddm, qml6-module-qtquick, qml6-module-qtquick-controls, qml6-module-qtquick-templates,
  qml6-module-qtquick-layouts, qml6-module-qtquick-window, qml6-module-qtqml-workerscript,
  qml6-module-org-kde-desktop, qt-style-kvantum, xdg-user-dirs,
@@ -17,6 +17,8 @@ Depends: cybroid-base (>= @VERSION@), cybroid-artwork (>= @VERSION@), cybroid-pl
  xrdp, xorgxrdp, dbus-x11, plymouth, plymouth-themes,
  network-manager, plasma-nm, wpasupplicant, iw, wireless-regdb, modemmanager, usb-modeswitch,
  bluez, bluedevil, xserver-xorg-input-libinput, pipewire-pulse, pipewire-alsa, plasma-pa,
+ pipewire-audio, libspa-0.2-bluetooth, alsa-ucm-conf, alsa-utils, rtkit,
+ mesa-va-drivers, intel-media-va-driver, iio-sensor-proxy, switcheroo-control,
  udisks2, kio-extras, ffmpegthumbs, kdegraphics-thumbnailers, exfatprogs, ntfs-3g, dosfstools,
  power-profiles-daemon, brightnessctl, xdg-utils,
  vlc, okular, kcalc, kde-spectacle, kate, plasma-systemmonitor,
@@ -24,7 +26,9 @@ Depends: cybroid-base (>= @VERSION@), cybroid-artwork (>= @VERSION@), cybroid-pl
  gstreamer1.0-plugins-good, gstreamer1.0-plugins-bad, gstreamer1.0-libav,
  fonts-noto-color-emoji, fonts-liberation2,
  zsh, zsh-autosuggestions, zsh-syntax-highlighting, bash-completion,
- cups, cups-filters, print-manager, zram-tools, unzip, p7zip-full, git, cracklib-runtime,
+ cups, cups-filters, cups-browsed, print-manager, avahi-daemon, libnss-mdns, ipp-usb,
+ printer-driver-hpcups, printer-driver-brlaser, printer-driver-gutenprint, printer-driver-splix,
+ sane-airscan, sane-utils, skanlite, zram-tools, unzip, p7zip-full, git, cracklib-runtime,
  unattended-upgrades, ufw, plasma-firewall, systemd-oomd
 Recommends: cybroid-icons
 Conflicts: cybroid-desktop, citos-desktop

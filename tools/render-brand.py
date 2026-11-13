@@ -233,8 +233,20 @@ def wallpaper(ctx: Context) -> None:
 # Hex's layout, in units of the picture's height (u = H / 1080). The desktop
 # widgets are placed to the same numbers by cybroid-appearance (keep them in
 # step): each of the dial's six leaders ends beside one readout.
-HEX_SIZES = ((1920, 1080), (2560, 1440), (3840, 2160), (1920, 1200), (2560, 1600))
-HEX_CY = 530      # the dial's centre, from the top
+# Every common screen shape gets its own drawing, so the frame is never cut
+# off: 16:9, 16:10, 4:3, 5:4, the two ultrawides (21:9, 32:9) and a portrait
+# screen. The desktop shows the one nearest the screen's shape, in the
+# smallest size at least as wide (cybroid-appearance and the widgets pick it
+# the same way: hexPick). Keep this list in step with theirs.
+HEX_SIZES = (
+    (1920, 1080), (2560, 1440), (3840, 2160),  # 16:9
+    (1920, 1200), (2560, 1600),  # 16:10
+    (1600, 1200), (1280, 1024),  # 4:3, 5:4
+    (2560, 1080), (3440, 1440), (5120, 1440),  # 21:9, 32:9
+    (1080, 1920),  # portrait
+)
+HEX_WIDTH = 1800  # the design's unit u is H/1080, smaller on narrow screens: W/1800
+HEX_CY = 530      # the dial's centre, from the top (10 above the middle)
 HEX_DIAG = 127    # where the four slanting leaders leave the dial
 HEX_ELBOW = 288   # where they turn level
 HEX_SIDE = 300    # where the two level leaders leave it
@@ -247,13 +259,15 @@ def hex_wallpaper(W: int = 1920, H: int = 1080, light: bool = False) -> str:
     sit. Drawn here rather than from a template: it is all geometry, and each
     screen shape (16:9, 16:10) gets its own so nothing is cropped. Hex Light
     is the same drawing in the light palette (HEX_LIGHT)."""
-    u = H / 1080
-    cx, cy = W / 2, HEX_CY * u
+    # On screens narrower than 16:10 the dial and its leaders shrink, so the
+    # readout columns beside them stay wide enough to read.
+    u = min(H / 1080, W / HEX_WIDTH)
+    cx, cy = W / 2, H / 2 + (HEX_CY - 540) * u
     f = lambda v: f"{v:.1f}"
     out = [
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}">',
         "<defs>",
-        f'<radialGradient id="bg" gradientUnits="userSpaceOnUse" cx="{f(cx)}" cy="{f(cy)}" r="{f(W * 0.62)}">'
+        f'<radialGradient id="bg" gradientUnits="userSpaceOnUse" cx="{f(cx)}" cy="{f(cy)}" r="{f(min(W, H * 16 / 9) * 0.62)}">'
         '<stop offset="0" stop-color="#0d1c44"/><stop offset=".5" stop-color="#071027"/><stop offset="1" stop-color="#030713"/></radialGradient>',
         f'<pattern id="grid" width="{f(32 * u)}" height="{f(32 * u)}" patternUnits="userSpaceOnUse">'
         f'<path d="M{f(32 * u)} 0H0V{f(32 * u)}" fill="none" stroke="#1ccbff" stroke-opacity=".035" stroke-width="1"/></pattern>',

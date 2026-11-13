@@ -8,10 +8,13 @@
 #                 readouts), in the appearance in use
 #   horizon-dark, horizon-light, hex-dark, hex-light   both at once
 #   toggle        Dark <-> Light, in the design in use
+#   refresh [startup]  only the wallpaper and the desktop widgets' places, for the
+#                 screens as they are now (run by cybroid-screens when a
+#                 monitor is plugged in or a resolution changes)
 #   status        prints dark, light, hex or hex-light
 #
 # Each sets: colours, the Plasma style (top bar, popups), icons, window title
-# bars and corners, app controls (Kvantum for Horizon, Breeze for Hex), the
+# bars and corners, app controls (Kvantum: rounded for Horizon, cut corners for Hex), the
 # dock, the desktop widgets' look and, where they are CybroidOS's own, the
 # wallpaper and lock screen. GTK apps and Firefox follow the colour scheme
 # through Plasma's GTK settings.
@@ -39,6 +42,8 @@ current() {
 	*) echo "horizon dark" ;;
 	esac
 }
+# "refresh startup": the session has just started; the dock has too.
+startup="${2:-}"
 set -- "${1:-status}"
 read -r was_design was_tone <<EOF_
 $(current)
@@ -49,6 +54,7 @@ dark | light) tone="$1" ;;
 horizon | hex) design="$1" ;;
 horizon-dark | horizon-light | hex-dark | hex-light) design="${1%-*}" tone="${1#*-}" ;;
 toggle) if [ "$tone" = light ]; then tone=dark; else tone=light; fi ;;
+refresh) ;;
 status)
 	if [ "$was_design" = hex ]; then
 		[ "$was_tone" = light ] && echo hex-light || echo hex
@@ -58,7 +64,7 @@ status)
 	exit 0
 	;;
 *)
-	echo "usage: cybroid-appearance dark|light|hex|horizon|toggle|status" >&2
+	echo "usage: cybroid-appearance dark|light|hex|horizon|toggle|refresh|status" >&2
 	exit 2
 	;;
 esac
@@ -74,16 +80,19 @@ horizon-dark)
 	radius=18 look=card cw=300 ch=176
 	;;
 hex-dark)
-	kv=CybroidOS style_engine=Breeze scheme=CybroidHex style=cybroid-hex icons=CybroidOS-Hex
+	kv=CybroidHex style_engine=kvantum scheme=CybroidHex style=cybroid-hex icons=CybroidOS-Hex
 	deco=org.cybroid.hex lnf=org.cybroid.hex dock=CybroidOS-Hex wall=cybroid-hex
 	radius=2 look=hud cw=320 ch=196
 	;;
 hex-light)
-	kv=CybroidOSLight style_engine=Breeze scheme=CybroidHexLight style=cybroid-hex-light icons=CybroidOS-Hex-Light
+	kv=CybroidHexLight style_engine=kvantum scheme=CybroidHexLight style=cybroid-hex-light icons=CybroidOS-Hex-Light
 	deco=org.cybroid.hex lnf=org.cybroid.hex.light dock=CybroidOS-Hex-Light wall=cybroid-hex-light
 	radius=2 look=hud cw=320 ch=196
 	;;
 esac
+mode="$1"
+# A screen change only moves the wallpaper and widgets: the theme stays.
+if [ "$mode" != refresh ]; then
 kwriteconfig6 --file kdeglobals --group KDE --key LookAndFeelPackage "$lnf"
 # System Settings' Quick Settings offers a light and a dark theme: the two of
 # the design in use, so it never swaps Hex for Horizon.
@@ -94,7 +103,7 @@ else
 	kwriteconfig6 --file kdeglobals --group KDE --key DefaultLightLookAndFeel org.cybroid.desktop.light
 	kwriteconfig6 --file kdeglobals --group KDE --key DefaultDarkLookAndFeel org.cybroid.desktop
 fi
-# App controls: Kvantum in CybroidOS's themes (Horizon) or Breeze (Hex); apps
+# App controls: Kvantum in the design's theme (CybroidOS* or CybroidHex*); apps
 # already open take it when next opened.
 kwriteconfig6 --file kdeglobals --group KDE --key widgetStyle "$style_engine"
 kvdir="${XDG_CONFIG_HOME:-$HOME/.config}/Kvantum"
@@ -135,6 +144,15 @@ systemd-run --user --quiet --collect --unit=cybroid-dock \
 	--setenv=DISPLAY --setenv=XAUTHORITY --setenv=PATH --setenv=XDG_CURRENT_DESKTOP --setenv=XDG_DATA_DIRS \
 	--setenv=XDG_CONFIG_DIRS --setenv=XDG_MENU_PREFIX --setenv=KDE_FULL_SESSION \
 	/usr/libexec/cybroid/dock >/dev/null 2>&1 || (setsid /usr/libexec/cybroid/dock >/dev/null 2>&1 &)
+elif [ "$startup" != startup ]; then
+	# Plank stays where it was on the old screen size: centred again.
+	pkill -x plank 2>/dev/null && sleep 0.5
+	systemctl --user stop cybroid-dock.service >/dev/null 2>&1 || true
+	systemd-run --user --quiet --collect --unit=cybroid-dock \
+		--setenv=DISPLAY --setenv=XAUTHORITY --setenv=PATH --setenv=XDG_CURRENT_DESKTOP --setenv=XDG_DATA_DIRS \
+		--setenv=XDG_CONFIG_DIRS --setenv=XDG_MENU_PREFIX --setenv=KDE_FULL_SESSION \
+		/usr/libexec/cybroid/dock >/dev/null 2>&1 || (setsid /usr/libexec/cybroid/dock >/dev/null 2>&1 &)
+fi
 
 # The wallpaper (where it is CybroidOS's own: a picture someone chose stays) and
 # the desktop widgets: Horizon's two cards at the top corners, or Hex's two
@@ -142,16 +160,25 @@ systemd-run --user --quiet --collect --unit=cybroid-dock \
 img="file:///usr/share/backgrounds/cybroid/$wall-1920x1080.png"
 places="$(qdbus6 org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript "
 var hex = '$design' == 'hex';
+// The Hex picture drawn for the shape nearest the screen's (render-brand.py,
+// HEX_SIZES), in the smallest size at least as wide; the widgets pick it the
+// same way (hexPick in org.cybroid.widgets). Keep the three in step.
+function hexPick(W, H) {
+    var shapes = [[1920, 1080], [2560, 1440], [3840, 2160], [1920, 1200], [2560, 1600],
+        [1600, 1200], [1280, 1024], [2560, 1080], [3440, 1440], [5120, 1440], [1080, 1920]];
+    var la = Math.log(W / H), best = 1e9, near = [];
+    for (var i = 0; i < shapes.length; i++) best = Math.min(best, Math.abs(Math.log(shapes[i][0] / shapes[i][1]) - la));
+    for (var i = 0; i < shapes.length; i++) if (Math.abs(Math.log(shapes[i][0] / shapes[i][1]) - la) <= best + 0.02) near.push(shapes[i]);
+    near.sort(function (a, b) { return a[0] - b[0]; });
+    for (var i = 0; i < near.length; i++) if (near[i][0] >= W) return near[i];
+    return near[near.length - 1];
+}
 var ds = desktops();
 for (var i = 0; i < ds.length; i++) {
     var d = ds[i];
     var g = screenGeometry(d.screen);
-    // Hex draws a picture for each screen shape (16:9, 16:10), so its frame
-    // is never cropped; the readouts are placed to the same numbers.
-    var tall = g.width / g.height < 1.7;
-    var Wp = 1920, Hp = tall ? 1200 : 1080;
-    var big = g.width > 2200 ? (tall ? '2560x1600' : (g.width > 3000 ? '3840x2160' : '2560x1440')) : '1920x' + Hp;
-    var img = hex ? 'file:///usr/share/backgrounds/cybroid/$wall-' + big + '.png' : '$img';
+    var pk = hexPick(g.width, g.height), Wp = pk[0], Hp = pk[1];
+    var img = hex ? 'file:///usr/share/backgrounds/cybroid/$wall-' + Wp + 'x' + Hp + '.png' : '$img';
     if (d.wallpaperPlugin == 'org.kde.image') {
         d.currentConfigGroup = ['Wallpaper', 'org.kde.image', 'General'];
         var cur = String(d.readConfig('Image'));
@@ -169,26 +196,44 @@ for (var i = 0; i < ds.length; i++) {
         if (all[j].readConfig('card') == 'title') all[j].remove();
         else ws.push(all[j]);
     }
-    // Hex: two columns between the screen's edge and the ends of the dial's
-    // leaders (render-brand.py, HEX_*: in units of the picture's height,
-    // the column from 96 to 860, the leaders ending 440 from the centre).
-    var s = Math.max(g.width / Wp, g.height / Hp);
-    var ox = (g.width - Wp * s) / 2, oy = (g.height - Hp * s) / 2, U = s * Hp / 1080;
-    var top = Math.round(oy + 96 * U), colH = Math.round(764 * U);
-    var lx = Math.max(16, Math.round(ox + 80 * U)), lw = Math.round(g.width / 2 - 456 * U) - lx;
-    var rx = Math.round(g.width / 2 + 456 * U), rw = Math.min(g.width - 16, Math.round(ox + Wp * s - 80 * U)) - rx;
+    // Hex: two columns between the frame and the ends of the dial's leaders
+    // (render-brand.py, HEX_*: in the design's unit u, the dial 10 above the
+    // middle, the columns 764 tall from 434 above it, from 80 inside the
+    // frame to 456 from the centre line, at most 520 wide on ultrawides).
+    // Portrait screens have no room beside the dial: the readouts go in a
+    // band above it and one below, clear of the dock.
+    var up = Math.min(Hp / 1080, Wp / 1800), s = Math.max(g.width / Wp, g.height / Hp);
+    var ox = (g.width - Wp * s) / 2, oy = (g.height - Hp * s) / 2, U = s * up;
+    var cy = oy + s * (Hp / 2 - 10 * up), cx = g.width / 2;
+    var lr, rr;
+    if (g.width < g.height) {
+        var bx = Math.max(16, Math.round(ox + 80 * U)), bw = g.width - 2 * bx;
+        // Below the top bar even where the picture is cropped (a 10:16 screen).
+        var ty = Math.max(64, Math.round(oy + s * (30 + 22 * up) + 80 * U)), by = Math.round(cy + 330 * U);
+        lr = [bx, ty, bw, Math.round(cy - 330 * U) - ty];
+        // The dock is about 90 tall with its gap: keep the band clear of it.
+        rr = [bx, by, bw, g.height - 180 - by];
+    } else {
+        var top = Math.round(cy - 434 * U), colH = Math.round(764 * U);
+        var lx = Math.max(16, Math.round(Math.max(ox + 80 * U, cx - 976 * U))), lw = Math.round(cx - 456 * U) - lx;
+        var rx = Math.round(cx + 456 * U), rw = Math.min(g.width - 16, Math.round(Math.min(ox + Wp * s - 80 * U, cx + 976 * U))) - rx;
+        lr = [lx, top, lw, colH];
+        rr = [rx, top, rw, colH];
+    }
     var places = '';
     for (var j = 0; j < ws.length; j++) {
         ws[j].currentConfigGroup = ['General'];
         ws[j].writeConfig('look', '$look');
         var right = ws[j].readConfig('card') == 'system';
-        var r = hex ? [right ? rx : lx, top, right ? rw : lw, colH] : [right ? g.width - $cw - 40 : 40, 56, $cw, $ch];
+        var r = hex ? (right ? rr : lr) : [right ? g.width - $cw - 40 : 40, 56, $cw, $ch];
         places += 'Applet-' + ws[j].id + ':' + r.join(',') + ',0;';
     }
     d.currentConfigGroup = [];
+    // print() adds no line break: each screen's line ends with its own.
+    if (String(d.readConfig('ItemGeometries-' + g.width + 'x' + g.height)) != places) print('moved\n');
     d.writeConfig('ItemGeometries-' + g.width + 'x' + g.height, places);
     d.writeConfig('ItemGeometriesHorizontal', places);
-    print(d.id + ' ' + g.width + 'x' + g.height + ' ' + places);
+    print(d.id + ' ' + g.width + 'x' + g.height + ' ' + places + '\n');
 }" 2>/dev/null || true)"
 lock="$(kreadconfig6 --file kscreenlockerrc --group Greeter --group Wallpaper --group org.kde.image --group General --key Image)"
 case "$lock" in
@@ -200,7 +245,13 @@ esac
 # Between designs the widgets change size, which the desktop takes only as it
 # starts. It also saves its own places as it stops, so it is stopped first,
 # the new places written, then started (a moment's blink).
-if [ "$design" != "$was_design" ]; then
+# On a screen change, only when a widget's place for this screen size isn't
+# the one the desktop had (the script says "moved").
+moved=""
+if [ "$mode" = refresh ]; then
+	case "$places" in *moved*) moved=yes ;; esac
+fi
+if [ "$design" != "$was_design" ] || [ -n "$moved" ]; then
 	if systemctl --user stop plasma-plasmashell >/dev/null 2>&1; then
 		printf '%s\n' "$places" | while read -r cid size where; do
 			[ -n "$where" ] || continue
@@ -208,7 +259,12 @@ if [ "$design" != "$was_design" ]; then
 				kwriteconfig6 --file plasma-org.kde.plasma.desktop-appletsrc --group Containments --group "$cid" --key "$key" "$where"
 			done
 		done
-		systemctl --user start plasma-plasmashell >/dev/null 2>&1 || true
+		# Several screen changes in a row (a monitor plugged in and out)
+		# restart it quickly: systemd's start limit must not leave the
+		# desktop down.
+		systemctl --user reset-failed plasma-plasmashell >/dev/null 2>&1 || true
+		systemctl --user start plasma-plasmashell >/dev/null 2>&1 ||
+			{ sleep 2; systemctl --user reset-failed plasma-plasmashell >/dev/null 2>&1; systemctl --user start plasma-plasmashell >/dev/null 2>&1; } || true
 	fi
 fi
 "$0" status

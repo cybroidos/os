@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=CybroidOS screens
+Comment=Draws the desktop for each screen's shape when monitors change
+Exec=/usr/libexec/cybroid/screens
+OnlyShowIn=KDE;
+NoDisplay=true
+X-KDE-autostart-phase=2

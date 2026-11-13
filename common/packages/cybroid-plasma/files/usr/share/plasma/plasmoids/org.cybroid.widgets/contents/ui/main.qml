@@ -449,18 +449,35 @@ PlasmoidItem {
     // wallpaper is drawn (one picture per screen shape, scaled to cover it),
     // and from where the column is: the desktop snaps widgets to a grid, so
     // the column is never exactly where cybroid-appearance put it.
+    // The Hex wallpaper drawn for the shape nearest the screen's, and where
+    // its dial sits on this screen (as render-brand.py draws it, and as
+    // cybroid-appearance picks and places; keep the three in step).
+    function hexPick(W, H) {
+        const shapes = [[1920, 1080], [2560, 1440], [3840, 2160], [1920, 1200], [2560, 1600],
+            [1600, 1200], [1280, 1024], [2560, 1080], [3440, 1440], [5120, 1440], [1080, 1920]]
+        const la = Math.log(W / H)
+        const off = p => Math.abs(Math.log(p[0] / p[1]) - la)
+        const best = Math.min(...shapes.map(off))
+        const near = shapes.filter(p => off(p) <= best + 0.02).sort((a, b) => a[0] - b[0])
+        return near.find(p => p[0] >= W) || near[near.length - 1]
+    }
     function hudGeom() {
         const W = Screen.width, H = Screen.height
-        const Hp = W / H < 1.7 ? 1200 : 1080
-        const s = Math.max(W / 1920, H / Hp)
-        return { s: s, U: s * Hp / 1080, oy: (H - Hp * s) / 2 }
+        const p = hexPick(W, H), Wp = p[0], Hp = p[1]
+        const up = Math.min(Hp / 1080, Wp / 1800)
+        const s = Math.max(W / Wp, H / Hp)
+        const oy = (H - Hp * s) / 2
+        return { U: s * up, cy: oy + s * (Hp / 2 - 10 * up), portrait: W < H }
     }
     function hudRowY(item, i) {
         void root.now  // re-placed each second: cheap, and follows moves
         if (!Screen.width || !Screen.height) return 0
         const g = hudGeom()
+        // Portrait: the readouts are a band above or below the dial, the
+        // three spaced down it.
+        if (g.portrait) return item.height * [0.3, 0.6, 0.88][i]
         const at = item.mapToGlobal(0, 0).y - Screen.virtualY
-        return g.oy + [242, 530, 818][i] * g.U - at
+        return g.cy + [-288, 0, 288][i] * g.U - at
     }
     fullRepresentation: Item {
         Layout.preferredWidth: view.implicitWidth

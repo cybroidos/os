@@ -92,7 +92,11 @@ else
 fi
 unmount_chroot "${mnt}"
 fstrim "${mnt}" 2>/dev/null || true
-umount "${mnt}"
+for try in 1 2 3 4 5; do
+	umount "${mnt}" && break
+	[ "${try}" = 5 ] && { fuser -vm "${mnt}" || true; exit 1; }
+	sleep 3
+done
 losetup -d "${loop}"
 loop=""
 

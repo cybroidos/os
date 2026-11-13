@@ -35,6 +35,14 @@ unmount_chroot() { # root
 		rm -f "${r}/etc/resolv.conf"
 		mv "${r}/etc/resolv.conf.cybroid-build" "${r}/etc/resolv.conf"
 	fi
+	# Programs a package started inside (an agent, a daemon) keep the image
+	# busy, and the disk can't be unmounted ("target is busy"): stopped.
+	local real pid
+	real="$(readlink -f "${r}")"
+	for pid in /proc/[0-9]*; do
+		[ "$(readlink "${pid}/root" 2>/dev/null)" = "${real}" ] && kill -9 "${pid#/proc/}" 2>/dev/null
+	done
+	sleep 1
 	for d in sys proc dev/pts dev; do
 		mountpoint -q "${r}/${d}" && umount -l "${r}/${d}"
 	done

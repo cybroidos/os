@@ -72,6 +72,18 @@ def svg(top, bottom, path):
     )
 
 
+def close_icon(light):
+    """Hex's close sign (notifications, tabs, dialogs): an x in a frame cut at
+    the top left and bottom right, in place of WhiteSur's red circle."""
+    edge, ink = ("#1f5fe0", "#0b1634") if light else ("#1ccbff", "#e8eefc")
+    return (
+        '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">'
+        f'<path d="M5 1.5H14.5V11L11 14.5H1.5V5Z" fill="{edge}" fill-opacity=".12" stroke="{edge}" '
+        'stroke-opacity=".8" stroke-linejoin="miter"/>'
+        f'<path d="M5.5 5.5L10.5 10.5M10.5 5.5L5.5 10.5" stroke="{ink}" stroke-width="1.4" stroke-linecap="square"/></svg>\n'
+    )
+
+
 def main(out):
     for theme, light, inherits in (("CybroidOS-Hex", False, "WhiteSur-dark,breeze-dark"), ("CybroidOS-Hex-Light", True, "WhiteSur-light,breeze")):
         root = pathlib.Path(out) / "usr/share/icons" / theme
@@ -82,14 +94,19 @@ def main(out):
             f = root / ctx / "scalable" / f"{name}.svg"
             f.parent.mkdir(parents=True, exist_ok=True)
             f.write_text(svg(top, bottom, path))
+        acts = root / "actions" / "scalable"
+        acts.mkdir(parents=True, exist_ok=True)
+        for name in ("window-close", "dialog-close", "tab-close"):
+            (acts / f"{name}.svg").write_text(close_icon(light))
         (root / "index.theme").write_text(
             "[Icon Theme]\n"
             f"Name={theme.replace('CybroidOS-', 'CybroidOS ').replace('-', ' ')}\n"
             "Comment=CybroidOS Hex: the dock's apps as tiles, the rest from WhiteSur\n"
             f"Inherits={inherits},hicolor\n"
-            "Directories=apps/scalable,places/scalable\n\n"
+            "Directories=apps/scalable,places/scalable,actions/scalable\n\n"
             "[apps/scalable]\nContext=Applications\nSize=128\nMinSize=16\nMaxSize=512\nType=Scalable\n\n"
-            "[places/scalable]\nContext=Places\nSize=128\nMinSize=16\nMaxSize=512\nType=Scalable\n"
+            "[places/scalable]\nContext=Places\nSize=128\nMinSize=16\nMaxSize=512\nType=Scalable\n\n"
+            "[actions/scalable]\nContext=Actions\nSize=16\nMinSize=8\nMaxSize=512\nType=Scalable\n"
         )
         print(f"wrote {len(ICONS)} icons to {root}")
 

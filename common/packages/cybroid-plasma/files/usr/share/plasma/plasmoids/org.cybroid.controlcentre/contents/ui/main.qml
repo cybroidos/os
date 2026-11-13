@@ -117,6 +117,26 @@ PlasmoidItem {
     // PipeWire's stand-in output when there is no sound card.
     readonly property bool hasSound: !!sink && sink.name !== "auto_null"
     readonly property real volume: hasSound ? sink.volume / PulseAudio.NormalVolume : 0
+    // A card's connectors (speakers, the headphone jack, line out) are its
+    // ports. Those PipeWire knows are unplugged (availability 2) are left
+    // out, so the jack shows only while headphones are in it.
+    function usablePorts(dev) {
+        const out = [];
+        const ps = dev && dev.ports ? dev.ports : [];
+        for (let i = 0; i < ps.length; i++)
+            if (ps[i] && ps[i].availability !== 2) out.push({ index: i, port: ps[i] });
+        return out;
+    }
+    function portName(dev) {
+        const ps = dev && dev.ports ? dev.ports : [];
+        const p = ps[dev ? dev.activePortIndex : -1];
+        return p && p.description ? p.description : "";
+    }
+    function outputIcon(text) {
+        return /headphone|headset/i.test(text) ? "audio-headphones-symbolic"
+            : /hdmi|displayport/i.test(text) ? "video-display-symbolic" : "audio-speakers-symbolic";
+    }
+    readonly property var sinkPorts: hasSound ? usablePorts(sink) : []
 
     // Do Not Disturb: Plasma's own setting, so its notifications obey it.
     NotificationManager.Settings { id: notifSettings }
@@ -703,12 +723,13 @@ PlasmoidItem {
                         Layout.fillWidth: true
                         QQC2.Label { text: "Sound"; color: root.ink; font.weight: Font.DemiBold; font.pixelSize: 13 }
                         QQC2.Label {
-                            text: root.hasSound ? (root.sink.description || "") : ""
+                            // "Headphones" once they're plugged in, else the card.
+                            text: root.hasSound ? (root.portName(root.sink) || root.sink.description || "") : ""
                             color: root.soft; font.pixelSize: 11; elide: Text.ElideRight; Layout.fillWidth: true
                             horizontalAlignment: Text.AlignRight
                         }
                         QQC2.ToolButton {
-                            visible: outputs.count > 1
+                            visible: outputs.count > 1 || root.sinkPorts.length > 1
                             icon.name: "go-next-symbolic"
                             implicitWidth: 26; implicitHeight: 26
                             onClicked: root.page = "sound"
@@ -983,9 +1004,16 @@ PlasmoidItem {
                     spacing: 0
                     Repeater {
                         model: outputs
-                        delegate: Item {
-                            id: out
+                        delegate: ColumnLayout {
+                            id: outGroup
                             required property var model
+                            readonly property var dev: model.PulseObject
+                            readonly property var ports: root.usablePorts(dev)
+                            Layout.fillWidth: true
+                            spacing: 0
+                        Item {
+                            id: out
+                            readonly property var model: outGroup.model
                             readonly property bool chosen: !!model.PulseObject && model.PulseObject.default
                             Layout.fillWidth: true
                             implicitHeight: 40
@@ -1002,22 +1030,73 @@ PlasmoidItem {
                                 spacing: 10
                                 Kirigami.Icon {
                                     Layout.preferredWidth: 18; Layout.preferredHeight: 18
-                                    source: /headphone|headset/i.test(out.model.Description || "") ? "audio-headphones-symbolic"
-                                        : /hdmi|displayport/i.test(out.model.Description || "") ? "video-display-symbolic" : "audio-speakers-symbolic"
+                                    source: root.outputIcon((out.model.Description || "") + " " + root.portName(outGroup.dev))
                                     color: out.chosen ? root.accent : root.ink; isMask: true
                                 }
-                                QQC2.Label {
-                                    text: out.model.Description || out.model.Name || "Output"
-                                    color: root.ink; font.pixelSize: 13
-                                    font.weight: out.chosen ? Font.DemiBold : Font.Normal
-                                    elide: Text.ElideRight; Layout.fillWidth: true
+                                ColumnLayout {
+                                    Layout.fillWidth: true
+                                    spacing: 0
+                                    QQC2.Label {
+                                        text: out.model.Description || out.model.Name || "Output"
+                                        color: root.ink; font.pixelSize: 13
+                                        font.weight: out.chosen ? Font.DemiBold : Font.Normal
+                                        elide: Text.ElideRight; Layout.fillWidth: true
+                                    }
+                                    // The connector in use, when the card has only one to show.
+                                    QQC2.Label {
+                                        visible: outGroup.ports.length === 1 && text !== ""
+                                        text: root.portName(outGroup.dev)
+                                        color: root.soft; font.pixelSize: 11
+                                        elide: Text.ElideRight; Layout.fillWidth: true
+                                    }
                                 }
                                 Kirigami.Icon {
-                                    visible: out.chosen
+                                    visible: out.chosen && outGroup.ports.length < 2
                                     Layout.preferredWidth: 16; Layout.preferredHeight: 16
                                     source: "checkmark-symbolic"; color: root.accent; isMask: true
                                 }
                             }
+                        }
+                        // Speakers, Headphones…: each plugged-in connector of this card.
+                        Repeater {
+                            model: outGroup.ports.length > 1 ? outGroup.ports : []
+                            delegate: Item {
+                                id: portRow
+                                required property var modelData
+                                readonly property bool chosen: out.chosen && outGroup.dev.activePortIndex === modelData.index
+                                Layout.fillWidth: true
+                                implicitHeight: 34
+                                Rectangle {
+                                    anchors.fill: parent; anchors.leftMargin: 28
+                                    radius: root.hex ? 0 : 8
+                                    color: portArea.containsMouse ? Qt.alpha(root.ink, 0.07) : "transparent"
+                                }
+                                MouseArea {
+                                    id: portArea; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                                    onClicked: { outGroup.dev.activePortIndex = portRow.modelData.index; outGroup.dev.default = true }
+                                }
+                                RowLayout {
+                                    anchors.fill: parent; anchors.leftMargin: 36; anchors.rightMargin: 8
+                                    spacing: 10
+                                    Kirigami.Icon {
+                                        Layout.preferredWidth: 16; Layout.preferredHeight: 16
+                                        source: root.outputIcon(portRow.modelData.port.description || "")
+                                        color: portRow.chosen ? root.accent : root.soft; isMask: true
+                                    }
+                                    QQC2.Label {
+                                        text: portRow.modelData.port.description || portRow.modelData.port.name
+                                        color: root.ink; font.pixelSize: 12
+                                        font.weight: portRow.chosen ? Font.DemiBold : Font.Normal
+                                        elide: Text.ElideRight; Layout.fillWidth: true
+                                    }
+                                    Kirigami.Icon {
+                                        visible: portRow.chosen
+                                        Layout.preferredWidth: 16; Layout.preferredHeight: 16
+                                        source: "checkmark-symbolic"; color: root.accent; isMask: true
+                                    }
+                                }
+                            }
+                        }
                         }
                     }
                 }

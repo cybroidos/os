@@ -39,3 +39,15 @@ if [ ! -e "${_cy_cfg}/cybroid/migrated-from-citos" ] && [ -d "${_cy_cfg}" ]; the
 	mkdir -p "${_cy_cfg}/cybroid" && : > "${_cy_cfg}/cybroid/migrated-from-citos"
 fi
 unset _cy_cfg _cy_f _cy_dock
+
+# 0.1.2: the tray of an account made before CybroidOS gave it its own list
+# keeps Plasma's full one, with sound, brightness, Wi-Fi and Bluetooth beside
+# Control Centre. Trim it to what Control Centre doesn't show, once.
+_cy_cfg="${XDG_CONFIG_HOME:-$HOME/.config}"
+_cy_rc="${_cy_cfg}/plasma-org.kde.plasma.desktop-appletsrc"
+if [ ! -e "${_cy_cfg}/cybroid/tray-0.1.2" ] && [ -f "${_cy_rc}" ]; then
+	sed -i -E '/^extraItems=.*org\.kde\.plasma\.(volume|brightness|networkmanagement)/c\
+extraItems=org.kde.plasma.notifications,org.kde.plasma.devicenotifier,org.kde.plasma.battery,org.kde.plasma.keyboardlayout,org.kde.plasma.mediacontroller,org.kde.plasma.cameraindicator' "${_cy_rc}"
+	mkdir -p "${_cy_cfg}/cybroid" && : > "${_cy_cfg}/cybroid/tray-0.1.2"
+fi
+unset _cy_cfg _cy_rc

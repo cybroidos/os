@@ -109,6 +109,16 @@ kwriteconfig6 --file kdeglobals --group KDE --key widgetStyle "$style_engine"
 kvdir="${XDG_CONFIG_HOME:-$HOME/.config}/Kvantum"
 mkdir -p "$kvdir"
 printf '[General]\ntheme=%s\n' "$kv" > "$kvdir/kvantum.kvconfig"
+# Text editors (KWrite, Kate): Hex's own colours for the writing area
+# (tools/editor-theme.py); Horizon goes back to choosing by light or dark.
+for rc in kwriterc katerc; do
+	if [ "$design" = hex ]; then
+		kwriteconfig6 --file "$rc" --group "KTextEditor Renderer" --key "Auto Color Theme Selection" false
+		kwriteconfig6 --file "$rc" --group "KTextEditor Renderer" --key "Color Theme" "$([ "$tone" = light ] && echo "CybroidOS Hex Light" || echo "CybroidOS Hex")"
+	else
+		kwriteconfig6 --file "$rc" --group "KTextEditor Renderer" --key "Auto Color Theme Selection" true
+	fi
+done
 plasma-apply-colorscheme "$scheme" >/dev/null
 plasma-apply-desktoptheme "$style" >/dev/null
 for c in /usr/lib/*/libexec/plasma-changeicons /usr/libexec/plasma-changeicons; do

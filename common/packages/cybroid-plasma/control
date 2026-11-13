@@ -5,7 +5,7 @@ Maintainer: CybroidOS maintainers <citos@cybroid.com>
 Homepage: https://github.com/cybroidinstitute/cit-os
 Section: kde
 Priority: optional
-Depends: cybroid-base (>= @VERSION@), cybroid-artwork (>= @VERSION@), cybroid-settings (>= @VERSION@), cybroid-plymouth-theme (>= @VERSION@),
+Depends: cybroid-base (>= @VERSION@), cybroid-artwork (>= @VERSION@), cybroid-settings (>= @VERSION@), cybroid-camera (>= @VERSION@), cybroid-plymouth-theme (>= @VERSION@),
  plasma-desktop, plasma-workspace, kwin-x11, plasma-integration, kde-cli-tools, kscreen, powerdevil,
  polkit-kde-agent-1, kactivitymanagerd, milou, kinfocenter, systemsettings, xdg-desktop-portal-kde,
  breeze, breeze-cursor-theme, papirus-icon-theme, fonts-inter, fonts-jetbrains-mono, appmenu-gtk3-module, x11-utils, x11-xserver-utils,
@@ -25,7 +25,7 @@ Depends: cybroid-base (>= @VERSION@), cybroid-artwork (>= @VERSION@), cybroid-se
  plasma-discover, plasma-discover-backend-flatpak, flatpak, fwupd,
  gstreamer1.0-plugins-good, gstreamer1.0-plugins-bad, gstreamer1.0-libav,
  fonts-noto-color-emoji, fonts-liberation2,
- zsh, zsh-autosuggestions, zsh-syntax-highlighting, bash-completion,
+ zsh, zsh-autosuggestions, zsh-syntax-highlighting, fzf, bash-completion,
  cups, cups-filters, cups-browsed, print-manager, avahi-daemon, libnss-mdns, ipp-usb,
  printer-driver-hpcups, printer-driver-brlaser, printer-driver-gutenprint, printer-driver-splix,
  sane-airscan, sane-utils, skanlite, zram-tools, unzip, p7zip-full, git, cracklib-runtime,

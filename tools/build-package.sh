@@ -17,7 +17,9 @@
 # Usage: tools/build-package.sh <name>...      build the named packages
 #        tools/build-package.sh --all          every package that can build here
 # Env:   OUT (dist/), VERSION (brand.toml), and inputs some packages need:
-#        KIOSK_BUNDLE (cybroid-kiosk-app: a flutterpi_tool release bundle).
+#        KIOSK_BUNDLE (cybroid-kiosk-app: a flutterpi_tool release bundle),
+#        NATIVE_ROOT (the native apps, staged by tools/build-native.sh, which
+#        runs this; "Architecture: @ARCH@" becomes this machine's).
 set -euo pipefail
 
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -62,7 +64,7 @@ build_one() {
 	install -d "${root}/DEBIAN"
 	local size
 	size="$(du -sk --exclude=DEBIAN "${root}" | cut -f1)"
-	sed -e "s/@VERSION@/${version}/g" "${src}/control" > "${root}/DEBIAN/control"
+	sed -e "s/@VERSION@/${version}/g" -e "s/@ARCH@/$(dpkg --print-architecture)/g" "${src}/control" > "${root}/DEBIAN/control"
 	printf 'Installed-Size: %s\n' "${size}" >> "${root}/DEBIAN/control"
 
 	for script in preinst postinst prerm postrm; do
@@ -96,6 +98,8 @@ build_one() {
 build_transitional() {
 	local name="$1" old="${1/cybroid/citos}"
 	[ "${old}" != "${name}" ] || return 0
+	# Packages new since the rename had no CIT-OS name.
+	case "${name}" in cybroid-ui | cybroid-settings | cybroid-camera) return 0 ;; esac
 	local work root arch
 	work="$(mktemp -d)"
 	root="${work}/${old}"
@@ -124,6 +128,7 @@ build_transitional() {
 needs_input() {
 	case "$1" in
 	cybroid-kiosk-app) [ -n "${KIOSK_BUNDLE:-}" ] ;;
+	cybroid-ui | cybroid-settings | cybroid-camera) [ -n "${NATIVE_ROOT:-}" ] ;;
 	*) true ;;
 	esac
 }

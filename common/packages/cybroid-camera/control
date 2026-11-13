@@ -1,0 +1,13 @@
+Package: cybroid-camera
+Version: @VERSION@
+Architecture: @ARCH@
+Maintainer: CybroidOS maintainers <citos@cybroid.com>
+Homepage: https://github.com/cybroidinstitute/cit-os
+Section: video
+Priority: optional
+Depends: cybroid-ui (= @VERSION@), libqt6core6t64 (>= 6.8), libqt6gui6 (>= 6.8), libqt6qml6 (>= 6.8), libqt6quick6 (>= 6.8),
+ libqt6network6 (>= 6.8), libqt6multimedia6 (>= 6.8), qml6-module-qtmultimedia, libstdc++6, libc6, xdg-utils
+Description: CybroidOS Camera
+ Photos and videos from the computer's camera, in CybroidOS's own design:
+ a timer, a mirrored preview, the other camera, and the last shot a tap
+ away. Photos go to Pictures/Camera, videos to Videos/Camera.

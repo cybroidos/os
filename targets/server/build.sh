@@ -46,7 +46,7 @@ cleanup() {
 trap cleanup EXIT
 
 case "$VARIANT" in
-desktop) export CYBROID_PACKAGES="cybroid-base cybroid-sources cybroid-artwork cybroid-plymouth-theme cybroid-settings cybroid-plasma" ;;
+desktop) export CYBROID_PACKAGES="cybroid-base cybroid-sources cybroid-artwork cybroid-plymouth-theme cybroid-plasma" ;;
 *) export CYBROID_PACKAGES="cybroid-base cybroid-sources" ;;
 esac
 build_debs $CYBROID_PACKAGES

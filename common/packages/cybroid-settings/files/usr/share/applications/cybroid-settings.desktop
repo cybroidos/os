@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Settings
+GenericName=Settings
+Comment=Wi-Fi, sound, appearance, date and time, and this computer
+Exec=cybroid-settings
+Icon=preferences-system
+Categories=Settings;System;
+Keywords=wifi;wireless;network;sound;volume;audio;appearance;dark;light;theme;time;date;timezone;about;computer;name;
+StartupWMClass=cybroid-settings

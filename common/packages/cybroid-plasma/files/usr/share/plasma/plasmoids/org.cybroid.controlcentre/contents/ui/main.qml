@@ -663,7 +663,7 @@ PlasmoidItem {
                     Layout.fillWidth: true; Layout.preferredWidth: 1
                     icon: "configure-symbolic"
                     title: "Settings"
-                    onClicked: { root.expanded = false; sh.run("systemsettings", () => {}) }
+                    onClicked: { root.expanded = false; sh.run("cybroid-settings", () => {}) }
                 }
             }
 
@@ -901,7 +901,7 @@ PlasmoidItem {
                 Layout.alignment: Qt.AlignRight
                 flat: true
                 text: "Wi-Fi Settings…"
-                onClicked: { root.expanded = false; sh.run("systemsettings kcm_networkmanagement", () => {}) }
+                onClicked: { root.expanded = false; sh.run("cybroid-settings wifi", () => {}) }
             }
         }
 
@@ -1106,7 +1106,7 @@ PlasmoidItem {
                 Layout.alignment: Qt.AlignRight
                 flat: true
                 text: "Sound Settings…"
-                onClicked: { root.expanded = false; sh.run("systemsettings kcm_pulseaudio", () => {}) }
+                onClicked: { root.expanded = false; sh.run("cybroid-settings sound", () => {}) }
             }
         }
     }

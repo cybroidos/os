@@ -3,7 +3,7 @@ org.kde.dolphin.desktop            Files
 org.kde.konsole.desktop            Terminal
 org.kde.kwrite.desktop             Text Editor
 org.kde.kate.desktop               Code Editor
-systemsettings.desktop             Settings
+systemsettings.desktop             More Settings
 firefox-esr.desktop                Firefox
 org.kde.gwenview.desktop           Photos
 org.kde.ark.desktop                Archives

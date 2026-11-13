@@ -1,0 +1,18 @@
+module CybroidUi
+singleton Theme 1.0 Theme.qml
+AboutPage 1.0 AboutPage.qml
+AppearancePage 1.0 AppearancePage.qml
+Btn 1.0 Btn.qml
+Card 1.0 Card.qml
+DateTimePage 1.0 DateTimePage.qml
+Field 1.0 Field.qml
+Label 1.0 Label.qml
+Section 1.0 Section.qml
+Segmented 1.0 Segmented.qml
+SettingRow 1.0 SettingRow.qml
+SettingsPage 1.0 SettingsPage.qml
+Slide 1.0 Slide.qml
+SoundPage 1.0 SoundPage.qml
+Surface 1.0 Surface.qml
+Toggle 1.0 Toggle.qml
+WifiPage 1.0 WifiPage.qml

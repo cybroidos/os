@@ -7,7 +7,8 @@ name: Server images
 # The "iso" image is CybroidOS Desktop as a live and installer ISO
 # (iso/cybroidos-desktop-amd64.iso).
 #
-# Secrets: CYBROID_IMAGES_KEY_ID, CYBROID_IMAGES_SECRET (a Garage key that can
+# Secrets: CITOS_IMAGES_KEY_ID, CITOS_IMAGES_SECRET (their names kept from
+# before the rename; a Garage key that can
 # write only to the citos-images bucket).
 on:
   workflow_dispatch:
@@ -183,11 +184,11 @@ jobs:
 
       - name: Upload to Hangar's storage
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.CYBROID_IMAGES_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.CYBROID_IMAGES_SECRET }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.CITOS_IMAGES_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.CITOS_IMAGES_SECRET }}
           AWS_DEFAULT_REGION: garage
         run: |
-          [ -n "$AWS_ACCESS_KEY_ID" ] || { echo "::warning::No CYBROID_IMAGES_KEY_ID secret: built but not uploaded"; exit 0; }
+          [ -n "$AWS_ACCESS_KEY_ID" ] || { echo "::warning::No CITOS_IMAGES_KEY_ID secret: built but not uploaded"; exit 0; }
           # Hangar's storage sits behind an office line: the classic transfer
           # engine (no minimum speed), two parts at a time, three tries.
           aws configure set default.s3.preferred_transfer_client classic

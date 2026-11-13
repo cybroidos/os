@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- CybroidOS desktop (cybroid-desktop): a clean desktop, no icons on it. The
-     wallpaper is set per screen at sign-in (/usr/libexec/cybroid/desktop-look). -->
-<channel name="xfce4-desktop" version="1.0">
-  <property name="desktop-icons" type="empty">
-    <property name="style" type="int" value="0"/>
-  </property>
-</channel>

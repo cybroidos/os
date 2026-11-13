@@ -3,7 +3,7 @@ name: Server images
 # CybroidOS Server as a VM image (qcow2, cloud-init) and as a container template
 # (Proxmox LXC; imports into Docker too), uploaded to the citos-images bucket
 # on Hangar's storage (s3.cybroid.com), where Hangar's Images page prepares
-# them for launching. The desktop VM is CybroidOS Desktop Lite (Xfce, xrdp).
+# them for launching. The desktop VM is CybroidOS Desktop (KDE Plasma, xrdp).
 # The "iso" image is CybroidOS Desktop as a live and installer ISO
 # (iso/cybroidos-desktop-amd64.iso).
 #
@@ -18,7 +18,6 @@ on:
       - 'common/branding/**'
       - 'common/packages/cybroid-base/**'
       - 'common/packages/cybroid-artwork/**'
-      - 'common/packages/cybroid-desktop/**'
       - 'common/packages/cybroid-sources/**'
       - 'common/packages/cybroid-plasma/**'
       - 'common/packages/cybroid-plymouth-theme/**'
@@ -49,7 +48,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: [ vm, desktop, lite, container, iso ]
+        image: [ vm, desktop, container, iso ]
     steps:
       - uses: actions/checkout@v5
 
@@ -147,9 +146,6 @@ jobs:
           df -h / | tail -1
           sudo EXTRA_DEBS="$PWD/dist/extra" OUT="$PWD/out" targets/desktop/build-iso.sh
 
-      - name: Build the light desktop VM image (CybroidOS Lite, Xfce)
-        if: matrix.image == 'lite'
-        run: sudo VARIANT=lite OUT="$PWD/out" targets/server/build.sh
 
       - name: Build the container template
         if: matrix.image == 'container'
@@ -163,7 +159,7 @@ jobs:
             ls -lh out/cybroidos-desktop-*-amd64.iso
           elif [ "${{ matrix.image }}" = vm ]; then
             qemu-img check out/cybroid-server-*-amd64.qcow2
-          elif [ "${{ matrix.image }}" = desktop ] || [ "${{ matrix.image }}" = lite ]; then
+          elif [ "${{ matrix.image }}" = desktop ]; then
             qemu-img check out/cybroid-${{ matrix.image }}-*-amd64.qcow2
           else
             zstd -dc out/cybroid-server_*_amd64.tar.zst | tar -xOf - ./usr/lib/os-release | tee /dev/stderr | grep -q '^ID=cybroid'
@@ -201,7 +197,7 @@ jobs:
             f=$(ls out/cybroidos-desktop-*-amd64.iso); key=iso/cybroidos-desktop-amd64.iso
           elif [ "${{ matrix.image }}" = vm ]; then
             f=$(ls out/cybroid-server-*-amd64.qcow2); key=server/citos-server-amd64.qcow2
-          elif [ "${{ matrix.image }}" = desktop ] || [ "${{ matrix.image }}" = lite ]; then
+          elif [ "${{ matrix.image }}" = desktop ]; then
             f=$(ls out/cybroid-${{ matrix.image }}-*-amd64.qcow2); key=desktop/citos-${{ matrix.image }}-amd64.qcow2
           else
             f=$(ls out/cybroid-server_*_amd64.tar.zst); key=server/citos-server_amd64.tar.zst

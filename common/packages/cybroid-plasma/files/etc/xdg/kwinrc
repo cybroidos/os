@@ -39,3 +39,12 @@ Meta=org.kde.plasmashell,/PlasmaShell,org.kde.PlasmaShell,activateLauncherMenu
 
 [Windows]
 Placement=Centered
+
+# Night Light (Control Centre's tile turns it on): warmer colours from
+# sunset to sunrise in Kampala, fading in over half an hour.
+[NightColor]
+Active=false
+Mode=Location
+LatitudeFixed=0.3476
+LongitudeFixed=32.5825
+NightTemperature=4200

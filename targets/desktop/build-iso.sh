@@ -120,6 +120,11 @@ echo "${user}:cybroid" | chpasswd
 # sudo and the installer without asking.
 printf '%s ALL=(ALL) NOPASSWD: ALL\n' "${user}" > /etc/sudoers.d/live
 chmod 0440 /etc/sudoers.d/live
+# The usual home folders (Documents, Downloads, Music, Pictures, Videos) for
+# the live user at once, not only once the session has started.
+if id "${user}" >/dev/null 2>&1 && command -v xdg-user-dirs-update >/dev/null; then
+	runuser -u "${user}" -- env HOME="/home/${user}" xdg-user-dirs-update --force >/dev/null 2>&1 || true
+fi
 # A live session has nothing to protect: no screen lock.
 mkdir -p /etc/xdg
 printf '[Daemon]\nAutolock=false\nLockOnResume=false\n' > /etc/xdg/kscreenlockerrc
@@ -138,8 +143,8 @@ welcomeExpandingLogo: true
 windowExpanding: normal
 windowSize: 960px,620px
 windowPlacement: center
-sidebar: widget
-navigation: widget
+sidebar: qml,left
+navigation: qml,bottom
 strings:
     productName: CybroidOS
     shortProductName: CybroidOS
@@ -150,8 +155,8 @@ strings:
     bootloaderEntryName: CybroidOS
     productUrl: https://cybroid.com
     supportUrl: https://cybroid.com
-    knownIssuesUrl: https://cybroid.com
-    releaseNotesUrl: https://cybroid.com
+    knownIssuesUrl:
+    releaseNotesUrl:
     donateUrl:
 images:
     productLogo: "logo.png"
@@ -169,7 +174,8 @@ uploadServer:
 EOF
 # Its look: the stylesheet (every page in the Horizon look), the slideshow
 # (screenshots of the system while it installs) and the welcome picture.
-cp "${here}/installer/stylesheet.qss" "${here}/installer/show.qml" "${brand}/"
+cp "${here}/installer/stylesheet.qss" "${here}/installer/show.qml" \
+	"${here}/installer/calamares-sidebar.qml" "${here}/installer/calamares-navigation.qml" "${brand}/"
 cp -r "${here}/installer/slides" "${brand}/slides"
 # GRUB's preparation without apt (Debian's helper installed it with apt-get,
 # which a live ISO without a package source can't).

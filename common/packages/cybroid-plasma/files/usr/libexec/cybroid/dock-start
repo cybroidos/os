@@ -1,0 +1,16 @@
+#!/bin/sh
+# Starts the CybroidOS dock, or starts it again (a new theme, a new screen
+# size). Plank runs as a user service of its own: the session's autostart and
+# cybroid-appearance's service would otherwise own it, and nothing brought it
+# back when it crashed or was closed (the dock "went missing"). The service
+# starts it again two seconds after it ends, however it ends, for as long as
+# the session runs (PartOf the graphical session).
+systemctl --user stop cybroid-dock.service >/dev/null 2>&1 || true
+systemctl --user reset-failed cybroid-dock.service >/dev/null 2>&1 || true
+# A dock started some other way (an older build's autostart).
+pkill -x plank 2>/dev/null && sleep 0.5
+systemd-run --user --quiet --collect --unit=cybroid-dock \
+	-p Restart=always -p RestartSec=2 -p PartOf=graphical-session.target \
+	--setenv=DISPLAY --setenv=XAUTHORITY --setenv=PATH --setenv=XDG_CURRENT_DESKTOP --setenv=XDG_DATA_DIRS \
+	--setenv=XDG_CONFIG_DIRS --setenv=XDG_MENU_PREFIX --setenv=KDE_FULL_SESSION \
+	/usr/libexec/cybroid/dock >/dev/null 2>&1 || (setsid /usr/libexec/cybroid/dock >/dev/null 2>&1 &)

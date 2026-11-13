@@ -95,6 +95,7 @@ os-prober
 cryptsetup
 cryptsetup-initramfs
 util-linux-extra
+systemd-timesyncd
 keyutils
 dosfstools
 ntfs-3g

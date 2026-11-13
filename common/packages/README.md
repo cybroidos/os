@@ -9,7 +9,7 @@ command line).
 | Package | Arch | Contents | Used by |
 |---|---|---|---|
 | `cybroid-base` | all | `/etc/os-release` identity, login banners, logo SVGs | every target |
-| `cybroid-sources` | all | apt sources at `citos.cybroid.com` (Debian 13's archive and security updates under the CybroidOS name; Debian's own entries set aside, restored on removal) | server, desktop, container images; the desktop ISO |
+| `cybroid-sources` | all | apt sources at `deb.cybroid.com` (Debian 13's archive and security updates under the CybroidOS name; Debian's own entries set aside, restored on removal) | server, desktop, container images; the desktop ISO |
 | `cybroid-plasma` | all | CybroidOS Desktop: KDE Plasma 6 in the CybroidOS Horizon look (colour scheme, top bar and floating dock, SDDM sign-in, splash), Plymouth, Firefox policy, xrdp | desktop VM image; the desktop ISO |
 | `cybroid-desktop` | all | CybroidOS Lite: Xfce in the CybroidOS colours, Firefox ESR, slick-greeter, xrdp | lite VM image |
 | `cybroid-artwork` | all | hicolor icons, wallpapers (1080p–2160p) | desktop, server, Pi |

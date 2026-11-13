@@ -80,7 +80,7 @@ what each finding changed in 0.1.1. The work is listed in "Decisions".
 
 | Area | Change |
 |---|---|
-| Name | CybroidOS everywhere; id `cybroid` (os-release `ID=cybroid`, `ID_LIKE=debian`, packages `cybroid-*`, paths, theme ids). Transitional `citos-*` packages move installed systems over. The package mirror host (citos.cybroid.com) and the storage bucket keep their names: they are addresses, not branding. |
+| Name | CybroidOS everywhere; id `cybroid` (os-release `ID=cybroid`, `ID_LIKE=debian`, packages `cybroid-*`, paths, theme ids). Transitional `citos-*` packages move installed systems over. The package mirror is deb.cybroid.com (citos.cybroid.com was removed on 2026-11-13); the storage bucket keeps its name. |
 | Live ISO | Live user `cybroid` / `cybroid`, home folders, no screen lock, `user-setup`, Wi-Fi stack, firmware for common Wi-Fi chips, CybroidOS boot menus (GRUB and syslinux) with no black box before the splash. |
 | Installer | Our sidebar and navigation in QML, a full stylesheet, a slideshow of the system, Erase disk by default with a swap file, GRUB without apt, `try_remove`, Kampala and British English. |
 | Desktop | Control Centre: Wi-Fi (join in place), Bluetooth (devices in place), Airplane mode, Night Light, Do Not Disturb, Appearance and Design, screenshot, display brightness, sound with the output, now playing, battery. AM/PM clocks, zsh with history suggestions, a Google start page, theme pages hidden. |

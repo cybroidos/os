@@ -1,13 +1,13 @@
-# CybroidOS package sources (cybroid-sources). citos.cybroid.com serves Debian's
+# CybroidOS package sources (cybroid-sources). deb.cybroid.com serves Debian's
 # archive; packages are checked against Debian's own signing keys.
 Types: deb
-URIs: https://citos.cybroid.com/debian
+URIs: https://deb.cybroid.com/debian
 Suites: trixie trixie-updates trixie-backports
 Components: main contrib non-free-firmware
 Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg
 
 Types: deb
-URIs: https://citos.cybroid.com/debian-security
+URIs: https://deb.cybroid.com/debian-security
 Suites: trixie-security
 Components: main contrib non-free-firmware
 Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg

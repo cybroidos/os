@@ -64,6 +64,9 @@ if [ "$1" = "configure" ]; then
 	if [ -f /etc/default/zramswap ] && ! grep -q '^PERCENT=' /etc/default/zramswap; then
 		printf '\n# CybroidOS: half the memory as compressed swap.\nALGO=zstd\nPERCENT=50\n' >> /etc/default/zramswap
 	fi
+	# The firewall on the first start; systemd-oomd against out-of-memory
+	# freezes (its limits: usr/lib/systemd/system/*.d/10-cybroid-oomd.conf).
+	systemctl enable cybroid-firewall-setup.service systemd-oomd.service >/dev/null 2>&1 || true
 	# SSDs stay fast: a weekly trim (util-linux's timer).
 	systemctl enable fstrim.timer >/dev/null 2>&1 || true
 	# Start graphical, on the CybroidOS sign-in screen.

@@ -1,0 +1,6 @@
+// CybroidOS (cybroid-plasma): Debian's security updates install by
+// themselves every day (unattended-upgrades); other updates wait for the
+// App Centre.
+APT::Periodic::Update-Package-Lists "1";
+APT::Periodic::Unattended-Upgrade "1";
+APT::Periodic::AutocleanInterval "7";

@@ -1,0 +1,13 @@
+#!/bin/sh
+# CybroidOS (cybroid-plasma): the firewall, set once on the first start
+# (ufw needs the running kernel, not the image builder's chroot). Nothing
+# comes in except Remote Desktop over Tower, Cybroid's private network;
+# everything goes out. Each person can change it in Settings > Firewall.
+set -e
+command -v ufw >/dev/null || exit 0
+ufw --force reset >/dev/null
+ufw default deny incoming >/dev/null
+ufw default allow outgoing >/dev/null
+ufw allow in on tailscale0 to any port 3389 proto tcp comment 'Remote Desktop over Tower' >/dev/null
+ufw --force enable >/dev/null
+mkdir -p /var/lib/cybroid && : > /var/lib/cybroid/firewall-set

@@ -24,7 +24,8 @@ Depends: cybroid-base (>= @VERSION@), cybroid-artwork (>= @VERSION@), cybroid-pl
  gstreamer1.0-plugins-good, gstreamer1.0-plugins-bad, gstreamer1.0-libav,
  fonts-noto-color-emoji, fonts-liberation2,
  zsh, zsh-autosuggestions, zsh-syntax-highlighting, bash-completion,
- cups, cups-filters, print-manager, zram-tools, unzip, p7zip-full, git, cracklib-runtime
+ cups, cups-filters, print-manager, zram-tools, unzip, p7zip-full, git, cracklib-runtime,
+ unattended-upgrades, ufw, plasma-firewall, systemd-oomd
 Recommends: cybroid-icons
 Conflicts: cybroid-desktop, citos-desktop
 Replaces: citos-plasma (<< 0.1.2~)

@@ -1,0 +1,13 @@
+[Unit]
+Description=CybroidOS: set up the firewall (once)
+ConditionPathExists=!/var/lib/cybroid/firewall-set
+ConditionPathExists=!/run/live/medium
+After=network-pre.target
+Before=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/cybroid/firewall-setup
+
+[Install]
+WantedBy=multi-user.target

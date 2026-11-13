@@ -7,7 +7,7 @@ set -e
 # Conflicts/Replaces on base-files (which is Essential) and conffile prompts.
 # On upgrade too, for files added to the list since the first install.
 #
-# CybroidOS was CIT-OS until 0.1.1: citos-base held these diversions. They
+# CybroidOS was CIT-OS until 0.1.2: citos-base held these diversions. They
 # pass to cybroid-base as they are (the files stay where they are).
 #
 # /etc/dpkg/origins/default: the dpkg vendor (Debian's derivative guidelines:

@@ -6,8 +6,8 @@ Homepage: https://github.com/cybroidinstitute/cit-os
 Section: graphics
 Priority: optional
 Depends: cybroid-base (>= @VERSION@)
-Replaces: citos-artwork (<< 0.1.1~)
-Breaks: citos-artwork (<< 0.1.1~)
+Replaces: citos-artwork (<< 0.1.2~)
+Breaks: citos-artwork (<< 0.1.2~)
 Description: CybroidOS icons and wallpapers
  The CybroidOS logo as hicolor theme icons and PNGs, and the CybroidOS
  wallpapers at 1080p, 1440p and 2160p. For desktops, servers with a

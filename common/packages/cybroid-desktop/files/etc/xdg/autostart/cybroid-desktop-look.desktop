@@ -1,8 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=CybroidOS look
-Comment=CybroidOS wallpaper and theme until the person picks their own
-Exec=/usr/libexec/cybroid/desktop-look
-OnlyShowIn=XFCE;
-NoDisplay=true
-X-XFCE-Autostart-Override=true

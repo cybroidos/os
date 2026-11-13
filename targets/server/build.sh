@@ -5,12 +5,10 @@
 #
 #   sudo targets/server/build.sh                    -> out/cybroid-server-<version>-amd64.qcow2
 #   sudo VARIANT=desktop targets/server/build.sh    -> out/cybroid-desktop-<version>-amd64.qcow2
-#   sudo VARIANT=lite targets/server/build.sh       -> out/cybroid-lite-<version>-amd64.qcow2
 #
 # CybroidOS Desktop is KDE Plasma 6 in the CybroidOS Horizon look (cybroid-plasma,
-# with the CybroidOS boot splash); CybroidOS Lite is Xfce in the CybroidOS colours
-# (cybroid-desktop), for small machines. Both grow the disk (10 and 8 GB) and
-# swap Debian's cloud kernel, which has no display drivers, for its
+# with the CybroidOS boot splash). It grows the disk to 10 GB and
+# swaps Debian's cloud kernel, which has no display drivers, for its
 # standard one.
 #
 # Needs root (loop devices, chroot), qemu-img, curl, python3 and dpkg-deb;
@@ -26,7 +24,7 @@ repo="$(cd "${here}/../.." && pwd)"
 [ "$(id -u)" = 0 ] || die "run as root"
 need qemu-img losetup curl
 VARIANT=${VARIANT:-server}
-case "$VARIANT" in server | desktop | lite) ;; *) die "VARIANT is server, desktop or lite" ;; esac
+case "$VARIANT" in server | desktop) ;; *) die "VARIANT is server or desktop" ;; esac
 GUI=false
 [ "$VARIANT" != server ] && GUI=true
 $GUI && need growpart resize2fs e2fsck
@@ -49,7 +47,6 @@ trap cleanup EXIT
 
 case "$VARIANT" in
 desktop) export CYBROID_PACKAGES="cybroid-base cybroid-sources cybroid-artwork cybroid-plymouth-theme cybroid-plasma" ;;
-lite) export CYBROID_PACKAGES="cybroid-base cybroid-sources cybroid-artwork cybroid-desktop" ;;
 *) export CYBROID_PACKAGES="cybroid-base cybroid-sources" ;;
 esac
 build_debs $CYBROID_PACKAGES
@@ -63,7 +60,6 @@ qemu-img convert -O raw "${base}" "${work}/disk.raw"
 # The desktop needs room: 8 GB, the root partition and filesystem grown to fill it.
 case "$VARIANT" in
 desktop) qemu-img resize -q -f raw "${work}/disk.raw" 10G ;;
-lite) qemu-img resize -q -f raw "${work}/disk.raw" 8G ;;
 esac
 
 # Attach the disk and mount its root partition (the largest ext4 one).

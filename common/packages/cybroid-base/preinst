@@ -6,8 +6,21 @@ set -e
 # kernel line (/etc/update-motd.d/10-uname) take effect. Diverting avoids
 # Conflicts/Replaces on base-files (which is Essential) and conffile prompts.
 # On upgrade too, for files added to the list since the first install.
+#
+# CybroidOS was CIT-OS until 0.1.1: citos-base held these diversions. They
+# pass to cybroid-base as they are (the files stay where they are).
+#
+# /etc/dpkg/origins/default: the dpkg vendor (Debian's derivative guidelines:
+# a derivative names itself, with Debian as its parent).
+files="/usr/lib/os-release /etc/issue /etc/motd /etc/update-motd.d/10-uname /etc/dpkg/origins/default"
 if [ "$1" = "install" ] || [ "$1" = "upgrade" ]; then
-	for f in /usr/lib/os-release /etc/issue /etc/motd /etc/update-motd.d/10-uname; do
+	for f in ${files}; do
+		if dpkg-divert --list "$f" | grep -q "by citos-base"; then
+			dpkg-divert --package citos-base --remove --no-rename --divert "${f}.base-files" "$f"
+			dpkg-divert --package cybroid-base --add --no-rename --divert "${f}.base-files" "$f"
+		fi
+	done
+	for f in ${files}; do
 		if ! dpkg-divert --list "$f" | grep -q cybroid-base; then
 			dpkg-divert --package cybroid-base --add --rename \
 				--divert "${f}.base-files" "$f"

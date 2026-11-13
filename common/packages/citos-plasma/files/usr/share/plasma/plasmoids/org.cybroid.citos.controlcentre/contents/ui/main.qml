@@ -156,7 +156,12 @@ PlasmoidItem {
     function q(v) { return "'" + String(v).replace(/'/g, "'\\''") + "'" }
 
     // Wi-Fi: the networks in reach, strongest first, one line each.
+    // The Wi-Fi networks already saved (their names).
+    property var saved: []
     function scan() {
+        sh.run("nmcli -t -f NAME,TYPE connection show", (out) => {
+            root.saved = out.split("\n").filter((l) => /:802-11-wireless$/.test(l)).map((l) => l.replace(/:802-11-wireless$/, "").replace(/\\:/g, ":"))
+        })
         root.scanning = true
         sh.run("nmcli -t -f IN-USE,SSID,SIGNAL,SECURITY dev wifi list --rescan yes", (out) => {
             const seen = {}
@@ -178,12 +183,21 @@ PlasmoidItem {
         sh.run("nmcli radio wifi " + (on ? "on" : "off"), () => { if (on) scanTimer.start() })
     }
     Timer { id: scanTimer; interval: 2500; onTriggered: root.scan() }
-    // Join: a saved or open network at once; a new secured one asks first.
+    // Join: a saved network or an open one at once; a new secured one asks
+    // for its password here first. nmcli then keeps the password with the
+    // connection: nothing asks Plasma's agent, so no wallet prompt.
     function join(n, password) {
+        if (password === undefined && n.secure && root.saved.indexOf(n.ssid) < 0) {
+            root.joinMessage = ""
+            root.joining = n.ssid
+            return
+        }
         root.joinMessage = "Joining " + n.ssid + "…"
         const cmd = password !== undefined
             ? "nmcli dev wifi connect " + q(n.ssid) + " password " + q(password)
-            : "sh -c " + q("nmcli connection up id " + q(n.ssid) + " 2>/dev/null || nmcli dev wifi connect " + q(n.ssid))
+            : root.saved.indexOf(n.ssid) >= 0
+                ? "nmcli connection up id " + q(n.ssid)
+                : "nmcli dev wifi connect " + q(n.ssid)
         sh.run(cmd, (out, code) => {
             if (code === 0) {
                 root.joinMessage = ""
@@ -194,6 +208,9 @@ PlasmoidItem {
                 root.joinMessage = ""
                 root.joining = n.ssid
             } else {
+                // A failed join can leave a profile without its password,
+                // which would ask again through Plasma: take it away.
+                if (password !== undefined) sh.run("nmcli connection delete id " + q(n.ssid), () => root.scan())
                 root.joinMessage = "Couldn't join " + n.ssid + (password !== undefined ? ": check the password." : ".")
                 root.joining = n.secure ? n.ssid : ""
             }

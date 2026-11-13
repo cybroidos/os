@@ -51,3 +51,10 @@ extraItems=org.kde.plasma.notifications,org.kde.plasma.devicenotifier,org.kde.pl
 	mkdir -p "${_cy_cfg}/cybroid" && : > "${_cy_cfg}/cybroid/tray-0.1.2"
 fi
 unset _cy_cfg _cy_rc
+
+# CybroidOS 0.1.5 moved its zsh settings into /usr/share/cybroid/zsh, so they
+# come with updates: an account's ~/.zshrc still as first given (unchanged)
+# is replaced by the new one, which loads them. A changed one is left alone.
+if [ -f "$HOME/.zshrc" ] && [ "$(md5sum < "$HOME/.zshrc" | cut -d' ' -f1)" = a87541637607018a64e8768c8e01535a ]; then
+	cp /etc/skel/.zshrc "$HOME/.zshrc"
+fi

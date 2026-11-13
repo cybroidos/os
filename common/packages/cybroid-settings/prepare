@@ -1,0 +1,6 @@
+#!/bin/sh
+# Stages the compiled app from tools/build-native.sh (NATIVE_ROOT).
+set -e
+name="$(basename "$(dirname "$0")")"
+[ -d "${NATIVE_ROOT}/${name}" ] || { echo "error: ${name} not built (run tools/build-native.sh)" >&2; exit 1; }
+cp -a "${NATIVE_ROOT}/${name}/." "$1/"

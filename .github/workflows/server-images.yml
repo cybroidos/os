@@ -26,6 +26,9 @@ on:
       - 'common/packages/cybroid-sources/**'
       - 'common/packages/cybroid-plasma/**'
       - 'common/packages/cybroid-settings/**'
+      - 'common/packages/cybroid-camera/**'
+      - 'common/packages/cybroid-ui/**'
+      - 'apps/desktop/**'
       - 'common/packages/cybroid-plymouth-theme/**'
       - 'tools/render-brand.py'
       - 'targets/lib/**'
@@ -81,6 +84,21 @@ jobs:
             git clone -q --depth 1 --branch "$VERSION" https://github.com/matinlotfali/KDE-Rounded-Corners /src
             cd /src && cmake . -DCMAKE_BUILD_TYPE=Release >/dev/null && cmake --build . -j"$(nproc)" >/dev/null && cpack -G DEB >/dev/null
             cp kwin4_effect_shapecorners*.deb /out/cybroid-kwin-effects_amd64.deb'
+          ls -la dist/extra
+
+      # CybroidOS's own apps (apps/desktop: Cybroid.Ui, Settings, Camera),
+      # compiled against Debian 13's Qt in a Debian 13 container and packaged
+      # (cybroid-ui, cybroid-settings, cybroid-camera) for amd64.
+      - name: Build CybroidOS's own apps
+        if: matrix.image == 'desktop' || matrix.image == 'iso'
+        run: |
+          mkdir -p dist/extra
+          docker run --rm -v "$PWD:/src" -w /src -e HOST_UID="$(id -u)" debian:trixie sh -ec '
+            apt-get update -q
+            apt-get install -y -q --no-install-recommends cmake g++ make dpkg-dev python3 \
+              qt6-base-dev qt6-declarative-dev qt6-multimedia-dev >/dev/null
+            tools/build-native.sh /src/dist/extra
+            chown -R "$HOST_UID" /src/dist'
           ls -la dist/extra
 
       # Office for the live and installer ISO: ONLYOFFICE Desktop Editors

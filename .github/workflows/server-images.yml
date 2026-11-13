@@ -254,9 +254,15 @@ jobs:
           # Hangar's storage sits behind an office line: the classic transfer
           # engine (no minimum speed), two parts at a time, three tries.
           aws configure set default.s3.preferred_transfer_client classic
-          aws configure set default.s3.max_concurrent_requests 2
-          aws configure set default.s3.multipart_chunksize 16MB
-          s3() { for try in 1 2 3; do aws --endpoint-url "$S3_URL" --cli-read-timeout 300 s3 "$@" && return 0; echo "upload try $try failed, retrying"; sleep 20; done; return 1; }
+          # Hangar's storage is at home, behind Cloudflare, which gives up on a
+          # request after 100 s (error 524): small parts, one at a time, and a
+          # failed part is sent again by itself (max_attempts) instead of the
+          # whole 2 GB file starting over.
+          aws configure set default.s3.max_concurrent_requests 1
+          aws configure set default.s3.multipart_chunksize 8MB
+          aws configure set default.retry_mode standard
+          aws configure set default.max_attempts 10
+          s3() { for try in 1 2 3; do aws --endpoint-url "$S3_URL" --cli-read-timeout 300 s3 "$@" && return 0; echo "upload try $try failed, retrying"; sleep 60; done; return 1; }
           # The VM and container images keep their storage names: Hangar's
           # image catalogue fetches them by these keys (internal/pve/images.go).
           if [ "${{ matrix.image }}" = iso ]; then

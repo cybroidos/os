@@ -506,7 +506,7 @@ PlasmoidItem {
                     spacing: 6
                     Row {
                         spacing: 6
-                        QQC2.Label { id: hhmm; text: Qt.formatTime(root.now, "h:mm"); color: root.hudFg; font.family: root.mono; font.pixelSize: 60; font.weight: Font.Medium; font.letterSpacing: 2 }
+                        QQC2.Label { id: hhmm; text: Qt.formatTime(root.now, "h:mm AP").split(" ")[0]; color: root.hudFg; font.family: root.mono; font.pixelSize: 60; font.weight: Font.Medium; font.letterSpacing: 2 }
                         QQC2.Label { anchors.baseline: hhmm.baseline; text: Qt.formatTime(root.now, "AP"); color: root.hudAcc; font.family: root.mono; font.pixelSize: 26; font.weight: Font.Light }
                     }
                     QQC2.Label {
@@ -668,7 +668,7 @@ PlasmoidItem {
                     spacing: 8
                     Layout.topMargin: -6; Layout.bottomMargin: -6
                     QQC2.Label {
-                        text: Qt.formatTime(root.now, "h:mm")
+                        text: Qt.formatTime(root.now, "h:mm AP").split(" ")[0]
                         color: root.ink
                         font.pixelSize: root.look === "open" ? 104 : root.look === "gauges" ? 44 : 56
                         font.weight: root.look === "open" ? Font.Light : Font.DemiBold

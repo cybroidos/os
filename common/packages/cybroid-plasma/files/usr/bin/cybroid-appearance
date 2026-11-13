@@ -146,22 +146,12 @@ gsettings set org.gnome.desktop.interface icon-theme "$icons" 2>/dev/null || tru
 # The dock (Plank keeps its settings in dconf); it loads icons once, so it
 # starts again with the new ones.
 gsettings set net.launchpad.plank.dock.settings:/net/launchpad/plank/docks/dock1/ theme "$dock" 2>/dev/null || true
-# Started again in a unit of its own (this script's service would take it
-# down when it ends), and started too if it wasn't running.
-pkill -x plank 2>/dev/null && sleep 0.5
-systemctl --user stop cybroid-dock.service >/dev/null 2>&1 || true
-systemd-run --user --quiet --collect --unit=cybroid-dock \
-	--setenv=DISPLAY --setenv=XAUTHORITY --setenv=PATH --setenv=XDG_CURRENT_DESKTOP --setenv=XDG_DATA_DIRS \
-	--setenv=XDG_CONFIG_DIRS --setenv=XDG_MENU_PREFIX --setenv=KDE_FULL_SESSION \
-	/usr/libexec/cybroid/dock >/dev/null 2>&1 || (setsid /usr/libexec/cybroid/dock >/dev/null 2>&1 &)
+# Started again in a service of its own (dock-start; this script's service
+# would take it down when it ends), and started too if it wasn't running.
+/usr/libexec/cybroid/dock-start
 elif [ "$startup" != startup ]; then
 	# Plank stays where it was on the old screen size: centred again.
-	pkill -x plank 2>/dev/null && sleep 0.5
-	systemctl --user stop cybroid-dock.service >/dev/null 2>&1 || true
-	systemd-run --user --quiet --collect --unit=cybroid-dock \
-		--setenv=DISPLAY --setenv=XAUTHORITY --setenv=PATH --setenv=XDG_CURRENT_DESKTOP --setenv=XDG_DATA_DIRS \
-		--setenv=XDG_CONFIG_DIRS --setenv=XDG_MENU_PREFIX --setenv=KDE_FULL_SESSION \
-		/usr/libexec/cybroid/dock >/dev/null 2>&1 || (setsid /usr/libexec/cybroid/dock >/dev/null 2>&1 &)
+	/usr/libexec/cybroid/dock-start
 fi
 
 # The wallpaper (where it is CybroidOS's own: a picture someone chose stays) and
@@ -192,7 +182,9 @@ for (var i = 0; i < ds.length; i++) {
     if (d.wallpaperPlugin == 'org.kde.image') {
         d.currentConfigGroup = ['Wallpaper', 'org.kde.image', 'General'];
         var cur = String(d.readConfig('Image'));
-        if (cur == '' || cur.indexOf('/backgrounds/cybroid/') >= 0) {
+        // Written only when it changes: Plasma draws the wallpaper again on
+        // every write, a blink each time Control Centre changed something.
+        if ((cur == '' || cur.indexOf('/backgrounds/cybroid/') >= 0) && cur != img) {
             d.writeConfig('Image', img);
             d.writeConfig('FillMode', 2);
         }

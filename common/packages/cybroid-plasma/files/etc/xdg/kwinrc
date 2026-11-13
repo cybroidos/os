@@ -48,3 +48,29 @@ Mode=Location
 LatitudeFixed=0.3476
 LongitudeFixed=32.5825
 NightTemperature=4200
+
+# No hot corners: Plasma opens Overview when the pointer touches the top-left
+# corner, which is where Launchpad's button is, so reaching for it (or any
+# small movement there) threw the desktop into Overview. Overview stays on
+# Meta+W, and anyone can set corners again in Settings → Screen Edges.
+[Effect-overview]
+BorderActivate=9
+
+[Effect-windowview]
+BorderActivateAll=9
+
+[ElectricBorders]
+TopLeft=None
+Top=None
+TopRight=None
+Right=None
+BottomRight=None
+Bottom=None
+BottomLeft=None
+Left=None
+
+[TouchEdges]
+Top=None
+Bottom=None
+Left=None
+Right=None

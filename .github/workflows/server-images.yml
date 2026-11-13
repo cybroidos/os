@@ -25,6 +25,7 @@ on:
       - 'common/packages/cybroid-artwork/**'
       - 'common/packages/cybroid-sources/**'
       - 'common/packages/cybroid-plasma/**'
+      - 'common/packages/cybroid-settings/**'
       - 'common/packages/cybroid-plymouth-theme/**'
       - 'tools/render-brand.py'
       - 'targets/lib/**'

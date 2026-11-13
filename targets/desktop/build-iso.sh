@@ -24,7 +24,7 @@ mkdir -p "${out}"
 work="$(mktemp -d)"
 trap 'rm -rf "${work}"' EXIT
 
-CYBROID_PACKAGES="cybroid-base cybroid-sources cybroid-artwork cybroid-plymouth-theme cybroid-plasma"
+CYBROID_PACKAGES="cybroid-base cybroid-sources cybroid-artwork cybroid-plymouth-theme cybroid-settings cybroid-plasma"
 build_debs ${CYBROID_PACKAGES}
 
 lb="${work}/lb"

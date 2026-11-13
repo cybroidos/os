@@ -1,0 +1,3 @@
+#!/bin/sh
+# CybroidOS Settings: cybroid-settings [wifi|sound|appearance|datetime|about]
+exec python3 /usr/share/cybroid/settings/settings.py "$@"

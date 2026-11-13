@@ -166,7 +166,7 @@ jobs:
             qemu-img check out/cybroid-${{ matrix.image }}-*-amd64.qcow2
           else
             zstd -dc out/cybroid-server_*_amd64.tar.zst | tar -xOf - ./usr/lib/os-release | tee /dev/stderr | grep -q '^ID=cybroid'
-            zstd -dc out/cybroid-server_*_amd64.tar.zst | tar -xOf - ./etc/apt/sources.list.d/cybroid.sources | grep -q 'citos.cybroid.com/debian'
+            zstd -dc out/cybroid-server_*_amd64.tar.zst | tar -xOf - ./etc/apt/sources.list.d/cybroid.sources | grep -q 'deb.cybroid.com/debian'
           fi
 
       - name: Upload to Hangar's storage

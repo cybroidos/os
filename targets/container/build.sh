@@ -33,7 +33,7 @@ cleanup() {
 }
 trap cleanup EXIT
 
-# The identity, and apt pointed at citos.cybroid.com (cybroid-sources).
+# The identity, and apt pointed at deb.cybroid.com (cybroid-sources).
 export CYBROID_PACKAGES="cybroid-base cybroid-sources"
 build_debs $CYBROID_PACKAGES
 

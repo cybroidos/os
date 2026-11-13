@@ -169,6 +169,18 @@ jobs:
             zstd -dc out/cybroid-server_*_amd64.tar.zst | tar -xOf - ./etc/apt/sources.list.d/cybroid.sources | grep -q 'deb.cybroid.com/debian'
           fi
 
+      # The ISO is also kept with the run for a week, to download for testing
+      # on real machines: gh run download <run> -n cybroidos-desktop-iso
+      - name: Keep the ISO with the run
+        if: matrix.image == 'iso'
+        uses: actions/upload-artifact@v4
+        with:
+          name: cybroidos-desktop-iso
+          path: out/cybroidos-desktop-*-amd64.iso
+          retention-days: 7
+          compression-level: 0
+          if-no-files-found: error
+
       - name: Upload to Hangar's storage
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.CYBROID_IMAGES_KEY_ID }}

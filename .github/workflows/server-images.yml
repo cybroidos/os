@@ -12,6 +12,11 @@ name: Server images
 # write only to the citos-images bucket).
 on:
   workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish the packages to deb.cybroid.com even if it has this version
+        type: boolean
+        default: false
   # Every branch builds and uploads: Hangar takes the newest build.
   push:
     paths:
@@ -165,6 +170,45 @@ jobs:
             zstd -dc out/cybroid-server_*_amd64.tar.zst | tar -xOf - ./usr/lib/os-release | tee /dev/stderr | grep -q '^ID=cybroid'
             zstd -dc out/cybroid-server_*_amd64.tar.zst | tar -xOf - ./etc/apt/sources.list.d/cybroid.sources | grep -q 'deb.cybroid.com/debian'
           fi
+
+      # CybroidOS's own packages at deb.cybroid.com/cybroid, so installed
+      # machines update (cybroid-sources points them there): every package
+      # this job built (the desktop, artwork, our dock, rounded corners,
+      # icons; not ONLYOFFICE, which has its own repository), signed with the
+      # CybroidOS archive key. Published when deb.cybroid.com doesn't have
+      # this version yet, so raising the version in brand.toml is a release;
+      # "Run workflow" with publish ticked publishes again anyway.
+      # Secrets: CYBROID_APT_SIGNING_KEY (the archive key, armoured, no
+      # passphrase), CYBROID_APT_PUBLISH_KEY (an SSH key the server lets write
+      # only to /srv/deb-cybroid/cybroid, through rrsync), and
+      # CYBROID_APT_KNOWN_HOSTS (the server's host key).
+      - name: Publish the packages to deb.cybroid.com
+        if: matrix.image == 'iso'
+        env:
+          SIGNING_KEY: ${{ secrets.CYBROID_APT_SIGNING_KEY }}
+          PUBLISH_KEY: ${{ secrets.CYBROID_APT_PUBLISH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.CYBROID_APT_KNOWN_HOSTS }}
+          FORCE: ${{ github.event.inputs.publish }}
+        run: |
+          [ -n "$SIGNING_KEY" ] && [ -n "$PUBLISH_KEY" ] || { echo "::warning::No CYBROID_APT_* secrets: packages not published"; exit 0; }
+          version="$(python3 -c 'import tomllib; print(tomllib.load(open("common/branding/brand.toml","rb"))["identity"]["version"])')"
+          have="$(curl -fsSL https://deb.cybroid.com/cybroid/dists/trixie/main/binary-amd64/Packages 2>/dev/null |
+            awk '/^Package: cybroid-plasma$/{p=1;next} p&&/^Version:/{print $2;exit}')"
+          if [ "$have" = "$version" ] && [ "$FORCE" != true ]; then
+            echo "deb.cybroid.com already has $version"; exit 0
+          fi
+          sudo apt-get install -y -q --no-install-recommends reprepro rsync >/dev/null
+          printf '%s\n' "$SIGNING_KEY" | gpg --batch --import
+          tools/build-package.sh --all >/dev/null
+          debs="$(ls dist/*_"$version"_all.deb; ls dist/extra/*.deb | grep -v onlyoffice)"
+          tools/publish-apt-repo.sh $debs
+          cp "dist/cybroid-sources_${version}_all.deb" apt-repo/published/cybroid-sources.deb
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$PUBLISH_KEY" > ~/.ssh/apt_publish && chmod 600 ~/.ssh/apt_publish
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          rsync -rlt --delete -e "ssh -i $HOME/.ssh/apt_publish -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes" \
+            apt-repo/published/ debpublish@deb.cybroid.com:/
+          curl -fsSL https://deb.cybroid.com/cybroid/dists/trixie/InRelease | head -12
 
       # The ISO is also kept with the run for a week, to download for testing
       # on real machines: gh run download <run> -n cybroidos-desktop-iso

@@ -11,3 +11,11 @@ URIs: https://deb.cybroid.com/debian-security
 Suites: trixie-security
 Components: main contrib non-free-firmware
 Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg
+
+# CybroidOS's own packages (the desktop, artwork, sign-in screen and so on),
+# signed with the CybroidOS archive key: updates to CybroidOS itself.
+Types: deb
+URIs: https://deb.cybroid.com/cybroid
+Suites: trixie
+Components: main
+Signed-By: /usr/share/keyrings/cybroid-archive-keyring.gpg

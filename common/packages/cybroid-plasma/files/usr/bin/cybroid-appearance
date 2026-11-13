@@ -254,6 +254,15 @@ if [ "$mode" = refresh ]; then
 	case "$places" in *moved*) moved=yes ;; esac
 fi
 if [ "$design" != "$was_design" ] || [ -n "$moved" ]; then
+	# Between designs, the new design's wallpaper covers the screens while
+	# the desktop restarts (cybroid-curtain), instead of a black second.
+	curtain=""
+	if [ "$design" != "$was_design" ] && [ -x /usr/libexec/cybroid/cybroid-curtain ]; then
+		curtain="${XDG_RUNTIME_DIR:-/tmp}/cybroid-curtain.$$"
+		: > "$curtain"
+		/usr/libexec/cybroid/cybroid-curtain "/usr/share/backgrounds/cybroid/$wall-1920x1080.png" "$curtain" >/dev/null 2>&1 &
+		sleep 0.4
+	fi
 	if systemctl --user stop plasma-plasmashell >/dev/null 2>&1; then
 		printf '%s\n' "$places" | while read -r cid size where; do
 			[ -n "$where" ] || continue
@@ -267,6 +276,17 @@ if [ "$design" != "$was_design" ] || [ -n "$moved" ]; then
 		systemctl --user reset-failed plasma-plasmashell >/dev/null 2>&1 || true
 		systemctl --user start plasma-plasmashell >/dev/null 2>&1 ||
 			{ sleep 2; systemctl --user reset-failed plasma-plasmashell >/dev/null 2>&1; systemctl --user start plasma-plasmashell >/dev/null 2>&1; } || true
+	fi
+	if [ -n "$curtain" ]; then
+		# The desktop is drawn once its shell answers on D-Bus and has had
+		# a moment to paint; then the cover fades away (at most 20 s).
+		for _ in $(seq 1 60); do
+			qdbus6 org.kde.plasmashell /PlasmaShell >/dev/null 2>&1 && break
+			sleep 0.25
+		done
+		sleep 1.2
+		rm -f "$curtain"
+		sleep 0.4
 	fi
 fi
 "$0" status

@@ -24,6 +24,7 @@ Window {
     property bool mirror: true       // the preview as in a mirror (not the saved picture)
     property int counting: 0
     property int camIndex: 0
+    property int micIndex: -1        // -1: the system's default microphone
     property string last: ""
     property bool saving: false          // a video still being written after Stop
     readonly property bool recording: rec.recorderState === MediaRecorder.RecordingState
@@ -93,7 +94,10 @@ Window {
             quality: MediaRecorder.NormalQuality
             onRecorderStateChanged: if (recorderState === MediaRecorder.StoppedState) { win.saving = false; win.refreshLast() }
         }
-        audioInput: AudioInput { }
+        // The microphone chosen in Video mode, or the system's default one.
+        audioInput: AudioInput {
+            device: win.micIndex >= 0 && win.micIndex < devices.audioInputs.length ? devices.audioInputs[win.micIndex] : devices.defaultAudioInput
+        }
         videoOutput: out
     }
 
@@ -204,6 +208,26 @@ Window {
             color: rb.on ? Theme.onAccent : "#ffffff"
         }
         MouseArea { id: rbm; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: rb.clicked() }
+    }
+
+    // Video: which microphone records the sound (the default first).
+    Choice {
+        visible: win.hasCamera && win.video && !win.recording
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.margins: 16
+        implicitWidth: 260
+        readonly property var mics: devices.audioInputs
+        options: ["Microphone: " + (devices.defaultAudioInput.description || "default")].concat(mics.map(m => m.description))
+        current: win.micIndex + 1
+        onPicked: (i) => win.micIndex = i - 1
+    }
+    Label {
+        visible: win.hasCamera && win.video && !win.recording && devices.audioInputs.length === 0
+        anchors.top: parent.top; anchors.left: parent.left
+        anchors.margins: 22
+        text: "No microphone: videos will be silent"
+        color: "#ffb547"
     }
 
     // The top: timer and mirror.

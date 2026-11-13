@@ -1,16 +1,38 @@
 #!/bin/sh
 # Starts the CybroidOS dock, or starts it again (a new theme, a new screen
-# size). Plank runs as a user service of its own: the session's autostart and
-# cybroid-appearance's service would otherwise own it, and nothing brought it
-# back when it crashed or was closed (the dock "went missing"). The service
-# starts it again two seconds after it ends, however it ends, for as long as
-# the session runs (PartOf the graphical session).
-systemctl --user stop cybroid-dock.service >/dev/null 2>&1 || true
-systemctl --user reset-failed cybroid-dock.service >/dev/null 2>&1 || true
-# A dock started some other way (an older build's autostart).
+# size). Plank runs as a user service of its own (cybroid-dock), which starts
+# it again two seconds after it ends, however it ends, for as long as the
+# session runs (PartOf the graphical session).
+#
+# What was left of an earlier dock is cleared first. A crashed Plank leaves
+# helpers in its service, which keeps the service loaded: a new one couldn't
+# start under the same name, and the dock was started inside the caller
+# instead (cybroid-appearance's own service), which systemd ends a moment
+# later, taking the dock with it: the dock "went missing" after a theme
+# change. A dock started some other way (an older build's autostart, by hand)
+# goes too, so there is only ever one.
+docks='cybroid-dock*.service'
+# An older dock's service, its Plank gone, can still hold a private D-Bus
+# and portals Plank started for itself (before the session's bus was passed
+# in): systemctl kill leaves an inactive service alone, so its processes are
+# ended through its control group, which belongs to this user.
+for unit in $(systemctl --user list-units "${docks}" --all --no-legend --plain 2>/dev/null | awk '{print $1}'); do
+	cg="$(systemctl --user show "${unit}" -p ControlGroup --value 2>/dev/null)"
+	[ -n "${cg}" ] && [ -w "/sys/fs/cgroup${cg}/cgroup.kill" ] && echo 1 > "/sys/fs/cgroup${cg}/cgroup.kill"
+done
+systemctl --user kill --signal=KILL "${docks}" >/dev/null 2>&1
+systemctl --user stop "${docks}" >/dev/null 2>&1
+systemctl --user reset-failed "${docks}" >/dev/null 2>&1
 pkill -x plank 2>/dev/null && sleep 0.5
-systemd-run --user --quiet --collect --unit=cybroid-dock \
-	-p Restart=always -p RestartSec=2 -p PartOf=graphical-session.target \
-	--setenv=DISPLAY --setenv=XAUTHORITY --setenv=PATH --setenv=XDG_CURRENT_DESKTOP --setenv=XDG_DATA_DIRS \
-	--setenv=XDG_CONFIG_DIRS --setenv=XDG_MENU_PREFIX --setenv=KDE_FULL_SESSION \
-	/usr/libexec/cybroid/dock >/dev/null 2>&1 || (setsid /usr/libexec/cybroid/dock >/dev/null 2>&1 &)
+
+start() {
+	systemd-run --user --quiet --collect --unit="$1" \
+		-p Restart=always -p RestartSec=2 -p PartOf=graphical-session.target \
+		--setenv=DISPLAY --setenv=XAUTHORITY --setenv=PATH --setenv=XDG_CURRENT_DESKTOP --setenv=XDG_DATA_DIRS \
+		--setenv=XDG_CONFIG_DIRS --setenv=XDG_MENU_PREFIX --setenv=KDE_FULL_SESSION \
+		--setenv=DBUS_SESSION_BUS_ADDRESS \
+		/usr/libexec/cybroid/dock >/dev/null 2>&1
+}
+# The usual name; if systemd still holds it, a name of its own (the
+# pattern above finds it next time).
+start cybroid-dock || { sleep 1; start cybroid-dock; } || start "cybroid-dock-$(date +%s)"

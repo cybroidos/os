@@ -35,12 +35,16 @@ if [ ! -f "$conf/cybroid/settings-in-dock" ] && [ -f /usr/share/applications/cyb
 	mkdir -p "$conf/cybroid" && : > "$conf/cybroid/settings-in-dock"
 fi
 # Terminal without its toolbars (New Tab, Split View...), as on a Mac: KDE
-# keeps that in the window's saved state, so a first sign-in gets one with
-# both hidden (Konsole's own, captured once); anyone can show them again.
+# keeps that in the window's saved state (Konsole's own, captured once).
+# Once per account (a marker, not "no state file yet": a state file made
+# before this ran kept the toolbars), changing only that value, so the
+# window's size stays; anyone can show them again.
 st="${XDG_STATE_HOME:-$HOME/.local/state}/konsolestaterc"
-if [ ! -f "$st" ]; then
-	mkdir -p "$(dirname "$st")"
-	printf '[MainWindow]\nState=AAAA/wAAAAD9AAAAAQAAAAAAAAAAAAAAAPwCAAAAAvsAAAAcAFMAUwBIAE0AYQBuAGEAZwBlAHIARABvAGMAawAAAAAA/////wAAAQkA////+wAAACIAUQB1AGkAYwBrAEMAbwBtAG0AYQBuAGQAcwBEAG8AYwBrAAAAAAD/////AAABbAD///8AAAKAAAABaAAAAAQAAAAEAAAACAAAAAj8AAAAAQAAAAIAAAACAAAAFgBtAGEAaQBuAFQAbwBvAGwAQgBhAHIAAAAAAP////8AAAAAAAAAAAAAABwAcwBlAHMAcwBpAG8AbgBUAG8AbwBsAGIAYQByAAAAAAD/////AAAAAAAAAAA=\n' > "$st"
+if [ ! -f "$conf/cybroid/konsole-toolbars" ]; then
+	mkdir -p "$(dirname "$st")" "$conf/cybroid"
+	kwriteconfig6 --file "$st" --group MainWindow --key State 'AAAA/wAAAAD9AAAAAQAAAAAAAAAAAAAAAPwCAAAAAvsAAAAcAFMAUwBIAE0AYQBuAGEAZwBlAHIARABvAGMAawAAAAAA/////wAAAQkA////+wAAACIAUQB1AGkAYwBrAEMAbwBtAG0AYQBuAGQAcwBEAG8AYwBrAAAAAAD/////AAABbAD///8AAAKAAAABaAAAAAQAAAAEAAAACAAAAAj8AAAAAQAAAAIAAAACAAAAFgBtAGEAaQBuAFQAbwBvAGwAQgBhAHIAAAAAAP////8AAAAAAAAAAAAAABwAcwBlAHMAcwBpAG8AbgBUAG8AbwBsAGIAYQByAAAAAAD/////AAAAAAAAAAA=' 2>/dev/null ||
+		printf '[MainWindow]\nState=AAAA/wAAAAD9AAAAAQAAAAAAAAAAAAAAAPwCAAAAAvsAAAAcAFMAUwBIAE0AYQBuAGEAZwBlAHIARABvAGMAawAAAAAA/////wAAAQkA////+wAAACIAUQB1AGkAYwBrAEMAbwBtAG0AYQBuAGQAcwBEAG8AYwBrAAAAAAD/////AAABbAD///8AAAKAAAABaAAAAAQAAAAEAAAACAAAAAj8AAAAAQAAAAIAAAACAAAAFgBtAGEAaQBuAFQAbwBvAGwAQgBhAHIAAAAAAP////8AAAAAAAAAAAAAABwAcwBlAHMAcwBpAG8AbgBUAG8AbwBsAGIAYQByAAAAAAD/////AAAAAAAAAAA=\n' > "$st"
+	: > "$conf/cybroid/konsole-toolbars"
 fi
 
 # No Templates folder (macOS has none, and its icon looked like the App

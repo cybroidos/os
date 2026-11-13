@@ -16,6 +16,9 @@ qt_add_qml_module(cybroid-settings
         qml/AppearancePage.qml
         qml/DateTimePage.qml
         qml/AboutPage.qml
+        qml/BluetoothPage.qml
+        qml/DisplaysPage.qml
+        qml/PowerPage.qml
 )
 target_include_directories(cybroid-settings PRIVATE ${CMAKE_SOURCE_DIR}/common)
 target_link_libraries(cybroid-settings PRIVATE Qt6::Gui Qt6::Qml Qt6::Quick Qt6::QuickControls2 Qt6::Network)

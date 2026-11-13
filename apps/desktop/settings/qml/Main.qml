@@ -22,14 +22,14 @@ Window {
     readonly property var groups: [
         [
             { id: "wifi", name: "Wi-Fi", icon: "network-wireless-symbolic", page: "WifiPage.qml" },
-            { id: "bluetooth", name: "Bluetooth", icon: "bluetooth-symbolic", kcm: "kcm_bluetooth" },
+            { id: "bluetooth", name: "Bluetooth", icon: "bluetooth-symbolic", page: "BluetoothPage.qml" },
             { id: "network", name: "Network", icon: "network-wired-symbolic", kcm: "kcm_networkmanagement" }
         ], [
             { id: "appearance", name: "Appearance", icon: "color-management-symbolic", page: "AppearancePage.qml" },
-            { id: "display", name: "Displays", icon: "video-display-symbolic", kcm: "kcm_kscreen" },
+            { id: "display", name: "Displays", icon: "video-display-symbolic", page: "DisplaysPage.qml" },
             { id: "sound", name: "Sound", icon: "audio-volume-high-symbolic", page: "SoundPage.qml" },
             { id: "notifications", name: "Notifications", icon: "notifications-symbolic", kcm: "kcm_notifications" },
-            { id: "power", name: "Battery & Power", icon: "battery-full-symbolic", kcm: "kcm_powerdevilprofilesconfig" }
+            { id: "power", name: "Battery & Power", icon: "battery-full-symbolic", page: "PowerPage.qml" }
         ], [
             { id: "keyboard", name: "Keyboard", icon: "input-keyboard-symbolic", kcm: "kcm_keyboard" },
             { id: "touchpad", name: "Mouse & Touchpad", icon: "input-touchpad-symbolic", kcm: "kcm_touchpad" },

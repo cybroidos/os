@@ -1,0 +1,5 @@
+// CybroidOS (cybroid-sources): CybroidOS's own updates install by themselves,
+// as Debian's security updates do (unattended-upgrades).
+Unattended-Upgrade::Origins-Pattern {
+	"origin=CybroidOS,codename=trixie,label=CybroidOS";
+};

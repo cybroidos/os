@@ -10,6 +10,8 @@ Replaces: citos-sources (<< 0.1.2~)
 Breaks: citos-sources (<< 0.1.2~)
 Description: CybroidOS package sources (deb.cybroid.com)
  Points apt at deb.cybroid.com, which serves Debian 13's archive (and its
- security updates) under the CybroidOS name. Packages are still Debian's and
- checked against Debian's signing keys. Debian's own source entries are set
+ security updates) under the CybroidOS name, and CybroidOS's own packages.
+ Debian's packages are checked against Debian's signing keys, CybroidOS's
+ against the CybroidOS archive key (shipped here); CybroidOS's updates install
+ by themselves, as Debian's security updates do. Debian's own source entries are set
  aside, not deleted, and come back if this package is removed.

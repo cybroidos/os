@@ -168,8 +168,11 @@ jobs:
 
       # The ISO is also kept with the run for a week, to download for testing
       # on real machines: gh run download <run> -n cybroidos-desktop-iso
+      # Optional: when the organisation's artifact storage is full, the upload
+      # to Hangar's storage below must still run.
       - name: Keep the ISO with the run
         if: matrix.image == 'iso'
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: cybroidos-desktop-iso

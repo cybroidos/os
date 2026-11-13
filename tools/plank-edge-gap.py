@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Patches Plank's source: a bottom dock floats above the screen's edge, and
-running apps can be marked by a flat hexagon (CIT-OS Hex).
+running apps can be marked by a flat hexagon (CybroidOS Hex).
 
 Plank always draws its strip flush with the edge. macOS's Dock (and Plasma's
 floating panels) sit a few pixels above it. This adds PLANK_EDGE_GAP (pixels,
@@ -27,7 +27,7 @@ EDITS = {
         (
             "\t\tint bottom_offset;\n",
             "\t\tint bottom_offset;\n"
-            "\t\t// CIT-OS: pixels between a bottom dock and the screen's edge.\n"
+            "\t\t// CybroidOS: pixels between a bottom dock and the screen's edge.\n"
             "\t\tpublic int EdgeGap { get; private set; default = 0; }\n",
         ),
         (
@@ -52,7 +52,7 @@ EDITS = {
         ),
     ],
     "lib/Drawing/DockTheme.vala": [
-        # CIT-OS Hex: running apps marked by a small solid hexagon in one
+        # CybroidOS Hex: running apps marked by a small solid hexagon in one
         # colour (PLANK_INDICATOR, e.g. "#1ccbff") instead of the glow.
         (
             "\t\t\tvar x = size / 2;\n\t\t\tvar y = x;\n\t\t\t\n\t\t\tcr.move_to (x, y);\n",

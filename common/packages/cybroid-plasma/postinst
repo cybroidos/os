@@ -1,0 +1,58 @@
+#!/bin/sh
+set -e
+if [ "$1" = "triggered" ]; then
+	/usr/libexec/cybroid/app-names || true
+	exit 0
+fi
+if [ "$1" = "configure" ]; then
+	chmod 0755 /usr/libexec/cybroid/plasma-look /usr/libexec/cybroid/dock /usr/libexec/cybroid/app-names
+	/usr/libexec/cybroid/app-names || true
+	command -v glib-compile-schemas >/dev/null && glib-compile-schemas /usr/share/glib-2.0/schemas || true
+	command -v gtk-update-icon-cache >/dev/null && gtk-update-icon-cache -q -f /usr/share/icons/hicolor || true
+	# Remote Desktop and plain X sessions start Plasma.
+	if [ -x /usr/bin/startplasma-x11 ]; then
+		update-alternatives --set x-session-manager /usr/bin/startplasma-x11 >/dev/null 2>&1 || true
+	fi
+	# xrdp reads its TLS key from ssl-cert's group.
+	if getent group ssl-cert >/dev/null && id xrdp >/dev/null 2>&1; then
+		adduser --quiet xrdp ssl-cert >/dev/null 2>&1 || true
+	fi
+	# New accounts start in zsh (/etc/skel/.zshrc: suggestions from history,
+	# Tab to take them). Existing accounts keep theirs.
+	if [ -x /usr/bin/zsh ]; then
+		if [ -f /etc/adduser.conf ]; then
+			if grep -q '^#\?DSHELL=' /etc/adduser.conf; then
+				sed -i 's|^#\?DSHELL=.*|DSHELL=/usr/bin/zsh|' /etc/adduser.conf
+			else
+				echo 'DSHELL=/usr/bin/zsh' >> /etc/adduser.conf
+			fi
+		fi
+		if [ -f /etc/default/useradd ]; then
+			if grep -q '^#\? *SHELL=' /etc/default/useradd; then
+				sed -i 's|^#\? *SHELL=.*|SHELL=/usr/bin/zsh|' /etc/default/useradd
+			else
+				echo 'SHELL=/usr/bin/zsh' >> /etc/default/useradd
+			fi
+		fi
+	fi
+	# Flathub for the App Centre (Discover), where it can be reached.
+	if command -v flatpak >/dev/null 2>&1; then
+		flatpak remote-add --system --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo >/dev/null 2>&1 || true
+	fi
+	# zram: compressed swap in memory, half of it (helps machines with 4 GB).
+	if [ -f /etc/default/zramswap ] && ! grep -q '^PERCENT=' /etc/default/zramswap; then
+		printf '\n# CybroidOS: half the memory as compressed swap.\nALGO=zstd\nPERCENT=50\n' >> /etc/default/zramswap
+	fi
+	# SSDs stay fast: a weekly trim (util-linux's timer).
+	systemctl enable fstrim.timer >/dev/null 2>&1 || true
+	# Start graphical, on the CybroidOS sign-in screen.
+	systemctl set-default graphical.target >/dev/null 2>&1 || true
+	if [ -f /etc/X11/default-display-manager ]; then
+		echo /usr/bin/sddm > /etc/X11/default-display-manager
+	fi
+	# A quiet boot behind the splash.
+	if command -v update-grub >/dev/null 2>&1 && [ -f /boot/grub/grub.cfg ]; then
+		update-grub >/dev/null 2>&1 || true
+	fi
+fi
+exit 0

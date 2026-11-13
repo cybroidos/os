@@ -1,0 +1,55 @@
+{
+  "policies": {
+    "Homepage": {
+      "URL": "file:///usr/share/cybroid/start/index.html",
+      "StartPage": "homepage",
+      "Locked": false
+    },
+    "NoDefaultBookmarks": true,
+    "DisplayBookmarksToolbar": "always",
+    "Bookmarks": [
+      {
+        "Title": "Google",
+        "URL": "https://www.google.com",
+        "Placement": "toolbar"
+      },
+      {
+        "Title": "Cybroid",
+        "URL": "https://cybroid.com",
+        "Placement": "toolbar"
+      },
+      {
+        "Title": "CIT Hub",
+        "URL": "https://hub.cybroid.com",
+        "Placement": "toolbar"
+      }
+    ],
+    "DisableTelemetry": true,
+    "DisableFirefoxStudies": true,
+    "OverrideFirstRunPage": "",
+    "OverridePostUpdatePage": "",
+    "UserMessaging": {
+      "WhatsNew": false,
+      "ExtensionRecommendations": false,
+      "SkipOnboarding": true
+    },
+    "Preferences": {
+      "browser.tabs.inTitlebar": {
+        "Value": 0,
+        "Status": "default"
+      }
+    },
+    "SearchEngines": {
+      "Default": "Google"
+    },
+    "FirefoxHome": {
+      "Search": true,
+      "TopSites": true,
+      "SponsoredTopSites": false,
+      "Highlights": false,
+      "Pocket": false,
+      "SponsoredPocket": false,
+      "Snippets": false
+    }
+  }
+}

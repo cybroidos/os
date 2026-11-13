@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Build CIT-OS .deb packages from common/packages/<name>/ (ADR-0007).
+# Build CybroidOS .deb packages from common/packages/<name>/ (ADR-0007).
 #
 # A package directory holds:
-#   control          DEBIAN/control; @VERSION@ is replaced with the CIT-OS
+#   control          DEBIAN/control; @VERSION@ is replaced with the CybroidOS
 #                    version from common/branding/brand.toml
 #   files/           static files at their install paths (optional)
 #   prepare          executable that stages generated files (optional):
@@ -17,7 +17,7 @@
 # Usage: tools/build-package.sh <name>...      build the named packages
 #        tools/build-package.sh --all          every package that can build here
 # Env:   OUT (dist/), VERSION (brand.toml), and inputs some packages need:
-#        KIOSK_BUNDLE (citos-kiosk-app: a flutterpi_tool release bundle).
+#        KIOSK_BUNDLE (cybroid-kiosk-app: a flutterpi_tool release bundle).
 set -euo pipefail
 
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -52,7 +52,7 @@ build_one() {
 	local doc="${root}/usr/share/doc/${name}"
 	install -d "${doc}"
 	install -m 0644 "${pkgs_dir}/copyright" "${doc}/copyright"
-	printf '%s (%s) trixie; urgency=medium\n\n  * Built from the cit-os repository.\n\n -- CIT-OS maintainers <citos@cybroid.com>  %s\n' \
+	printf '%s (%s) trixie; urgency=medium\n\n  * Built from the cit-os repository.\n\n -- CybroidOS maintainers <citos@cybroid.com>  %s\n' \
 		"${name}" "${version}" "$(date -R)" | gzip -9n > "${doc}/changelog.gz"
 
 	# Normalise permissions: the source tree's umask must not leak in.
@@ -89,10 +89,41 @@ build_one() {
 	echo "built ${deb#"${repo_root}"/}"
 }
 
+# Transitional packages: CybroidOS was CIT-OS until 0.1.1, and its packages
+# were citos-*. Each old name becomes an empty package that depends on the
+# new one, so "apt upgrade" moves an installed system across; the new
+# packages Replace and Break the old ones (their control files).
+build_transitional() {
+	local name="$1" old="${1/cybroid/citos}"
+	[ "${old}" != "${name}" ] || return 0
+	local work root arch
+	work="$(mktemp -d)"
+	root="${work}/${old}"
+	install -d "${root}/DEBIAN" "${root}/usr/share/doc/${old}"
+	install -m 0644 "${pkgs_dir}/copyright" "${root}/usr/share/doc/${old}/copyright"
+	arch="$(sed -n 's/^Architecture: *//p' "${pkgs_dir}/${name}/control")"
+	{
+		echo "Package: ${old}"
+		echo "Version: ${version}"
+		echo "Architecture: ${arch}"
+		echo "Maintainer: CybroidOS maintainers <citos@cybroid.com>"
+		echo "Section: oldlibs"
+		echo "Priority: optional"
+		echo "Depends: ${name} (>= ${version})"
+		echo "Description: transitional package: ${old} is now ${name}"
+		echo " CIT-OS is now CybroidOS. This empty package moves an installed system to"
+		echo " ${name}; it can be removed afterwards."
+	} > "${root}/DEBIAN/control"
+	mkdir -p "${out}"
+	dpkg-deb --root-owner-group -Zxz --build "${root}" "${out}/${old}_${version}_${arch}.deb" >/dev/null
+	rm -rf "${work}"
+	echo "built ${old}_${version}_${arch}.deb (transitional)"
+}
+
 # Packages whose inputs come from another build (the Flutter bundle).
 needs_input() {
 	case "$1" in
-	citos-kiosk-app) [ -n "${KIOSK_BUNDLE:-}" ] ;;
+	cybroid-kiosk-app) [ -n "${KIOSK_BUNDLE:-}" ] ;;
 	*) true ;;
 	esac
 }
@@ -104,6 +135,7 @@ if [ "$1" = "--all" ]; then
 		[ -f "${dir}/control" ] || continue
 		if needs_input "${name}"; then
 			build_one "${name}"
+			build_transitional "${name}"
 		else
 			echo "skip ${name} (input not provided)"
 		fi

@@ -1,13 +1,13 @@
 name: Server images
 
-# CIT-OS Server as a VM image (qcow2, cloud-init) and as a container template
+# CybroidOS Server as a VM image (qcow2, cloud-init) and as a container template
 # (Proxmox LXC; imports into Docker too), uploaded to the citos-images bucket
 # on Hangar's storage (s3.cybroid.com), where Hangar's Images page prepares
-# them for launching. The desktop VM is CIT-OS Desktop Lite (Xfce, xrdp).
-# The "iso" image is CIT-OS Desktop as a live and installer ISO
-# (iso/citos-desktop-amd64.iso).
+# them for launching. The desktop VM is CybroidOS Desktop Lite (Xfce, xrdp).
+# The "iso" image is CybroidOS Desktop as a live and installer ISO
+# (iso/cybroidos-desktop-amd64.iso).
 #
-# Secrets: CITOS_IMAGES_KEY_ID, CITOS_IMAGES_SECRET (a Garage key that can
+# Secrets: CYBROID_IMAGES_KEY_ID, CYBROID_IMAGES_SECRET (a Garage key that can
 # write only to the citos-images bucket).
 on:
   workflow_dispatch:
@@ -15,12 +15,12 @@ on:
   push:
     paths:
       - 'common/branding/**'
-      - 'common/packages/citos-base/**'
-      - 'common/packages/citos-artwork/**'
-      - 'common/packages/citos-desktop/**'
-      - 'common/packages/citos-sources/**'
-      - 'common/packages/citos-plasma/**'
-      - 'common/packages/citos-plymouth-theme/**'
+      - 'common/packages/cybroid-base/**'
+      - 'common/packages/cybroid-artwork/**'
+      - 'common/packages/cybroid-desktop/**'
+      - 'common/packages/cybroid-sources/**'
+      - 'common/packages/cybroid-plasma/**'
+      - 'common/packages/cybroid-plymouth-theme/**'
       - 'tools/render-brand.py'
       - 'targets/lib/**'
       - 'targets/server/**'
@@ -59,7 +59,7 @@ jobs:
         if: matrix.image == 'vm'
         run: sudo OUT="$PWD/out" targets/server/build.sh
 
-      # Rounded windows for CIT-OS Desktop: KDE Rounded Corners (GPL-3.0,
+      # Rounded windows for CybroidOS Desktop: KDE Rounded Corners (GPL-3.0,
       # github.com/matinlotfali/KDE-Rounded-Corners), compiled in a Debian 13
       # container against Debian's own KWin, the way its project builds it.
       # Built here, not in a job of its own: the account's artifact storage
@@ -74,7 +74,7 @@ jobs:
               qt6-base-private-dev qt6-base-dev-tools libkf6configwidgets-dev libkf6kcmutils-dev kwin-dev libdrm-dev dpkg-dev file >/dev/null
             git clone -q --depth 1 --branch "$VERSION" https://github.com/matinlotfali/KDE-Rounded-Corners /src
             cd /src && cmake . -DCMAKE_BUILD_TYPE=Release >/dev/null && cmake --build . -j"$(nproc)" >/dev/null && cpack -G DEB >/dev/null
-            cp kwin4_effect_shapecorners*.deb /out/citos-kwin-effects_amd64.deb'
+            cp kwin4_effect_shapecorners*.deb /out/cybroid-kwin-effects_amd64.deb'
           ls -la dist/extra
 
       # Office for the live and installer ISO: ONLYOFFICE Desktop Editors
@@ -90,7 +90,7 @@ jobs:
 
       # The dock floats above the screen's edge like macOS's: Debian's own
       # Plank, rebuilt with tools/plank-edge-gap.py (PLANK_EDGE_GAP), as
-      # 0.11.89-6+citos1 so it takes Debian's place.
+      # 0.11.89-6+cybroid1 so it takes Debian's place.
       - name: Build the dock (Plank with an edge gap)
         if: matrix.image == 'desktop' || matrix.image == 'iso'
         run: |
@@ -101,17 +101,17 @@ jobs:
             apt-get build-dep -y -q plank >/dev/null
             mkdir /src && cd /src && apt-get source -q plank >/dev/null && cd plank-*/
             python3 /tools/plank-edge-gap.py .
-            DEBEMAIL=citos@cybroid.com DEBFULLNAME=CIT-OS dch -l +citos "Float a bottom dock above the edge of the screen (PLANK_EDGE_GAP)." >/dev/null
+            DEBEMAIL=citos@cybroid.com DEBFULLNAME=CybroidOS dch -l +cybroid "Float a bottom dock above the edge of the screen (PLANK_EDGE_GAP)." >/dev/null
             DEB_BUILD_OPTIONS="nocheck parallel=$(nproc)" dpkg-buildpackage -b -uc -us >/dev/null
-            cp ../plank_*+citos*_amd64.deb ../libplank1_*+citos*_amd64.deb ../libplank-common_*+citos*_all.deb /out/'
+            cp ../plank_*+cybroid*_amd64.deb ../libplank1_*+cybroid*_amd64.deb ../libplank-common_*+cybroid*_all.deb /out/'
           ls -la dist/extra
 
       # App icons: WhiteSur (GPL-3.0, github.com/vinceliuice/WhiteSur-icon-theme)
       # at a fixed release, installed with -a (its own file-manager and store
       # icons) as an unprivileged user inside the build container, then
       # tools/icons-fixups.sh (no Apple Photos flower) and tools/icons-dark.py
-      # (dark app icons for Dark, as macOS has), packed as citos-icons.
-      - name: Build the icons (citos-icons)
+      # (dark app icons for Dark, as macOS has), packed as cybroid-icons.
+      - name: Build the icons (cybroid-icons)
         if: matrix.image == 'desktop' || matrix.image == 'iso'
         run: |
           docker run --rm -v "$PWD/dist/extra:/out" -v "$PWD/tools:/tools:ro" -e REF=2026-09-10 debian:trixie sh -ec '
@@ -122,31 +122,31 @@ jobs:
             sh /tools/icons-fixups.sh /home/build/out
             apt-get install -y -q --no-install-recommends python3 python3-pil librsvg2-bin >/dev/null
             python3 /tools/icons-dark.py /home/build/out
-            p=/home/build/pkg; mkdir -p $p/DEBIAN $p/usr/share/icons $p/usr/share/doc/citos-icons
+            p=/home/build/pkg; mkdir -p $p/DEBIAN $p/usr/share/icons $p/usr/share/doc/cybroid-icons
             cp -a /home/build/out/WhiteSur* $p/usr/share/icons/
-            cp /home/build/src/COPYING $p/usr/share/doc/citos-icons/copyright 2>/dev/null || cp /home/build/src/LICENSE $p/usr/share/doc/citos-icons/copyright
-            printf "Package: citos-icons\nVersion: %s\nArchitecture: all\nMaintainer: CIT-OS <citos@cybroid.com>\nSection: x11\nPriority: optional\nDescription: CIT-OS app icons (WhiteSur, %s)\n Rounded-square app icons for CIT-OS Desktop: WhiteSur by Vince Liuice,\n GPL-3.0, with CIT-OS fixups.\n" "$(echo $REF | tr -d -)+citos1" "$REF" > $p/DEBIAN/control
+            cp /home/build/src/COPYING $p/usr/share/doc/cybroid-icons/copyright 2>/dev/null || cp /home/build/src/LICENSE $p/usr/share/doc/cybroid-icons/copyright
+            printf "Package: cybroid-icons\nVersion: %s\nArchitecture: all\nMaintainer: CybroidOS <citos@cybroid.com>\nSection: x11\nPriority: optional\nReplaces: citos-icons\nBreaks: citos-icons\nProvides: citos-icons\nDescription: CybroidOS app icons (WhiteSur, %s)\n Rounded-square app icons for CybroidOS Desktop: WhiteSur by Vince Liuice,\n GPL-3.0, with CybroidOS fixups.\n" "$(echo $REF | tr -d -)+cybroid1" "$REF" > $p/DEBIAN/control
             printf "#!/bin/sh\nset -e\nif [ \"\$1\" = configure ] && command -v gtk-update-icon-cache >/dev/null; then for t in /usr/share/icons/WhiteSur*; do gtk-update-icon-cache -q -f \"\$t\" || true; done; fi\n" > $p/DEBIAN/postinst
             chmod 0755 $p/DEBIAN/postinst
             chown -R root:root $p
-            dpkg-deb --root-owner-group -Zxz --build $p /out/citos-icons_all.deb >/dev/null'
+            dpkg-deb --root-owner-group -Zxz --build $p /out/cybroid-icons_all.deb >/dev/null'
           ls -la dist/extra
 
-      - name: Build the desktop VM image (CIT-OS Desktop, KDE Plasma)
+      - name: Build the desktop VM image (CybroidOS Desktop, KDE Plasma)
         if: matrix.image == 'desktop'
         run: sudo VARIANT=desktop EXTRA_DEBS="$PWD/dist/extra" OUT="$PWD/out" targets/server/build.sh
 
       # The live and installer ISO: the same packages, booted live (Calamares
       # puts it on a disk). The runner's preinstalled toolchains are removed
       # first: the live system and the ISO need the room.
-      - name: Build the installer ISO (CIT-OS Desktop, live and install)
+      - name: Build the installer ISO (CybroidOS Desktop, live and install)
         if: matrix.image == 'iso'
         run: |
           sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL /usr/local/share/boost
           df -h / | tail -1
           sudo EXTRA_DEBS="$PWD/dist/extra" OUT="$PWD/out" targets/desktop/build-iso.sh
 
-      - name: Build the light desktop VM image (CIT-OS Lite, Xfce)
+      - name: Build the light desktop VM image (CybroidOS Lite, Xfce)
         if: matrix.image == 'lite'
         run: sudo VARIANT=lite OUT="$PWD/out" targets/server/build.sh
 
@@ -159,37 +159,39 @@ jobs:
           sudo chown -R "$(id -u)" out
           ls -lh out/
           if [ "${{ matrix.image }}" = iso ]; then
-            ls -lh out/citos-desktop-*-amd64.iso
+            ls -lh out/cybroidos-desktop-*-amd64.iso
           elif [ "${{ matrix.image }}" = vm ]; then
-            qemu-img check out/citos-server-*-amd64.qcow2
+            qemu-img check out/cybroid-server-*-amd64.qcow2
           elif [ "${{ matrix.image }}" = desktop ] || [ "${{ matrix.image }}" = lite ]; then
-            qemu-img check out/citos-${{ matrix.image }}-*-amd64.qcow2
+            qemu-img check out/cybroid-${{ matrix.image }}-*-amd64.qcow2
           else
-            zstd -dc out/citos-server_*_amd64.tar.zst | tar -xOf - ./usr/lib/os-release | tee /dev/stderr | grep -q '^ID=citos'
-            zstd -dc out/citos-server_*_amd64.tar.zst | tar -xOf - ./etc/apt/sources.list.d/citos.sources | grep -q 'citos.cybroid.com/debian'
+            zstd -dc out/cybroid-server_*_amd64.tar.zst | tar -xOf - ./usr/lib/os-release | tee /dev/stderr | grep -q '^ID=cybroid'
+            zstd -dc out/cybroid-server_*_amd64.tar.zst | tar -xOf - ./etc/apt/sources.list.d/cybroid.sources | grep -q 'citos.cybroid.com/debian'
           fi
 
       - name: Upload to Hangar's storage
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.CITOS_IMAGES_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.CITOS_IMAGES_SECRET }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.CYBROID_IMAGES_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.CYBROID_IMAGES_SECRET }}
           AWS_DEFAULT_REGION: garage
         run: |
-          [ -n "$AWS_ACCESS_KEY_ID" ] || { echo "::warning::No CITOS_IMAGES_KEY_ID secret: built but not uploaded"; exit 0; }
+          [ -n "$AWS_ACCESS_KEY_ID" ] || { echo "::warning::No CYBROID_IMAGES_KEY_ID secret: built but not uploaded"; exit 0; }
           # Hangar's storage sits behind an office line: the classic transfer
           # engine (no minimum speed), two parts at a time, three tries.
           aws configure set default.s3.preferred_transfer_client classic
           aws configure set default.s3.max_concurrent_requests 2
           aws configure set default.s3.multipart_chunksize 16MB
           s3() { for try in 1 2 3; do aws --endpoint-url "$S3_URL" --cli-read-timeout 300 s3 "$@" && return 0; echo "upload try $try failed, retrying"; sleep 20; done; return 1; }
+          # The VM and container images keep their storage names: Hangar's
+          # image catalogue fetches them by these keys (internal/pve/images.go).
           if [ "${{ matrix.image }}" = iso ]; then
-            f=$(ls out/citos-desktop-*-amd64.iso); key=iso/citos-desktop-amd64.iso
+            f=$(ls out/cybroidos-desktop-*-amd64.iso); key=iso/cybroidos-desktop-amd64.iso
           elif [ "${{ matrix.image }}" = vm ]; then
-            f=$(ls out/citos-server-*-amd64.qcow2); key=server/citos-server-amd64.qcow2
+            f=$(ls out/cybroid-server-*-amd64.qcow2); key=server/citos-server-amd64.qcow2
           elif [ "${{ matrix.image }}" = desktop ] || [ "${{ matrix.image }}" = lite ]; then
-            f=$(ls out/citos-${{ matrix.image }}-*-amd64.qcow2); key=desktop/citos-${{ matrix.image }}-amd64.qcow2
+            f=$(ls out/cybroid-${{ matrix.image }}-*-amd64.qcow2); key=desktop/citos-${{ matrix.image }}-amd64.qcow2
           else
-            f=$(ls out/citos-server_*_amd64.tar.zst); key=server/citos-server_amd64.tar.zst
+            f=$(ls out/cybroid-server_*_amd64.tar.zst); key=server/citos-server_amd64.tar.zst
           fi
           sum=$(sha256sum "$f" | cut -d' ' -f1)
           s3 cp --only-show-errors "$f" "s3://$BUCKET/$key" --metadata "sha256=$sum,commit=$GITHUB_SHA"

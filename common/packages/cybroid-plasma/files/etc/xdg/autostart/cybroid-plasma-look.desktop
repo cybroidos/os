@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=CybroidOS look
+Comment=Applies the CybroidOS Horizon style once, at a person's first sign-in
+Exec=/usr/libexec/cybroid/plasma-look
+OnlyShowIn=KDE;
+NoDisplay=true
+X-KDE-autostart-phase=2

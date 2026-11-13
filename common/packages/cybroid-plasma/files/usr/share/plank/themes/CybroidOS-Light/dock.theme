@@ -1,0 +1,35 @@
+# CybroidOS Horizon Light dock (cybroid-plasma): a frosted white strip with a soft
+# grey edge over the light wallpaper, round corners (macOS's light Dock).
+[PlankTheme]
+TopRoundness=18
+BottomRoundness=18
+LineWidth=1
+OuterStrokeColor=0;;0;;0;;48
+FillStartColor=255;;255;;255;;200
+FillEndColor=240;;244;;252;;165
+InnerStrokeColor=255;;255;;255;;235
+
+[PlankDockTheme]
+HorizPadding=3
+TopPadding=2.5
+BottomPadding=2.5
+ItemPadding=3.5
+IndicatorSize=4
+IconShadowSize=2.5
+UrgentBounceHeight=1.6666666666666667
+LaunchBounceHeight=0.625
+FadeOpacity=1
+ClickTime=300
+UrgentBounceTime=600
+LaunchBounceTime=600
+ActiveTime=300
+SlideTime=300
+FadeTime=250
+HideTime=250
+GlowSize=30
+GlowTime=10000
+GlowPulseTime=2000
+UrgentHueShift=150
+ItemMoveTime=450
+CascadeHide=true
+BadgeColor=37;;99;;235;;255

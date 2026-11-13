@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generates the CIT-OS Horizon Plasma Style (citos-plasma).
+"""Generates the CybroidOS Horizon Plasma Style (cybroid-plasma).
 
 A Plasma Style draws panels, the dock, popups, tooltips and highlights from
 SVG "frames": nine named pieces (corners, edges, centre) Plasma stretches to
@@ -8,7 +8,7 @@ blur behind. Everything here comes from a few numbers (radius, fill, edge),
 so the look is tuned in one place. Elements this style doesn't draw fall
 back to Plasma's default style.
 
-    tools/plasma-style.py <out>   # writes usr/share/plasma/desktoptheme/citos{,-light}/
+    tools/plasma-style.py <out>   # writes usr/share/plasma/desktoptheme/cybroid{,-light}/
 """
 
 import json
@@ -125,39 +125,39 @@ class Sheet:
 # alpha by variant: translucent (blur behind), default, opaque (no compositing)
 VARIANTS = {"translucent": 0.72, "": 0.9, "opaque": 1.0}
 
-# The two styles: CIT-OS Horizon (dark) and CIT-OS Horizon Light. Each names
+# The two styles: CybroidOS Horizon (dark) and CybroidOS Horizon Light. Each names
 # the bar over the wallpaper (colour, alpha), the bar when a window is
 # maximised and the tint for hovered rows. main() writes one style per entry.
 STYLES = {
-    "citos": dict(
+    "cybroid": dict(
         name="CybroidOS Horizon", desc="CybroidOS Horizon: a clear top bar, solid navy popups",
         bar=(WHITE, 0.05), bar_default=(NAVY, 0.55), bar_solid=NAVY, hover=(WHITE, 0.08),
     ),
-    "citos-light": dict(
+    "cybroid-light": dict(
         name="CybroidOS Horizon Light", desc="CybroidOS Horizon Light: a frosted white top bar, white popups",
         bar=((246, 248, 252), 0.82), bar_default=((246, 248, 252), 0.9), bar_solid=(240, 243, 248),
         hover=((14, 24, 58), 0.06),
     ),
     # Hex, the HUD design in CIT's colours: a deep navy bar, popups cut at
     # the top-left and bottom-right corners (Hangar's panels), cyan hovers.
-    "citos-hex": dict(
+    "cybroid-hex": dict(
         name="CybroidOS Hex", desc="CybroidOS Hex: the HUD design, deep navy and cyan with cut corners",
         bar=((6, 12, 30), 0.94), bar_default=((6, 12, 30), 0.96), bar_solid=(6, 12, 30),
         hover=((28, 203, 255), 0.14), radius=14, tip_radius=8, bevel=True, shadow=0.14,
     ),
     # Hex Light: the same shapes in daylight, a pale blue bar that lets the
     # wallpaper through a little (white looked glaring), blue hovers.
-    "citos-hex-light": dict(
+    "cybroid-hex-light": dict(
         name="CybroidOS Hex Light", desc="CybroidOS Hex Light: the HUD design in daylight, white and CIT blue with cut corners",
         bar=((214, 228, 250), 0.86), bar_default=((214, 228, 250), 0.9), bar_solid=(214, 228, 250),
         hover=((31, 95, 224), 0.10), radius=14, tip_radius=8, bevel=True, shadow=0.08,
     ),
 }
-S = STYLES["citos"]
+S = STYLES["cybroid"]
 
 
 def popup(r, margins, pad, shadow_alpha, bevel=False):
-    """Popups and tooltips at CIT-OS's radius, with a soft shadow.
+    """Popups and tooltips at CybroidOS's radius, with a soft shadow.
 
     The layout follows Plasma's own Breeze dialog: a nine-piece frame with
     zero "hint-*-inset"s, a mask, and shadow pieces pad + r deep whose

@@ -1,0 +1,7 @@
+# CybroidOS (cybroid-plasma): no KDE Wallet. Joining a Wi-Fi network asked to
+# set up a "wallet" (encrypted storage) first, which only confused people;
+# Wi-Fi passwords stay with NetworkManager's connections, and browsers keep
+# their own. Each person can turn the wallet on in Settings.
+[Wallet]
+Enabled=false
+First Use=false

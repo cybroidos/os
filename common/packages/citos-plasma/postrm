@@ -1,7 +1,0 @@
-#!/bin/sh
-set -e
-if [ "$1" = "remove" ] || [ "$1" = "purge" ]; then
-	# The renamed copies app-names wrote (not files of this package).
-	rm -rf /usr/share/citos/apps/applications
-fi
-exit 0

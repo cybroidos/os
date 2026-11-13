@@ -1,9 +1,0 @@
-#!/bin/sh
-# Generated parts of citos-plasma: the CybroidOS Horizon Plasma Style
-# (tools/plasma-style.py), the CIT-OS window decoration (tools/aurorae-theme.py)
-# Hex's dock icons (tools/hex-icons.py) and the GRUB theme (tools/boot-menu.py).
-set -eu
-python3 "$2/tools/plasma-style.py" "$1" >/dev/null
-python3 "$2/tools/aurorae-theme.py" "$1" >/dev/null
-python3 "$2/tools/hex-icons.py" "$1" >/dev/null
-python3 "$2/tools/boot-menu.py" --installed "$1" >/dev/null

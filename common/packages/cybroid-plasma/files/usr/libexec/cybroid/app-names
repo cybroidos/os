@@ -1,0 +1,26 @@
+#!/bin/sh
+# Writes renamed or hidden copies of installed apps' .desktop files into
+# /usr/share/cybroid/apps/applications, which the CybroidOS session puts first in
+# XDG_DATA_DIRS (/etc/xdg/plasma-workspace/env/cybroid-apps.sh). Copies follow
+# the installed file, so they are rewritten whenever a package changes one
+# (cybroid-plasma's dpkg trigger). Translations of the name are dropped so the
+# CybroidOS name shows in every language until it has its own translations.
+set -e
+names=/usr/share/cybroid/apps/names
+out=/usr/share/cybroid/apps/applications
+mkdir -p "$out"
+rm -f "$out"/*.desktop
+grep -v -e '^#' -e '^[[:space:]]*$' "$names" | while read -r id name; do
+	src=/usr/share/applications/$id
+	[ -f "$src" ] || continue
+	awk -v name="$name" '
+		/^\[/ { main = ($0 == "[Desktop Entry]") }
+		main && name == "hide" && /^NoDisplay=/ { next }
+		main && name != "hide" && /^Name(\[[^]]*\])?=/ { next }
+		main && name != "hide" && /^X-GNOME-FullName/ { next }
+		{ print }
+		$0 == "[Desktop Entry]" {
+			if (name == "hide") print "NoDisplay=true"; else print "Name=" name
+		}
+	' "$src" > "$out/$id"
+done

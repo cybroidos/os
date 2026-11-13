@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Dark app icons for CIT-OS's Dark appearance (citos-icons).
+"""Dark app icons for CybroidOS's Dark appearance (cybroid-icons).
 
 WhiteSur's app icons are the same in its light and dark sets. macOS draws
 dark versions in Dark mode: a white tile turns dark and the symbol keeps its
@@ -12,7 +12,7 @@ the pictures WhiteSur layers in. Every other icon is left as it is.
     tools/icons-dark.py <icons dir>   # reads WhiteSur/apps/scalable,
                                       # writes WhiteSur-dark/apps/scalable
 
-Run on the installed themes (the citos-icons build, after install.sh). WhiteSur's
+Run on the installed themes (the cybroid-icons build, after install.sh). WhiteSur's
 dark set has no app icons of its own (its apps folder links to the light one).
 """
 
@@ -42,7 +42,7 @@ def darken_rgb(r, g, b):
         return None
     # White -> 0.16, the palest greys a little lighter, keeping their order.
     nl = 0.16 + (1.0 - l) * 0.9
-    nr, ng, nb = colorsys.hls_to_rgb(0.62, nl, 0.18)  # a touch of CIT-OS navy
+    nr, ng, nb = colorsys.hls_to_rgb(0.62, nl, 0.18)  # a touch of CybroidOS navy
     return round(nr * 255), round(ng * 255), round(nb * 255)
 
 

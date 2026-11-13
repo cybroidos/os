@@ -1,0 +1,4 @@
+# CybroidOS Desktop (cybroid-plasma): app controls drawn by Kvantum in the CybroidOS
+# theme (tools/kvantum-theme.py); cybroid-appearance switches to CybroidOSLight.
+[General]
+theme=CybroidOS

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# CIT-OS Desktop as a live and installer ISO (hybrid: DVD or USB stick, BIOS
+# CybroidOS Desktop as a live and installer ISO (hybrid: DVD or USB stick, BIOS
 # and UEFI). It boots silently into the live CybroidOS Desktop (Horizon), signed
 # in as "cybroid" (password "cybroid", to try the sign-in screen); "Install
 # CybroidOS" in the dock starts Calamares, which puts
@@ -24,13 +24,13 @@ mkdir -p "${out}"
 work="$(mktemp -d)"
 trap 'rm -rf "${work}"' EXIT
 
-CITOS_PACKAGES="citos-base citos-sources citos-artwork citos-plymouth-theme citos-plasma"
-build_debs ${CITOS_PACKAGES}
+CYBROID_PACKAGES="cybroid-base cybroid-sources cybroid-artwork cybroid-plymouth-theme cybroid-plasma"
+build_debs ${CYBROID_PACKAGES}
 
 lb="${work}/lb"
 mkdir -p "${lb}/config/packages.chroot" "${lb}/config/package-lists" \
 	"${lb}/config/hooks/normal" "${lb}/config/includes.chroot"
-for p in ${CITOS_PACKAGES}; do
+for p in ${CYBROID_PACKAGES}; do
 	cp "${repo}/dist/${p}_${VERSION}_all.deb" "${lb}/config/packages.chroot/"
 done
 if [ -n "${EXTRA_DEBS:-}" ] && ls "${EXTRA_DEBS}"/*.deb >/dev/null 2>&1; then
@@ -38,10 +38,10 @@ if [ -n "${EXTRA_DEBS:-}" ] && ls "${EXTRA_DEBS}"/*.deb >/dev/null 2>&1; then
 fi
 # The local .debs are installed with the lists below; live-build makes them a
 # little repository, so their dependencies resolve from Debian.
-printf '%s\n' ${CITOS_PACKAGES} > "${lb}/config/package-lists/citos.list.chroot"
+printf '%s\n' ${CYBROID_PACKAGES} > "${lb}/config/package-lists/cybroid.list.chroot"
 for f in "${lb}"/config/packages.chroot/*.deb; do
 	dpkg-deb -f "$f" Package
-done | sort -u >> "${lb}/config/package-lists/citos.list.chroot"
+done | sort -u >> "${lb}/config/package-lists/cybroid.list.chroot"
 
 # What a real computer needs beyond the VM image: hardware (graphics, Wi-Fi,
 # firmware, microcode), networking for people (NetworkManager with Plasma's
@@ -103,9 +103,9 @@ EOF
 # The live session signs in by itself (a live-config script: it runs only
 # when booted live, so the installed system never inherits it).
 mkdir -p "${lb}/config/includes.chroot/usr/lib/live/config"
-cat > "${lb}/config/includes.chroot/usr/lib/live/config/2000-citos-autologin" <<'EOF'
+cat > "${lb}/config/includes.chroot/usr/lib/live/config/2000-cybroid-autologin" <<'EOF'
 #!/bin/sh
-# CIT-OS live: sign the live user in to Plasma (X11) at once. Written to
+# CybroidOS live: sign the live user in to Plasma (X11) at once. Written to
 # /etc/sddm.conf as well: live-config's own sddm step writes the Wayland
 # session there, and that file outranks sddm.conf.d.
 user=cybroid
@@ -113,7 +113,7 @@ for a in $(cat /proc/cmdline); do
 	case "$a" in username=* | live-config.username=*) user="${a#*username=}" ;; esac
 done
 mkdir -p /etc/sddm.conf.d
-printf '[Autologin]\nUser=%s\nSession=plasmax11\n' "${user}" > /etc/sddm.conf.d/zz-citos-live.conf
+printf '[Autologin]\nUser=%s\nSession=plasmax11\n' "${user}" > /etc/sddm.conf.d/zz-cybroid-live.conf
 printf '[Autologin]\nUser=%s\nSession=plasmax11\n' "${user}" > /etc/sddm.conf
 # An easy password, to try the sign-in screen (sign out): the user's name.
 echo "${user}:cybroid" | chpasswd
@@ -124,15 +124,15 @@ chmod 0440 /etc/sudoers.d/live
 mkdir -p /etc/xdg
 printf '[Daemon]\nAutolock=false\nLockOnResume=false\n' > /etc/xdg/kscreenlockerrc
 EOF
-chmod 0755 "${lb}/config/includes.chroot/usr/lib/live/config/2000-citos-autologin"
+chmod 0755 "${lb}/config/includes.chroot/usr/lib/live/config/2000-cybroid-autologin"
 
 # Calamares in CybroidOS's colours and words.
-brand="${lb}/config/includes.chroot/etc/calamares/branding/citos"
+brand="${lb}/config/includes.chroot/etc/calamares/branding/cybroid"
 mkdir -p "${brand}"
-cp "${repo}/common/packages/citos-plasma/files/usr/share/icons/hicolor/scalable/apps/citos-mark.svg" "${brand}/mark.svg"
+cp "${repo}/common/packages/cybroid-plasma/files/usr/share/icons/hicolor/scalable/apps/cybroid-mark.svg" "${brand}/mark.svg"
 cat > "${brand}/branding.desc" <<EOF
 ---
-componentName: citos
+componentName: cybroid
 welcomeStyleCalamares: false
 welcomeExpandingLogo: true
 windowExpanding: normal
@@ -239,7 +239,7 @@ operations:
 EOF
 # A step on the installed system: numbers and dates in British English where
 # Calamares picked Luganda's lg_UG from the zone (it isn't generated).
-cat > "${lb}/config/includes.chroot/etc/calamares/modules/shellprocess-citos.conf" <<'EOF'
+cat > "${lb}/config/includes.chroot/etc/calamares/modules/shellprocess-cybroid.conf" <<'EOF'
 ---
 dontChroot: false
 timeout: 60
@@ -247,12 +247,12 @@ script:
     - "-sed -i s/lg_UG.UTF-8/en_GB.UTF-8/g /etc/default/locale"
 EOF
 
-# After the packages: Calamares uses the CIT-OS branding; its launcher is
-# "Install CIT-OS" with the CIT-OS mark.
-cat > "${lb}/config/hooks/normal/9000-citos.hook.chroot" <<'EOF'
+# After the packages: Calamares uses the CybroidOS branding; its launcher is
+# "Install CybroidOS" with the CybroidOS mark.
+cat > "${lb}/config/hooks/normal/9000-cybroid.hook.chroot" <<'EOF'
 #!/bin/sh
 set -e
-# New accounts start in zsh (citos-plasma's /etc/skel/.zshrc).
+# New accounts start in zsh (cybroid-plasma's /etc/skel/.zshrc).
 if [ -f /etc/calamares/modules/users.conf ]; then
 	if grep -q '^userShell:' /etc/calamares/modules/users.conf; then
 		sed -i 's|^userShell:.*|userShell: /usr/bin/zsh|' /etc/calamares/modules/users.conf
@@ -261,14 +261,14 @@ if [ -f /etc/calamares/modules/users.conf ]; then
 	fi
 fi
 if [ -f /etc/calamares/settings.conf ]; then
-	sed -i 's/^branding:.*/branding: citos/' /etc/calamares/settings.conf
-	if ! grep -q "shellprocess@citos" /etc/calamares/settings.conf; then
-		sed -i 's/^  - displaymanager$/  - displaymanager\n  - shellprocess@citos/' /etc/calamares/settings.conf
-		printf '\ninstances:\n- id: citos\n  module: shellprocess\n  config: shellprocess-citos.conf\n' >> /etc/calamares/settings.conf
+	sed -i 's/^branding:.*/branding: cybroid/' /etc/calamares/settings.conf
+	if ! grep -q "shellprocess@cybroid" /etc/calamares/settings.conf; then
+		sed -i 's/^  - displaymanager$/  - displaymanager\n  - shellprocess@cybroid/' /etc/calamares/settings.conf
+		printf '\ninstances:\n- id: cybroid\n  module: shellprocess\n  config: shellprocess-cybroid.conf\n' >> /etc/calamares/settings.conf
 	fi
 fi
 # Debian 13 names Calamares' launcher calamares-install-debian.desktop; the
-# dock looks for install-debian.desktop, so the CIT-OS one is made under that
+# dock looks for install-debian.desktop, so the CybroidOS one is made under that
 # name and Debian's is hidden (and its desktop shortcut left out).
 src=/usr/share/applications/calamares-install-debian.desktop
 if [ -f "$src" ] && [ ! -f /usr/share/applications/install-debian.desktop ]; then
@@ -279,7 +279,7 @@ for f in /usr/share/applications/install-debian.desktop /etc/skel/Desktop/instal
 	sed -i -e 's/^Name=.*/Name=Install CybroidOS/' -e '/^Name\[/d' \
 		-e 's/^GenericName=.*/GenericName=Put CybroidOS on this computer/' -e '/^GenericName\[/d' \
 		-e 's/^Comment=.*/Comment=Put CybroidOS on this computer/' -e '/^Comment\[/d' \
-		-e 's/^Icon=.*/Icon=citos-mark/' "$f"
+		-e 's/^Icon=.*/Icon=cybroid-mark/' "$f"
 done
 if [ -f "$src" ] && ! grep -q '^NoDisplay=true' "$src"; then
 	echo 'NoDisplay=true' >> "$src"
@@ -288,10 +288,10 @@ rm -f /etc/xdg/autostart/calamares-desktop-icon.desktop
 # No stray blank wallpaper text on the desktop of the live user.
 rm -rf /etc/skel/Desktop
 EOF
-chmod 0755 "${lb}/config/hooks/normal/9000-citos.hook.chroot"
+chmod 0755 "${lb}/config/hooks/normal/9000-cybroid.hook.chroot"
 
 # The boot menus (tools/boot-menu.py, put in by tools/iso-brand.sh after the
-# build): CIT-OS's own in place of live-build's stock Debian ones.
+# build): CybroidOS's own in place of live-build's stock Debian ones.
 mkdir -p "${work}/tools"
 cp "${repo}/tools/iso-brand.sh" "${repo}/tools/boot-menu.py" "${work}/tools/"
 
@@ -325,9 +325,9 @@ lb config \
 	--bootappend-live "boot=live components quiet splash loglevel=3 rd.udev.log_level=3 systemd.show_status=false vt.global_cursor_default=0 username=cybroid user-fullname=Cybroid hostname=cybroid keyboard-layouts=us locales=en_GB.UTF-8 timezone=Africa/Kampala"
 lb build 2>&1 | tail -n 200
 iso=\$(ls /build/lb/*.iso | head -1)
-sh /build/tools/iso-brand.sh "\$iso" "/out/citos-desktop-${VERSION}-amd64.iso"
+sh /build/tools/iso-brand.sh "\$iso" "/out/cybroidos-desktop-${VERSION}-amd64.iso"
 EOF
 chmod 0755 "${work}/run.sh"
 
 docker run --rm --privileged -v "${work}:/build" -v "${out}:/out" debian:trixie /build/run.sh
-ls -lh "${out}"/citos-desktop-*-amd64.iso
+ls -lh "${out}"/cybroidos-desktop-*-amd64.iso

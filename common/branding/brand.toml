@@ -1,4 +1,4 @@
-# CybroidOS brand identity (the OS was CIT-OS until 0.1.1)
+# CybroidOS brand identity (the OS was CybroidOS until 0.1.1)
 #
 # Single source of truth for branding values. tools/render-brand.py reads this
 # file and renders a filesystem overlay per target (see targets.toml), so
@@ -11,7 +11,7 @@
 
 [identity]
 name            = "CybroidOS"
-id              = "citos"                 # os-release ID, hostname, package prefix, install paths
+id              = "cybroid"                 # os-release ID, hostname, package prefix, install paths
 vendor          = "Cybroid"
 vendor_short    = "Cybroid"
 pretty_name     = "CybroidOS"

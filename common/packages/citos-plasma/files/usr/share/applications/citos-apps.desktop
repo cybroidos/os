@@ -1,8 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=Apps
-Comment=Every app, full screen, with search
-Icon=citos-apps
-Exec=dbus-send --session --dest=org.kde.plasmashell --type=method_call /PlasmaShell org.kde.PlasmaShell.activateLauncherMenu
-NoDisplay=true
-Categories=System;

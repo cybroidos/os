@@ -8,7 +8,7 @@
 #   desktop    live-build config/includes.chroot/
 #   server     image build overlay / cloud-init image
 #   container  Dockerfile `COPY overlay/ /`
-#   base       citos-base .deb source tree    (tools/build-package.sh)
+#   base       cybroid-base .deb source tree    (tools/build-package.sh)
 #
 # Components (see tools/render-brand.py):
 #   identity   /usr/lib/os-release, /etc/motd, /etc/issue

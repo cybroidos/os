@@ -1,0 +1,14 @@
+{
+    "KPackageStructure": "Plasma/LookAndFeel",
+    "KPlugin": {
+        "Authors": [{ "Name": "Cybroid Institute of Technology", "Email": "citos@cybroid.com" }],
+        "Category": "",
+        "Description": "CybroidOS Hex: the HUD design, deep navy and cyan, cut corners and live readouts",
+        "Id": "org.cybroid.hex",
+        "License": "GPL-2.0-or-later",
+        "Name": "CybroidOS Hex",
+        "Version": "1.0",
+        "Website": "https://cybroid.com"
+    },
+    "X-Plasma-APIVersion": "2"
+}

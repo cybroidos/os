@@ -1,0 +1,25 @@
+Package: cybroid-desktop
+Version: @VERSION@
+Architecture: all
+Maintainer: CybroidOS maintainers <citos@cybroid.com>
+Homepage: https://github.com/cybroidinstitute/cit-os
+Section: x11
+Priority: optional
+Depends: cybroid-base (>= @VERSION@), cybroid-artwork (>= @VERSION@),
+ xserver-xorg-core, xserver-xorg-input-libinput, x11-xserver-utils, xauth,
+ lightdm, slick-greeter,
+ xfce4-session, xfwm4, xfdesktop4, xfce4-panel, xfce4-settings, xfconf,
+ thunar, xfce4-terminal, mousepad, xfce4-whiskermenu-plugin, xfce4-notifyd,
+ xfce4-taskmanager, ristretto, xfce4-docklike-plugin,
+ orchis-gtk-theme, papirus-icon-theme, fonts-inter, fonts-jetbrains-mono, fonts-dejavu-core,
+ dbus-x11, dbus-user-session, polkitd, at-spi2-core, xdg-user-dirs,
+ firefox-esr, xrdp, xorgxrdp
+Replaces: citos-desktop (<< 0.1.1~)
+Breaks: citos-desktop (<< 0.1.1~)
+Description: CybroidOS Desktop Lite: Xfce with the CybroidOS look
+ A light, modern desktop for servers and VMs: Xfce with a slim top bar
+ (menu, clock, tray) and a dock, the Orchis dark theme, Papirus icons, the
+ Inter and JetBrains Mono fonts, Firefox ESR, a terminal in CybroidOS colours,
+ and slick-greeter's sign-in screen with the CybroidOS wallpaper and logo; xrdp
+ lets Remote Desktop clients sign in. About 400 MB of memory when idle.
+ These are defaults: each person can change them.

@@ -66,14 +66,14 @@ jobs:
 
       - name: Syntax-check tooling
         run: |
-          python3 -m py_compile tools/render-brand.py tools/brand_anim.py common/services/citos_robot/*.py
+          python3 -m py_compile tools/render-brand.py tools/brand_anim.py common/services/cybroid_robot/*.py
           echo "render-brand.py compiles"
           bash -n targets/rpi/config
           bash -n targets/rpi/build.sh
-          bash -n targets/rpi/stage-citos/prerun.sh
-          bash -n targets/rpi/stage-citos/00-citos/01-run.sh
-          bash -n targets/rpi/stage-citos/00-citos/02-run.sh
-          bash -n targets/rpi/stage-citos/00-citos/03-run.sh
+          bash -n targets/rpi/stage-cybroid/prerun.sh
+          bash -n targets/rpi/stage-cybroid/00-cybroid/01-run.sh
+          bash -n targets/rpi/stage-cybroid/00-cybroid/02-run.sh
+          bash -n targets/rpi/stage-cybroid/00-cybroid/03-run.sh
           echo "targets/rpi scripts parse"
 
       - name: Check required files exist
@@ -101,15 +101,15 @@ jobs:
             tests/qemu/rpi-gui-test.sh \
             targets/rpi/config \
             targets/rpi/build.sh \
-            targets/rpi/stage-citos/EXPORT_IMAGE \
-            targets/rpi/stage-citos/00-citos/02-run.sh \
-            targets/rpi/stage-citos/00-citos/03-run.sh \
+            targets/rpi/stage-cybroid/EXPORT_IMAGE \
+            targets/rpi/stage-cybroid/00-cybroid/02-run.sh \
+            targets/rpi/stage-cybroid/00-cybroid/03-run.sh \
             common/packages/copyright \
-            common/packages/citos-base/control \
-            common/packages/citos-kiosk/files/usr/bin/citos-kiosk \
-            common/packages/citos-kiosk/files/etc/citos/kiosk.conf \
-            common/packages/citos-robot/control \
-            common/services/citos_robot/kioskd.py \
+            common/packages/cybroid-base/control \
+            common/packages/cybroid-kiosk/files/usr/bin/cybroid-kiosk \
+            common/packages/cybroid-kiosk/files/etc/cybroid/kiosk.conf \
+            common/packages/cybroid-robot/control \
+            common/services/cybroid_robot/kioskd.py \
             apps/kiosk/pubspec.yaml \
             apps/kiosk/.fvmrc \
             common/branding/brand.toml \
@@ -146,7 +146,7 @@ jobs:
           out = pathlib.Path("out/branding")
           for t in ("base", "rpi", "desktop", "server", "container"):
               rel = (out / t / "usr/lib/os-release").read_text()
-              assert "ID=citos" in rel, t
+              assert "ID=cybroid" in rel, t
           for f in out.rglob("*.svg"):
               xml.dom.minidom.parse(str(f))
           for f in out.rglob("*.png"):
@@ -163,7 +163,7 @@ jobs:
           path: out/branding/
 
   build-packages:
-    name: Build, install and remove the CIT-OS packages (Debian 13 / Trixie)
+    name: Build, install and remove the CybroidOS packages (Debian 13 / Trixie)
     runs-on: ubuntu-24.04
     container: debian:13-slim
     steps:
@@ -184,37 +184,37 @@ jobs:
       - name: Install on a clean Trixie root
         run: |
           # Everything that installs here; the arm64 app/runtime and the
-          # citos-robot metapackage that needs them are built in pi-image.yml.
+          # cybroid-robot metapackage that needs them are built in pi-image.yml.
           apt-get install -y --no-install-recommends \
-            ./dist/citos-base_*.deb ./dist/citos-artwork_*.deb \
-            ./dist/citos-plymouth-theme_*.deb ./dist/python3-citos-robot_*.deb \
-            ./dist/citos-system_*.deb ./dist/citos-kiosk_*.deb ./dist/citos-robot-hw_*.deb
+            ./dist/cybroid-base_*.deb ./dist/cybroid-artwork_*.deb \
+            ./dist/cybroid-plymouth-theme_*.deb ./dist/python3-cybroid-robot_*.deb \
+            ./dist/cybroid-system_*.deb ./dist/cybroid-kiosk_*.deb ./dist/cybroid-robot-hw_*.deb
 
       - name: Verify what the packages did
         run: |
           set -x
-          grep -q '^ID=citos' /etc/os-release
-          grep -q 'CIT-OS' /etc/motd
-          grep -q '^Theme=citos$' /etc/plymouth/plymouthd.conf
-          test -f /usr/share/plymouth/themes/citos/anim-000.png
-          test -f /usr/share/icons/hicolor/256x256/apps/citos.png
-          test -f /etc/mosquitto/conf.d/citos.conf
-          test -L /etc/systemd/system/multi-user.target.wants/citos-system.service
-          python3 -c 'import citos_robot.kioskd, citos_robot.system, citos_robot.bus'
-          citos-kiosk --help | grep -q 'kiosk supervisor'
+          grep -q '^ID=cybroid' /etc/os-release
+          grep -q 'CybroidOS' /etc/motd
+          grep -q '^Theme=cybroid$' /etc/plymouth/plymouthd.conf
+          test -f /usr/share/plymouth/themes/cybroid/anim-000.png
+          test -f /usr/share/icons/hicolor/256x256/apps/cybroid.png
+          test -f /etc/mosquitto/conf.d/cybroid.conf
+          test -L /etc/systemd/system/multi-user.target.wants/cybroid-system.service
+          python3 -c 'import cybroid_robot.kioskd, cybroid_robot.system, cybroid_robot.bus'
+          cybroid-kiosk --help | grep -q 'kiosk supervisor'
 
       - name: Remove and check base-files is restored
         run: |
-          apt-get remove -y citos-base citos-artwork citos-plymouth-theme citos-kiosk citos-system python3-citos-robot citos-robot-hw
+          apt-get remove -y cybroid-base cybroid-artwork cybroid-plymouth-theme cybroid-kiosk cybroid-system python3-cybroid-robot cybroid-robot-hw
           grep -q '^ID=debian' /etc/os-release
-          ! grep -q '^Theme=citos$' /etc/plymouth/plymouthd.conf
+          ! grep -q '^Theme=cybroid$' /etc/plymouth/plymouthd.conf
 
       - name: Lintian (non-fatal)
         run: lintian dist/*.deb || true
 
       - uses: actions/upload-artifact@v4
         with:
-          name: citos-packages-all
+          name: cybroid-packages-all
           path: dist/*.deb
 
   services:
@@ -274,7 +274,7 @@ jobs:
         shell: bash
         run: |
           mapfile -t files < <(find tools ci tests targets -name '*.sh' 2>/dev/null || true)
-          files+=(common/packages/*/prepare common/packages/*/files/usr/bin/citos-kiosk)
+          files+=(common/packages/*/prepare common/packages/*/files/usr/bin/cybroid-kiosk)
           for f in common/packages/*/{preinst,postinst,prerm,postrm}; do
             [ -f "$f" ] && files+=("$f")
           done

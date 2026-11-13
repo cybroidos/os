@@ -1,0 +1,35 @@
+# CybroidOS app names: <desktop file id> <name shown in the Launchpad, dock and menus>
+org.kde.dolphin.desktop            Files
+org.kde.konsole.desktop            Terminal
+org.kde.kwrite.desktop             Text Editor
+org.kde.kate.desktop               Code Editor
+systemsettings.desktop             Settings
+firefox-esr.desktop                Firefox
+org.kde.gwenview.desktop           Photos
+org.kde.ark.desktop                Archives
+org.kde.okular.desktop             Documents
+org.kde.spectacle.desktop          Screenshot
+org.kde.plasma-systemmonitor.desktop  System Monitor
+org.kde.kinfocenter.desktop        System Info
+org.kde.kcalc.desktop              Calculator
+org.kde.discover.desktop           App Centre
+org.kde.plasma.emojier.desktop     Emoji
+net.launchpad.plank.desktop        hide
+plank.desktop                      hide
+vim.desktop                        hide
+org.kde.kmenuedit.desktop          hide
+xterm.desktop                      hide
+uxterm.desktop                     hide
+debian-xterm.desktop               hide
+debian-uxterm.desktop              hide
+display-im6.q16.desktop            hide
+kvantummanager.desktop             hide
+onlyoffice-desktopeditors.desktop  Office
+vlc.desktop                        VLC
+org.kde.bluedevilwizard.desktop    hide
+org.kde.bluedevilsendfile.desktop  hide
+org.kde.kdeconnect.app.desktop     hide
+org.kde.discover.urlhandler.desktop hide
+org.kde.discover.notifier.desktop  hide
+org.kde.print-queue.desktop        hide
+zsh.desktop                        hide

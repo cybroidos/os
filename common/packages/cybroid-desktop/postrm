@@ -1,0 +1,9 @@
+#!/bin/sh
+set -e
+# Puts xfce4-settings' xsettings.xml back (see preinst).
+f=/etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xsettings.xml
+if [ "$1" = "remove" ] || [ "$1" = "purge" ]; then
+	rm -f "$f"
+	dpkg-divert --package cybroid-desktop --remove --rename --divert "$f.xfce4-settings" "$f" || true
+fi
+exit 0

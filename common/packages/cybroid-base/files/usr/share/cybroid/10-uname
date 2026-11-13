@@ -1,0 +1,6 @@
+#!/bin/sh
+# CybroidOS's sign-in line about the kernel, in place of Debian's 10-uname
+# (which prints `uname -snrvm`). The banner above already names the
+# system; this says which kernel runs it. CybroidOS uses Debian's kernel, so
+# `uname -a` still says Debian: that string is built into the kernel.
+printf 'Kernel %s · %s\n' "$(uname -r)" "$(uname -m)"

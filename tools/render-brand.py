@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render CIT-OS branding for one build target as a filesystem overlay.
+"""Render CybroidOS branding for one build target as a filesystem overlay.
 
 Branding is defined once in common/branding/ (brand.toml + logo/ + templates/)
 and every target picks the components it needs from common/branding/targets.toml.
@@ -141,8 +141,8 @@ def identity(ctx: Context) -> None:
         f'DOCUMENTATION_URL="{ident["documentation"]}"',
         f'VENDOR_NAME="{ident["vendor"]}"',
     ]
-    # The hicolor icon name (citos-artwork ships it). Every target writes it:
-    # citos-base's os-release replaces the image's on upgrade, and System
+    # The hicolor icon name (cybroid-artwork ships it). Every target writes it:
+    # cybroid-base's os-release replaces the image's on upgrade, and System
     # Info showed a placeholder when it lacked LOGO.
     lines.append(f"LOGO={ctx.id}")
     lines.append("")
@@ -207,7 +207,7 @@ def wallpaper(ctx: Context) -> None:
     psrc = ctx.write(f"usr/share/backgrounds/{ctx.id}/{ctx.id}-plain.svg", plain)
     for w, h in WALLPAPER_SIZES:
         rasterise(psrc, psrc.with_name(f"{ctx.id}-plain-{w}x{h}.png"), w, h)
-    # The light version (CIT-OS Horizon Light): the same picture on a bright
+    # The light version (CybroidOS Horizon Light): the same picture on a bright
     # blue ground, as macOS pairs a light and a dark wallpaper (light, still
     # coloured: a near-white one washed the desktop out).
     light = re.sub(
@@ -231,7 +231,7 @@ def wallpaper(ctx: Context) -> None:
 
 
 # Hex's layout, in units of the picture's height (u = H / 1080). The desktop
-# widgets are placed to the same numbers by citos-appearance (keep them in
+# widgets are placed to the same numbers by cybroid-appearance (keep them in
 # step): each of the dial's six leaders ends beside one readout.
 HEX_SIZES = ((1920, 1080), (2560, 1440), (3840, 2160), (1920, 1200), (2560, 1600))
 HEX_CY = 530      # the dial's centre, from the top
@@ -242,7 +242,7 @@ HEX_END = 440     # where every leader ends, from the centre line
 
 
 def hex_wallpaper(W: int = 1920, H: int = 1080, light: bool = False) -> str:
-    """CIT-OS Hex's wallpaper: a notched frame round the screen, the CIT mark
+    """CybroidOS Hex's wallpaper: a notched frame round the screen, the CIT mark
     alone in a dial, and six leaders out to where the desktop's readouts
     sit. Drawn here rather than from a template: it is all geometry, and each
     screen shape (16:9, 16:10) gets its own so nothing is cropped. Hex Light

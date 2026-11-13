@@ -1,0 +1,28 @@
+#!/bin/sh
+set -e
+
+# /etc/issue and /etc/motd are conffiles owned by base-files and are not shipped
+# as package files (that would trigger a conffile prompt). preinst divers
+# base-files' copies aside; here we install our branded ones in their place.
+if [ -f /usr/share/cybroid/issue ]; then
+	cp /usr/share/cybroid/issue /etc/issue
+fi
+if [ -f /usr/share/cybroid/motd ]; then
+	cp /usr/share/cybroid/motd /etc/motd
+fi
+if [ -f /usr/share/cybroid/10-uname ] && [ -d /etc/update-motd.d ]; then
+	install -m 0755 /usr/share/cybroid/10-uname /etc/update-motd.d/10-uname
+fi
+
+# /etc/os-release points at ours now, not only from the next boot
+# (usr/lib/tmpfiles.d/cybroid-os-release.conf keeps it so).
+if command -v systemd-tmpfiles >/dev/null 2>&1; then
+	systemd-tmpfiles --create cybroid-os-release.conf >/dev/null 2>&1 || true
+fi
+
+# The boot menu says CybroidOS (/etc/default/grub.d/50-cybroid.cfg).
+if command -v update-grub >/dev/null 2>&1 && [ -f /boot/grub/grub.cfg ]; then
+	update-grub >/dev/null 2>&1 || true
+fi
+
+exit 0

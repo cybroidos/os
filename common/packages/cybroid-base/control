@@ -1,0 +1,15 @@
+Package: cybroid-base
+Version: @VERSION@
+Architecture: all
+Maintainer: CybroidOS maintainers <citos@cybroid.com>
+Section: admin
+Priority: optional
+Depends: base-files
+Homepage: https://github.com/cybroidinstitute/cit-os
+Replaces: citos-base (<< 0.1.1~)
+Breaks: citos-base (<< 0.1.1~)
+Description: CybroidOS identity and brand assets
+ The CybroidOS identity (/etc/os-release), login banners (/etc/issue,
+ /etc/motd) and the logo in SVG form under /usr/share/cybroid/branding.
+ Shared by every CybroidOS target: Raspberry Pi, desktop, server and
+ containers.

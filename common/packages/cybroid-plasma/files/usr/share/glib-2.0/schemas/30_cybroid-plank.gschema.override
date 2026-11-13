@@ -1,0 +1,11 @@
+# The CybroidOS dock (cybroid-plasma): icons zoom as the pointer passes.
+[net.launchpad.plank.dock.settings]
+theme='CybroidOS'
+zoom-enabled=true
+zoom-percent=160
+icon-size=46
+hide-mode='intelligent'
+position='bottom'
+alignment='center'
+show-dock-item=false
+dock-items=['cybroid-apps.dockitem', 'firefox-esr.dockitem', 'org.kde.dolphin.dockitem', 'org.kde.konsole.dockitem', 'org.kde.kwrite.dockitem', 'systemsettings.dockitem', 'cybroid-trash.dockitem']

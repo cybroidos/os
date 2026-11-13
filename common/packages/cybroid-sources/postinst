@@ -1,0 +1,23 @@
+#!/bin/sh
+set -e
+# Sets Debian's own source entries aside, so apt uses cybroid.sources only:
+# the deb822 file Debian's images ship moves to /etc/apt/cybroid-replaced/,
+# and deb.debian.org / security.debian.org lines in sources.list are
+# commented out with a "#cybroid-off# " mark. postrm undoes both. Only on
+# Debian 13 (trixie), which cybroid.sources describes.
+case "$(cat /etc/debian_version 2>/dev/null)" in 13* | trixie*) ;; *)
+	echo "cybroid-sources: not Debian 13; leaving apt's sources as they are" >&2
+	exit 0
+	;;
+esac
+keep=/etc/apt/cybroid-replaced
+for f in /etc/apt/sources.list.d/debian.sources; do
+	if [ -f "$f" ] && grep -qE 'deb\.debian\.org|security\.debian\.org|mirror\+file:///etc/apt/mirrors/debian' "$f"; then
+		mkdir -p "$keep"
+		mv "$f" "$keep/"
+	fi
+done
+if [ -f /etc/apt/sources.list ]; then
+	sed -i -E 's@^([[:space:]]*deb(-src)?[[:space:]].*(deb\.debian\.org|security\.debian\.org).*)$@#cybroid-off# \1@' /etc/apt/sources.list
+fi
+exit 0

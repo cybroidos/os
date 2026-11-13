@@ -1,1 +1,0 @@
-../../../org.cybroid.citos.desktop/contents/layouts/org.kde.plasma.desktop-layout.js

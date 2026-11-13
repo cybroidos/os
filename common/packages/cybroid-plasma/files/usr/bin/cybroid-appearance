@@ -1,0 +1,214 @@
+#!/bin/sh
+# cybroid-appearance dark|light|hex|horizon|toggle|status: the CybroidOS design
+# and appearance, applied live through Plasma's own tools, as Control
+# Centre's Appearance and Design tiles do. Two designs, each Dark or Light:
+#
+#   dark, light   Dark or Light, in the design in use
+#   horizon, hex  Horizon (the clean design) or Hex (the HUD: a dial and live
+#                 readouts), in the appearance in use
+#   horizon-dark, horizon-light, hex-dark, hex-light   both at once
+#   toggle        Dark <-> Light, in the design in use
+#   status        prints dark, light, hex or hex-light
+#
+# Each sets: colours, the Plasma style (top bar, popups), icons, window title
+# bars and corners, app controls (Kvantum for Horizon, Breeze for Hex), the
+# dock, the desktop widgets' look and, where they are CybroidOS's own, the
+# wallpaper and lock screen. GTK apps and Firefox follow the colour scheme
+# through Plasma's GTK settings.
+#
+# Not plasma-apply-lookandfeel: it writes the theme as defaults
+# (~/.config/kdedefaults), which the running shell and KWin don't reload.
+set -eu
+# Changing design restarts the desktop shell, and Control Centre runs this
+# from inside it: stopping the shell killed this script half way (Qt kills
+# the processes it started), before it started the shell again: a black
+# screen and no dock. So the work runs as a user service of its own, which
+# the shell never owned; --wait keeps it in step for whoever called it.
+if [ "${1:-status}" != status ] && [ -z "${CYBROID_APPEARANCE_SERVICE:-}" ] && command -v systemd-run >/dev/null; then
+	exec systemd-run --user --wait --quiet --collect --unit="cybroid-appearance-$$" \
+		--setenv=CYBROID_APPEARANCE_SERVICE=1 --setenv=DISPLAY --setenv=XAUTHORITY --setenv=PATH \
+		--setenv=XDG_CURRENT_DESKTOP --setenv=XDG_DATA_DIRS --setenv=XDG_CONFIG_DIRS --setenv=XDG_MENU_PREFIX \
+		--setenv=KDE_FULL_SESSION --setenv=KDE_SESSION_VERSION --setenv=DESKTOP_SESSION \
+		-- "$0" "$@"
+fi
+current() {
+	case "$(kreadconfig6 --file kdeglobals --group General --key ColorScheme)" in
+	*HexLight) echo "hex light" ;;
+	*Hex) echo "hex dark" ;;
+	*Light) echo "horizon light" ;;
+	*) echo "horizon dark" ;;
+	esac
+}
+set -- "${1:-status}"
+read -r was_design was_tone <<EOF_
+$(current)
+EOF_
+design="$was_design" tone="$was_tone"
+case "$1" in
+dark | light) tone="$1" ;;
+horizon | hex) design="$1" ;;
+horizon-dark | horizon-light | hex-dark | hex-light) design="${1%-*}" tone="${1#*-}" ;;
+toggle) if [ "$tone" = light ]; then tone=dark; else tone=light; fi ;;
+status)
+	if [ "$was_design" = hex ]; then
+		[ "$was_tone" = light ] && echo hex-light || echo hex
+	else
+		echo "$was_tone"
+	fi
+	exit 0
+	;;
+*)
+	echo "usage: cybroid-appearance dark|light|hex|horizon|toggle|status" >&2
+	exit 2
+	;;
+esac
+case "$design-$tone" in
+horizon-light)
+	kv=CybroidOSLight style_engine=kvantum scheme=CybroidHorizonLight style=cybroid-light icons=WhiteSur-light
+	deco=__aurorae__svg__CybroidOS-Light lnf=org.cybroid.desktop.light dock=CybroidOS-Light wall=cybroid-light
+	radius=18 look=card cw=300 ch=176
+	;;
+horizon-dark)
+	kv=CybroidOS style_engine=kvantum scheme=CybroidHorizon style=cybroid icons=WhiteSur-dark
+	deco=__aurorae__svg__CybroidOS lnf=org.cybroid.desktop dock=CybroidOS wall=cybroid
+	radius=18 look=card cw=300 ch=176
+	;;
+hex-dark)
+	kv=CybroidOS style_engine=Breeze scheme=CybroidHex style=cybroid-hex icons=CybroidOS-Hex
+	deco=org.cybroid.hex lnf=org.cybroid.hex dock=CybroidOS-Hex wall=cybroid-hex
+	radius=2 look=hud cw=320 ch=196
+	;;
+hex-light)
+	kv=CybroidOSLight style_engine=Breeze scheme=CybroidHexLight style=cybroid-hex-light icons=CybroidOS-Hex-Light
+	deco=org.cybroid.hex lnf=org.cybroid.hex.light dock=CybroidOS-Hex-Light wall=cybroid-hex-light
+	radius=2 look=hud cw=320 ch=196
+	;;
+esac
+kwriteconfig6 --file kdeglobals --group KDE --key LookAndFeelPackage "$lnf"
+# System Settings' Quick Settings offers a light and a dark theme: the two of
+# the design in use, so it never swaps Hex for Horizon.
+if [ "$design" = hex ]; then
+	kwriteconfig6 --file kdeglobals --group KDE --key DefaultLightLookAndFeel org.cybroid.hex.light
+	kwriteconfig6 --file kdeglobals --group KDE --key DefaultDarkLookAndFeel org.cybroid.hex
+else
+	kwriteconfig6 --file kdeglobals --group KDE --key DefaultLightLookAndFeel org.cybroid.desktop.light
+	kwriteconfig6 --file kdeglobals --group KDE --key DefaultDarkLookAndFeel org.cybroid.desktop
+fi
+# App controls: Kvantum in CybroidOS's themes (Horizon) or Breeze (Hex); apps
+# already open take it when next opened.
+kwriteconfig6 --file kdeglobals --group KDE --key widgetStyle "$style_engine"
+kvdir="${XDG_CONFIG_HOME:-$HOME/.config}/Kvantum"
+mkdir -p "$kvdir"
+printf '[General]\ntheme=%s\n' "$kv" > "$kvdir/kvantum.kvconfig"
+plasma-apply-colorscheme "$scheme" >/dev/null
+plasma-apply-desktoptheme "$style" >/dev/null
+for c in /usr/lib/*/libexec/plasma-changeicons /usr/libexec/plasma-changeicons; do
+	if [ -x "$c" ]; then
+		"$c" "$icons" >/dev/null 2>&1 || true
+		break
+	fi
+done
+# Window title bars (Horizon's are Aurorae SVG themes; Hex's is QML, for the
+# tab its title sits in), and the corners the rounded-corners effect cuts.
+kwriteconfig6 --file kwinrc --group org.kde.kdecoration2 --key library org.kde.kwin.aurorae
+kwriteconfig6 --file kwinrc --group org.kde.kdecoration2 --key theme "$deco"
+# Hex's title bar draws Dark or Light as its own setting says.
+kwriteconfig6 --file auroraerc --group org.cybroid.hex --key light "$([ "$tone" = light ] && echo true || echo false)"
+kwriteconfig6 --file kwinrc --group Round-Corners --key Size "$radius"
+kwriteconfig6 --file kwinrc --group Round-Corners --key InactiveCornerRadius "$radius"
+qdbus6 org.kde.KWin /KWin reconfigure >/dev/null 2>&1 || true
+
+# GTK apps and the dock read their icons from GTK's settings.
+for f in "${XDG_CONFIG_HOME:-$HOME/.config}"/gtk-3.0/settings.ini "${XDG_CONFIG_HOME:-$HOME/.config}"/gtk-4.0/settings.ini; do
+	[ -f "$f" ] && sed -i "s/^gtk-icon-theme-name=.*/gtk-icon-theme-name=$icons/" "$f"
+done
+gsettings set org.gnome.desktop.interface icon-theme "$icons" 2>/dev/null || true
+
+# The dock (Plank keeps its settings in dconf); it loads icons once, so it
+# starts again with the new ones.
+gsettings set net.launchpad.plank.dock.settings:/net/launchpad/plank/docks/dock1/ theme "$dock" 2>/dev/null || true
+# Started again in a unit of its own (this script's service would take it
+# down when it ends), and started too if it wasn't running.
+pkill -x plank 2>/dev/null && sleep 0.5
+systemctl --user stop cybroid-dock.service >/dev/null 2>&1 || true
+systemd-run --user --quiet --collect --unit=cybroid-dock \
+	--setenv=DISPLAY --setenv=XAUTHORITY --setenv=PATH --setenv=XDG_CURRENT_DESKTOP --setenv=XDG_DATA_DIRS \
+	--setenv=XDG_CONFIG_DIRS --setenv=XDG_MENU_PREFIX --setenv=KDE_FULL_SESSION \
+	/usr/libexec/cybroid/dock >/dev/null 2>&1 || (setsid /usr/libexec/cybroid/dock >/dev/null 2>&1 &)
+
+# The wallpaper (where it is CybroidOS's own: a picture someone chose stays) and
+# the desktop widgets: Horizon's two cards at the top corners, or Hex's two
+# readout columns beside the wallpaper's dial.
+img="file:///usr/share/backgrounds/cybroid/$wall-1920x1080.png"
+places="$(qdbus6 org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript "
+var hex = '$design' == 'hex';
+var ds = desktops();
+for (var i = 0; i < ds.length; i++) {
+    var d = ds[i];
+    var g = screenGeometry(d.screen);
+    // Hex draws a picture for each screen shape (16:9, 16:10), so its frame
+    // is never cropped; the readouts are placed to the same numbers.
+    var tall = g.width / g.height < 1.7;
+    var Wp = 1920, Hp = tall ? 1200 : 1080;
+    var big = g.width > 2200 ? (tall ? '2560x1600' : (g.width > 3000 ? '3840x2160' : '2560x1440')) : '1920x' + Hp;
+    var img = hex ? 'file:///usr/share/backgrounds/cybroid/$wall-' + big + '.png' : '$img';
+    if (d.wallpaperPlugin == 'org.kde.image') {
+        d.currentConfigGroup = ['Wallpaper', 'org.kde.image', 'General'];
+        var cur = String(d.readConfig('Image'));
+        if (cur == '' || cur.indexOf('/backgrounds/cybroid/') >= 0) {
+            d.writeConfig('Image', img);
+            d.writeConfig('FillMode', 2);
+        }
+    }
+    var all = d.widgets('org.cybroid.widgets');
+    if (all.length == 0) continue;
+    // A title widget (card 'title') from an earlier build is taken away.
+    var ws = [];
+    for (var j = 0; j < all.length; j++) {
+        all[j].currentConfigGroup = ['General'];
+        if (all[j].readConfig('card') == 'title') all[j].remove();
+        else ws.push(all[j]);
+    }
+    // Hex: two columns between the screen's edge and the ends of the dial's
+    // leaders (render-brand.py, HEX_*: in units of the picture's height,
+    // the column from 96 to 860, the leaders ending 440 from the centre).
+    var s = Math.max(g.width / Wp, g.height / Hp);
+    var ox = (g.width - Wp * s) / 2, oy = (g.height - Hp * s) / 2, U = s * Hp / 1080;
+    var top = Math.round(oy + 96 * U), colH = Math.round(764 * U);
+    var lx = Math.max(16, Math.round(ox + 80 * U)), lw = Math.round(g.width / 2 - 456 * U) - lx;
+    var rx = Math.round(g.width / 2 + 456 * U), rw = Math.min(g.width - 16, Math.round(ox + Wp * s - 80 * U)) - rx;
+    var places = '';
+    for (var j = 0; j < ws.length; j++) {
+        ws[j].currentConfigGroup = ['General'];
+        ws[j].writeConfig('look', '$look');
+        var right = ws[j].readConfig('card') == 'system';
+        var r = hex ? [right ? rx : lx, top, right ? rw : lw, colH] : [right ? g.width - $cw - 40 : 40, 56, $cw, $ch];
+        places += 'Applet-' + ws[j].id + ':' + r.join(',') + ',0;';
+    }
+    d.currentConfigGroup = [];
+    d.writeConfig('ItemGeometries-' + g.width + 'x' + g.height, places);
+    d.writeConfig('ItemGeometriesHorizontal', places);
+    print(d.id + ' ' + g.width + 'x' + g.height + ' ' + places);
+}" 2>/dev/null || true)"
+lock="$(kreadconfig6 --file kscreenlockerrc --group Greeter --group Wallpaper --group org.kde.image --group General --key Image)"
+case "$lock" in
+"" | *"/backgrounds/cybroid/"*)
+	kwriteconfig6 --file kscreenlockerrc --group Greeter --group Wallpaper --group org.kde.image --group General --key Image "$img"
+	kwriteconfig6 --file kscreenlockerrc --group Greeter --group Wallpaper --group org.kde.image --group General --key PreviewImage "$img"
+	;;
+esac
+# Between designs the widgets change size, which the desktop takes only as it
+# starts. It also saves its own places as it stops, so it is stopped first,
+# the new places written, then started (a moment's blink).
+if [ "$design" != "$was_design" ]; then
+	if systemctl --user stop plasma-plasmashell >/dev/null 2>&1; then
+		printf '%s\n' "$places" | while read -r cid size where; do
+			[ -n "$where" ] || continue
+			for key in "ItemGeometries-$size" ItemGeometriesHorizontal; do
+				kwriteconfig6 --file plasma-org.kde.plasma.desktop-appletsrc --group Containments --group "$cid" --key "$key" "$where"
+			done
+		done
+		systemctl --user start plasma-plasmashell >/dev/null 2>&1 || true
+	fi
+fi
+"$0" status

@@ -1,0 +1,15 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [{ "Name": "Cybroid Institute of Technology", "Email": "citos@cybroid.com" }],
+        "Category": "Date and Time",
+        "Description": "The date and time in the top bar; a click opens notifications and the Today widgets",
+        "Icon": "preferences-system-time",
+        "Id": "org.cybroid.today",
+        "License": "GPL-2.0-or-later",
+        "Name": "CybroidOS Today",
+        "Version": "1.0",
+        "Website": "https://cybroid.com"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}

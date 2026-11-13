@@ -1,19 +1,19 @@
 #!/usr/bin/env bash
-# Add CIT-OS packages to the signed APT repository (ADR-0007).
+# Add CybroidOS packages to the signed APT repository (ADR-0007).
 #
 # reprepro writes the repository to apt-repo/published/ (dists/ + pool/),
-# signed with the default GnuPG key: import the CIT-OS signing key first.
-# The public key is exported next to it as citos-archive-keyring.gpg.
+# signed with the default GnuPG key: import the CybroidOS signing key first.
+# The public key is exported next to it as cybroid-archive-keyring.gpg.
 #
 # Usage: tools/publish-apt-repo.sh <deb>...
 # Then serve apt-repo/published/ over HTTPS (CI publishes it to GitHub Pages).
 #
-# On a CIT-OS or Debian 13 machine:
-#   sudo curl -fsSLo /usr/share/keyrings/citos-archive-keyring.gpg \
-#     https://<repo-host>/citos-archive-keyring.gpg
-#   echo "deb [signed-by=/usr/share/keyrings/citos-archive-keyring.gpg] https://<repo-host> trixie main" \
-#     | sudo tee /etc/apt/sources.list.d/citos.list
-#   sudo apt update && sudo apt install citos-robot
+# On a CybroidOS or Debian 13 machine:
+#   sudo curl -fsSLo /usr/share/keyrings/cybroid-archive-keyring.gpg \
+#     https://<repo-host>/cybroid-archive-keyring.gpg
+#   echo "deb [signed-by=/usr/share/keyrings/cybroid-archive-keyring.gpg] https://<repo-host> trixie main" \
+#     | sudo tee /etc/apt/sources.list.d/cybroid.list
+#   sudo apt update && sudo apt install cybroid-robot
 set -euo pipefail
 
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -31,5 +31,5 @@ for deb in "$@"; do
 	reprepro -b "${repo}" includedeb trixie "${deb}"
 done
 reprepro -b "${repo}" export trixie
-gpg --export > "${repo}/published/citos-archive-keyring.gpg"
+gpg --export > "${repo}/published/cybroid-archive-keyring.gpg"
 reprepro -b "${repo}" list trixie

@@ -1,12 +1,12 @@
 #!/bin/sh
-# CIT-OS's changes to the WhiteSur icons (citos-icons), run on the installed
+# CybroidOS's changes to the WhiteSur icons (cybroid-icons), run on the installed
 # themes: <dir holding WhiteSur*>. WhiteSur is installed with -a (its own
 # file-manager and store icons, not Finder's face); here the photo viewer's
 # icon, Apple Photos' flower, becomes WhiteSur's own picture icon, and the
 # system logo (start-here*, which WhiteSur draws as Apple's logo) and any
 # Apple-named icon are removed, the Templates folder (App Store "A") gets a
-# plain folder, so CIT-OS's own mark (citos-plasma ships it
-# under the start-here names in hicolor) is found instead. Nothing in CIT-OS
+# plain folder, so CybroidOS's own mark (cybroid-plasma ships it
+# under the start-here names in hicolor) is found instead. Nothing in CybroidOS
 # looks like another company's trademark.
 set -eu
 root="$1"

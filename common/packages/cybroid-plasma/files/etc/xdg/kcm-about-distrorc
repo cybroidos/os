@@ -1,0 +1,6 @@
+# System Settings > About this System: CybroidOS, its mark and its site.
+[General]
+Name=CybroidOS
+LogoPath=/usr/share/icons/hicolor/scalable/apps/cybroid-mark.svg
+Website=https://cybroid.com
+Variant=Desktop

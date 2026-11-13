@@ -1,7 +1,7 @@
 name: APT repository
 
-# Publishes every CIT-OS package to the signed APT repository on GitHub Pages
-# (ADR-0007). Needs the repository secret CITOS_APT_SIGNING_KEY: an
+# Publishes every CybroidOS package to the signed APT repository on GitHub Pages
+# (ADR-0007). Needs the repository secret CYBROID_APT_SIGNING_KEY: an
 # ASCII-armoured GnuPG secret key with no passphrase, used only for this.
 on:
   workflow_dispatch:
@@ -44,12 +44,12 @@ jobs:
       - uses: actions/checkout@v5
       - uses: actions/download-artifact@v4
         with:
-          pattern: '{packages-all,citos-kiosk-app}'
+          pattern: '{packages-all,cybroid-kiosk-app}'
           path: debs
           merge-multiple: true
       - name: Import the signing key
         env:
-          KEY: ${{ secrets.CITOS_APT_SIGNING_KEY }}
+          KEY: ${{ secrets.CYBROID_APT_SIGNING_KEY }}
         run: printf '%s\n' "$KEY" | gpg --batch --import
       - name: Build the repository
         run: |

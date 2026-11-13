@@ -1,10 +1,10 @@
-# CIT-OS branding
+# CybroidOS branding
 
-Single source of truth for CIT-OS branding. Branding is defined **once** here and
+Single source of truth for CybroidOS branding. Branding is defined **once** here and
 rendered per target by [`tools/render-brand.py`](../../tools/render-brand.py)
 into a **filesystem overlay** (paths are final install paths). Every builder
 consumes the overlay the same way, so the Pi image, desktop ISO, server/pod
-image, containers and the `citos-base` package all show identical branding.
+image, containers and the `cybroid-base` package all show identical branding.
 
 ```
 common/branding/
@@ -28,15 +28,15 @@ tools/render-brand.py --target desktop --out <overlay> --only identity,wallpaper
 | Component | Installs |
 |---|---|
 | `identity` | `/usr/lib/os-release` (incl. `VARIANT`/`VARIANT_ID` per target), `/etc/motd`, `/etc/issue` |
-| `assets` | `/usr/share/citos/branding/{logo,logo-animated,mark,mark-animated}.svg` |
-| `icons` | `/usr/share/citos/branding/{logo,mark}-<n>.png`, hicolor `apps/citos` icons, `/usr/share/pixmaps/citos.png` |
-| `plymouth` | `/usr/share/plymouth/themes/citos/` — mark fades in, then breathes |
-| `kiosk` | `/usr/share/citos/kiosk/` — branded page with the animated mark (cage + Chromium) |
-| `wallpaper` | `/usr/share/backgrounds/citos/citos.svg` + PNGs at 1080p / 1440p / 2160p |
+| `assets` | `/usr/share/cybroid/branding/{logo,logo-animated,mark,mark-animated}.svg` |
+| `icons` | `/usr/share/cybroid/branding/{logo,mark}-<n>.png`, hicolor `apps/cybroid` icons, `/usr/share/pixmaps/cybroid.png` |
+| `plymouth` | `/usr/share/plymouth/themes/cybroid/` — mark fades in, then breathes |
+| `kiosk` | `/usr/share/cybroid/kiosk/` — branded page with the animated mark (cage + Chromium) |
+| `wallpaper` | `/usr/share/backgrounds/cybroid/cybroid.svg` + PNGs at 1080p / 1440p / 2160p |
 
 | Target | Components | Consumer |
 |---|---|---|
-| `base` | identity, assets | `tools/build-package.sh` → `citos-base` .deb |
+| `base` | identity, assets | `tools/build-package.sh` → `cybroid-base` .deb |
 | `rpi` | identity, assets, icons, plymouth, kiosk, wallpaper | `targets/rpi/build.sh` → pi-gen `files/` |
 | `desktop` | identity, assets, icons, plymouth, wallpaper | live-build `config/includes.chroot/` (Phase 6) |
 | `server` | identity, assets, icons, plymouth, wallpaper | server/pod image overlay (Phase 5) |
@@ -85,4 +85,4 @@ Palette values in `brand.toml` are **derived** from the Cybroid logo
 - [ ] Approve the generated wallpaper, or provide final wallpaper art.
 - [ ] Can `logo/legacy/` be deleted?
 - [ ] Licence/ownership confirmation that these assets may be redistributed in
-      CIT-OS images shipped to customers.
+      CybroidOS images shipped to customers.

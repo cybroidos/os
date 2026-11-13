@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generates the CIT-OS window decoration, an Aurorae theme (citos-plasma).
+"""Generates the CybroidOS window decoration, an Aurorae theme (cybroid-plasma).
 
 Windows get a title bar in the window's own navy (one surface with the app,
 as on a Mac), a centred title, round coloured buttons on the left (close,
@@ -12,10 +12,10 @@ around the window. The shadow lives in the padding outside the window, drawn
 as rings that fade outwards; rings, not filled shapes, so nothing dark shows
 where the effect rounds the window's bottom corners.
 
-    tools/aurorae-theme.py <out>   # writes usr/share/aurorae/themes/CIT-OS{,-Light}/
+    tools/aurorae-theme.py <out>   # writes usr/share/aurorae/themes/CybroidOS{,-Light}/
 
-Two themes from the same shapes: CIT-OS (navy, for CIT-OS Horizon) and
-CIT-OS-Light (soft white, for CIT-OS Horizon Light).
+Two themes from the same shapes: CybroidOS (navy, for CybroidOS Horizon) and
+CybroidOS-Light (soft white, for CybroidOS Horizon Light).
 """
 
 import gzip
@@ -23,7 +23,7 @@ import json
 import pathlib
 import sys
 
-NAME = "CIT-OS"
+NAME = "CybroidOS"
 R = 18  # corner radius: kwinrc [Round-Corners] Size
 TITLE_H = 20  # title text row
 EDGE_T, EDGE_B = 8, 8  # space above and below it
@@ -35,7 +35,7 @@ LAYERS = 18
 SHADOW = 0.30  # the soft shadow's strength (per variant)
 HIGHLIGHT = (255, 255, 255, 0.10)  # the light line along the bar's top
 
-ACTIVE_BAR = (17, 27, 61)  # [Colors:Window] BackgroundNormal of CITOSHorizon
+ACTIVE_BAR = (17, 27, 61)  # [Colors:Window] BackgroundNormal of CybroidHorizon
 INACTIVE_BAR = (14, 22, 52)
 ACTIVE_TEXT = (232, 238, 252)
 INACTIVE_TEXT = (138, 156, 196)
@@ -43,15 +43,15 @@ INACTIVE_TEXT = (138, 156, 196)
 # name: (active bar, inactive bar, active text, inactive text); main() sets
 # the globals above from each in turn.
 VARIANTS = {
-    "CIT-OS": ((17, 27, 61), (14, 22, 52), (232, 238, 252), (138, 156, 196), 0.12, (255, 255, 255, 0.10)),
-    # [WM] of CITOSHorizonLight
-    "CIT-OS-Light": ((236, 239, 245), (245, 246, 249), (22, 30, 52), (120, 130, 150), 0.07, (255, 255, 255, 0.9)),
+    "CybroidOS": ((17, 27, 61), (14, 22, 52), (232, 238, 252), (138, 156, 196), 0.12, (255, 255, 255, 0.10)),
+    # [WM] of CybroidHorizonLight
+    "CybroidOS-Light": ((236, 239, 245), (245, 246, 249), (22, 30, 52), (120, 130, 150), 0.07, (255, 255, 255, 0.9)),
     # Hex, the HUD design in CIT's navy, a cyan line along the bar's top.
-    "CIT-OS-Hex": ((8, 15, 36), (7, 13, 31), (232, 238, 252), (143, 163, 200), 0.14, (28, 203, 255, 0.55)),
+    "CybroidOS-Hex": ((8, 15, 36), (7, 13, 31), (232, 238, 252), (143, 163, 200), 0.14, (28, 203, 255, 0.55)),
 }
 # Per variant: corner radius and button shape (the defaults are Horizon's).
 # Hex: the top-left corner cut at 14 px (Hangar's bevelled panels), square status keys.
-SHAPES = {"CIT-OS-Hex": (14, "square", True)}
+SHAPES = {"CybroidOS-Hex": (14, "square", True)}
 BUTTON = "circle"
 BEVEL = False  # straight cuts instead of round corners
 
@@ -420,7 +420,7 @@ def write(out):
             "Description": "Round coloured buttons, a centred title and a soft shadow",
             "Id": NAME,
             "License": "GPL-2.0-or-later",
-            "Name": NAME.replace("CIT-OS", "CybroidOS"),
+            "Name": NAME.replace("CybroidOS", "CybroidOS"),
             "Version": "1.0",
             "Website": "https://cybroid.com",
         },

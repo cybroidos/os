@@ -1,0 +1,18 @@
+#!/bin/sh
+set -e
+
+# Brand system identity files owned by base-files by diverting them aside, so
+# our versions of /etc/issue, /etc/motd, /usr/lib/os-release and the sign-in
+# kernel line (/etc/update-motd.d/10-uname) take effect. Diverting avoids
+# Conflicts/Replaces on base-files (which is Essential) and conffile prompts.
+# On upgrade too, for files added to the list since the first install.
+if [ "$1" = "install" ] || [ "$1" = "upgrade" ]; then
+	for f in /usr/lib/os-release /etc/issue /etc/motd /etc/update-motd.d/10-uname; do
+		if ! dpkg-divert --list "$f" | grep -q cybroid-base; then
+			dpkg-divert --package cybroid-base --add --rename \
+				--divert "${f}.base-files" "$f"
+		fi
+	done
+fi
+
+exit 0

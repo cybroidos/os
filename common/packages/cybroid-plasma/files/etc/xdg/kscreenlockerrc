@@ -1,0 +1,7 @@
+# CybroidOS lock screen (cybroid-plasma): the CybroidOS wallpaper; locks after 15 idle minutes.
+[Daemon]
+Timeout=15
+
+[Greeter][Wallpaper][org.kde.image][General]
+Image=file:///usr/share/backgrounds/cybroid/cybroid-1920x1080.png
+PreviewImage=file:///usr/share/backgrounds/cybroid/cybroid-1920x1080.png

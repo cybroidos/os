@@ -1,4 +1,4 @@
-# CIT-OS build environment (Debian 13 "Trixie")
+# CybroidOS build environment (Debian 13 "Trixie")
 # Matches the shipping base OS (ADR-0001). See docs/dev-environments.md.
 FROM debian:13-slim
 

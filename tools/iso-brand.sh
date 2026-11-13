@@ -1,10 +1,10 @@
 #!/bin/sh
-# iso-brand.sh <in.iso> <out.iso> [hook.sh]: give a CIT-OS live ISO its own
+# iso-brand.sh <in.iso> <out.iso> [hook.sh]: give a CybroidOS live ISO its own
 # boot menus (tools/boot-menu.py) in place of live-build's stock Debian ones,
 # without unpacking or rebuilding it. Needs xorriso, python3, rsvg-convert;
 # no root. BIOS (syslinux) and UEFI (GRUB) booting are kept as they were.
 #
-#   GRUB and syslinux: "Try or install CybroidOS", "Try CIT-OS with safe
+#   GRUB and syslinux: "Try or install CybroidOS", "Try CybroidOS with safe
 #   graphics" (nomodeset), Utilities; the first starts by itself after 5 s.
 #
 # With hook.sh, the script is put on the medium at /live/config-hooks/ and

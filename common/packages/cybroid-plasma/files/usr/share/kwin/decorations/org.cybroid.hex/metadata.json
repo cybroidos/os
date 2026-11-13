@@ -1,0 +1,15 @@
+{
+    "KPackageStructure": "KWin/Decoration",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Email": "citos@cybroid.com",
+                "Name": "CybroidOS"
+            }
+        ],
+        "Description": "CybroidOS Hex: the window's title in a tab the top line bends round, the top-left corner cut",
+        "Id": "org.cybroid.hex",
+        "License": "GPL-3.0-or-later",
+        "Name": "CybroidOS Hex"
+    }
+}

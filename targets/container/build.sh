@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# CIT-OS Server as a container: Proxmox's Debian 13 container template with
-# the CIT-OS identity, repacked as a Proxmox (LXC) template. The same tarball
+# CybroidOS Server as a container: Proxmox's Debian 13 container template with
+# the CybroidOS identity, repacked as a Proxmox (LXC) template. The same tarball
 # imports into Docker or Podman too:
-#   zstd -dc citos-server_<v>-1_amd64.tar.zst | docker import - citos/server:<v>
+#   zstd -dc cybroid-server_<v>-1_amd64.tar.zst | docker import - cybroid/server:<v>
 #
-#   sudo targets/container/build.sh     -> out/citos-server_<version>-1_amd64.tar.zst
+#   sudo targets/container/build.sh     -> out/cybroid-server_<version>-1_amd64.tar.zst
 #
 # Built by CI (.github/workflows/server-images.yml), which uploads it where
 # Hangar fetches it from.
@@ -22,7 +22,7 @@ need tar zstd curl
 
 out="${OUT:-${repo}/out}"
 mkdir -p "${out}"
-tarball="${out}/citos-server_${VERSION}-1_amd64.tar.zst"
+tarball="${out}/cybroid-server_${VERSION}-1_amd64.tar.zst"
 work="$(mktemp -d)"
 root="${work}/root"
 
@@ -33,9 +33,9 @@ cleanup() {
 }
 trap cleanup EXIT
 
-# The identity, and apt pointed at citos.cybroid.com (citos-sources).
-export CITOS_PACKAGES="citos-base citos-sources"
-build_debs $CITOS_PACKAGES
+# The identity, and apt pointed at citos.cybroid.com (cybroid-sources).
+export CYBROID_PACKAGES="cybroid-base cybroid-sources"
+build_debs $CYBROID_PACKAGES
 
 # The base: Proxmox's own template, from its cache or its download server.
 base="${BASE:-}"
@@ -54,7 +54,7 @@ mkdir -p "${root}"
 tar --numeric-owner -xpf "${base}" -I zstd -C "${root}"
 
 mount_chroot "${root}"
-install_citos "${root}" container
+install_cybroid "${root}" container
 unmount_chroot "${root}"
 # Proxmox writes the container's own hostname and network at create time.
 rm -f "${root}/etc/hostname"

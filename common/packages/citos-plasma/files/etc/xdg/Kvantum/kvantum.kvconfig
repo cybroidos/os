@@ -1,4 +1,0 @@
-# CIT-OS Desktop (citos-plasma): app controls drawn by Kvantum in the CIT-OS
-# theme (tools/kvantum-theme.py); citos-appearance switches to CIT-OSLight.
-[General]
-theme=CIT-OS

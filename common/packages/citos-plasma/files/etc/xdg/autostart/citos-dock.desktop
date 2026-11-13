@@ -1,8 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=CybroidOS dock
-Comment=The dock (Plank) with the CIT-OS apps
-Exec=/usr/libexec/citos/dock
-OnlyShowIn=KDE;
-NoDisplay=true
-X-KDE-autostart-phase=2

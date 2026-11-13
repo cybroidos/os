@@ -1,0 +1,13 @@
+#!/bin/sh
+set -e
+
+if [ "$1" = "remove" ] || [ "$1" = "purge" ]; then
+	if [ -f /etc/plymouth/plymouthd.conf ] && grep -q '^Theme=cybroid$' /etc/plymouth/plymouthd.conf; then
+		sed -i '/^Theme=cybroid$/d' /etc/plymouth/plymouthd.conf
+		if command -v update-initramfs >/dev/null; then
+			update-initramfs -u -k all || true
+		fi
+	fi
+fi
+
+exit 0

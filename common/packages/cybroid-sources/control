@@ -1,0 +1,15 @@
+Package: cybroid-sources
+Version: @VERSION@
+Architecture: all
+Maintainer: CybroidOS maintainers <citos@cybroid.com>
+Homepage: https://github.com/cybroidinstitute/cit-os
+Section: admin
+Priority: optional
+Depends: debian-archive-keyring
+Replaces: citos-sources (<< 0.1.1~)
+Breaks: citos-sources (<< 0.1.1~)
+Description: CybroidOS package sources (citos.cybroid.com)
+ Points apt at citos.cybroid.com, which serves Debian 13's archive (and its
+ security updates) under the CybroidOS name. Packages are still Debian's and
+ checked against Debian's signing keys. Debian's own source entries are set
+ aside, not deleted, and come back if this package is removed.

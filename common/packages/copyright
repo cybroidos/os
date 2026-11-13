@@ -1,42 +1,42 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: CIT-OS
-Upstream-Contact: CIT-OS maintainers <citos@cybroid.com>
+Upstream-Name: CybroidOS
+Upstream-Contact: CybroidOS maintainers <citos@cybroid.com>
 Source: https://github.com/cybroidinstitute/cit-os
 
 Files: *
 Copyright: 2026 Cybroid Institute of Technology
 License: Proprietary
- CIT-OS software, branding assets and configuration. All rights reserved.
+ CybroidOS software, branding assets and configuration. All rights reserved.
 
-Files: usr/share/citos/kiosk/flutter_bundle/flutter_assets/assets/fonts/*
+Files: usr/share/cybroid/kiosk/flutter_bundle/flutter_assets/assets/fonts/*
 Copyright: 2017 The Barlow Project Authors (https://github.com/jpt/barlow)
 License: OFL-1.1
- Shipped only in citos-kiosk-app. Full text in the bundle's OFL.txt and
+ Shipped only in cybroid-kiosk-app. Full text in the bundle's OFL.txt and
  at https://openfontlicense.org.
 
-Files: usr/share/citos/kiosk/flutter_bundle/flutter-pi
+Files: usr/share/cybroid/kiosk/flutter_bundle/flutter-pi
 Copyright: 2019-2026 Hannes Winkler (ardera) and contributors
 License: MIT
- Shipped in citos-kiosk-app (prebuilt by the flutter-pi project,
+ Shipped in cybroid-kiosk-app (prebuilt by the flutter-pi project,
  fetched by flutterpi_tool). https://github.com/ardera/flutter-pi
 
-Files: usr/share/citos/kiosk/flutter_bundle/*.so
+Files: usr/share/cybroid/kiosk/flutter_bundle/*.so
 Copyright: 2014 The Flutter Authors
 License: BSD-3-Clause
- Flutter engine, shipped only in citos-kiosk-app.
+ Flutter engine, shipped only in cybroid-kiosk-app.
  https://github.com/flutter/flutter/blob/main/LICENSE
 
-Files: usr/share/Kvantum/CIT-OS/* usr/share/Kvantum/CIT-OSLight/*
-Copyright: 2018-2024 Vince Liuice (WhiteSur-kde), recoloured for CIT-OS
+Files: usr/share/Kvantum/CybroidOS/* usr/share/Kvantum/CybroidOSLight/*
+Copyright: 2018-2024 Vince Liuice (WhiteSur-kde), recoloured for CybroidOS
 License: GPL-3.0-or-later
- Shipped in citos-plasma. Made by tools/kvantum-theme.py from WhiteSur's
+ Shipped in cybroid-plasma. Made by tools/kvantum-theme.py from WhiteSur's
  opaque Kvantum themes, https://github.com/vinceliuice/WhiteSur-kde (release
  2024-11-18). Full text in /usr/share/common-licenses/GPL-3.
 
 Files: usr/share/icons/WhiteSur*
 Copyright: 2018-2026 Vince Liuice (WhiteSur icon theme)
 License: GPL-3.0-or-later
- Shipped in citos-icons, built in CI from
+ Shipped in cybroid-icons, built in CI from
  https://github.com/vinceliuice/WhiteSur-icon-theme (release 2026-09-10),
- with CIT-OS changes (tools/icons-fixups.sh, tools/icons-dark.py).
+ with CybroidOS changes (tools/icons-fixups.sh, tools/icons-dark.py).
  Full text in /usr/share/common-licenses/GPL-3.

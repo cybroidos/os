@@ -1,0 +1,10 @@
+[Desktop Entry]
+DefaultProfile=CybroidOS.profile
+
+[MainWindow]
+MenuBar=Disabled
+ToolBarsMovable=Disabled
+StatusBar=Disabled
+
+[TabBar]
+TabBarVisibility=ShowTabBarWhenNeeded

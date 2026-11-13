@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
-# CIT-OS Server as a VM image: Debian 13's official cloud image (cloud-init,
-# a 3 GB disk that grows on first boot) with the CIT-OS identity and the QEMU
+# CybroidOS Server as a VM image: Debian 13's official cloud image (cloud-init,
+# a 3 GB disk that grows on first boot) with the CybroidOS identity and the QEMU
 # guest agent, as a compressed qcow2. Built by CI (.github/workflows/server-images.yml).
 #
-#   sudo targets/server/build.sh                    -> out/citos-server-<version>-amd64.qcow2
-#   sudo VARIANT=desktop targets/server/build.sh    -> out/citos-desktop-<version>-amd64.qcow2
-#   sudo VARIANT=lite targets/server/build.sh       -> out/citos-lite-<version>-amd64.qcow2
+#   sudo targets/server/build.sh                    -> out/cybroid-server-<version>-amd64.qcow2
+#   sudo VARIANT=desktop targets/server/build.sh    -> out/cybroid-desktop-<version>-amd64.qcow2
+#   sudo VARIANT=lite targets/server/build.sh       -> out/cybroid-lite-<version>-amd64.qcow2
 #
-# CIT-OS Desktop is KDE Plasma 6 in the CIT-OS Horizon look (citos-plasma,
-# with the CIT-OS boot splash); CIT-OS Lite is Xfce in the CIT-OS colours
-# (citos-desktop), for small machines. Both grow the disk (10 and 8 GB) and
+# CybroidOS Desktop is KDE Plasma 6 in the CybroidOS Horizon look (cybroid-plasma,
+# with the CybroidOS boot splash); CybroidOS Lite is Xfce in the CybroidOS colours
+# (cybroid-desktop), for small machines. Both grow the disk (10 and 8 GB) and
 # swap Debian's cloud kernel, which has no display drivers, for its
 # standard one.
 #
@@ -34,7 +34,7 @@ $GUI && need growpart resize2fs e2fsck
 base_url="https://cloud.debian.org/images/cloud/trixie/latest/debian-13-genericcloud-amd64.qcow2"
 out="${OUT:-${repo}/out}"
 mkdir -p "${out}"
-image="${out}/citos-${VARIANT}-${VERSION}-amd64.qcow2"
+image="${out}/cybroid-${VARIANT}-${VERSION}-amd64.qcow2"
 work="$(mktemp -d)"
 loop="" mnt="${work}/root"
 
@@ -48,11 +48,11 @@ cleanup() {
 trap cleanup EXIT
 
 case "$VARIANT" in
-desktop) export CITOS_PACKAGES="citos-base citos-sources citos-artwork citos-plymouth-theme citos-plasma" ;;
-lite) export CITOS_PACKAGES="citos-base citos-sources citos-artwork citos-desktop" ;;
-*) export CITOS_PACKAGES="citos-base citos-sources" ;;
+desktop) export CYBROID_PACKAGES="cybroid-base cybroid-sources cybroid-artwork cybroid-plymouth-theme cybroid-plasma" ;;
+lite) export CYBROID_PACKAGES="cybroid-base cybroid-sources cybroid-artwork cybroid-desktop" ;;
+*) export CYBROID_PACKAGES="cybroid-base cybroid-sources" ;;
 esac
-build_debs $CITOS_PACKAGES
+build_debs $CYBROID_PACKAGES
 
 base="${BASE:-${out}/debian-13-genericcloud-amd64.qcow2}"
 if [ ! -f "${base}" ]; then
@@ -83,7 +83,7 @@ mount "/dev/${part}" "${mnt}"
 
 mount_chroot "${mnt}"
 if $GUI; then
-	install_citos "${mnt}" desktop qemu-guest-agent linux-image-amd64
+	install_cybroid "${mnt}" desktop qemu-guest-agent linux-image-amd64
 	# The standard kernel only: the cloud one would stay first in the boot menu.
 	chroot "${mnt}" /usr/bin/env DEBIAN_FRONTEND=noninteractive LC_ALL=C.UTF-8 sh -ec '
 		apt-get purge -y -q "linux-image-cloud-amd64" $(dpkg-query -W -f "\${Package}\n" "linux-image-*-cloud-amd64" 2>/dev/null) >/dev/null
@@ -92,7 +92,7 @@ if $GUI; then
 		ls /boot/vmlinuz-*
 	'
 else
-	install_citos "${mnt}" server qemu-guest-agent
+	install_cybroid "${mnt}" server qemu-guest-agent
 fi
 unmount_chroot "${mnt}"
 fstrim "${mnt}" 2>/dev/null || true

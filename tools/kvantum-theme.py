@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
-"""Generates CIT-OS's Kvantum themes (citos-plasma): how app controls look.
+"""Generates CybroidOS's Kvantum themes (cybroid-plasma): how app controls look.
 
 Kvantum is the Qt style engine that draws buttons, fields, sidebars, lists,
 tabs and menus inside apps (Debian's qt-style-kvantum). These themes start
 from WhiteSur's opaque Kvantum themes (GPL-3.0, Vince Liuice,
 github.com/vinceliuice/WhiteSur-kde, release 2024-11-18): rounded, Mac-like
-shapes. They are recoloured to CIT-OS: greys become navy-tinted greys of the
-same lightness, Apple blues become the CIT-OS blue, and the base colours
-(window, fields, text, selection, links) come from the CIT-OS Horizon and
-Horizon Light colour schemes. No translucency or blur: CIT-OS surfaces are
+shapes. They are recoloured to CybroidOS: greys become navy-tinted greys of the
+same lightness, Apple blues become the CybroidOS blue, and the base colours
+(window, fields, text, selection, links) come from the CybroidOS Horizon and
+Horizon Light colour schemes. No translucency or blur: CybroidOS surfaces are
 solid.
 
     tools/kvantum-theme.py <WhiteSur-kde checkout> <out>
-        # writes <out>/usr/share/Kvantum/CIT-OS{,Light}/
+        # writes <out>/usr/share/Kvantum/CybroidOS{,Light}/
 """
 
 import colorsys
@@ -20,9 +20,9 @@ import pathlib
 import re
 import sys
 
-BLUE_HUE = 0.612  # #3a7cff, the CIT-OS blue
+BLUE_HUE = 0.612  # #3a7cff, the CybroidOS blue
 
-# Base colours from the colour schemes (CITOSHorizon*.colors).
+# Base colours from the colour schemes (CybroidHorizon*.colors).
 DARK = {
     "window.color": "#111b3d", "inactive.window.color": "#111b3d",
     "base.color": "#0e1735", "inactive.base.color": "#0e1735",
@@ -75,7 +75,7 @@ def recolour(dark):
                 nl = l
             r2, g2, b2 = colorsys.hls_to_rgb(BLUE_HUE, min(nl, 0.985), ns)
         elif 0.53 <= h <= 0.72 and s > 0.35:
-            # Apple's blues: the CIT-OS blue at the same lightness.
+            # Apple's blues: the CybroidOS blue at the same lightness.
             r2, g2, b2 = colorsys.hls_to_rgb(BLUE_HUE, l, max(s, 0.85))
         else:
             return m.group(0)
@@ -94,7 +94,7 @@ def kvconfig(text, colours, name):
     for key, val in (("translucent_windows", "false"), ("blurring", "false"), ("popup_blurring", "false"), ("reduce_window_opacity", "0"), ("reduce_menu_opacity", "0")):
         text = re.sub(rf"^{key}=.*$", f"{key}={val}", text, flags=re.M)
     head = (
-        f"# {name}: CIT-OS's Kvantum theme (citos-plasma), made by tools/kvantum-theme.py\n"
+        f"# {name}: CybroidOS's Kvantum theme (cybroid-plasma), made by tools/kvantum-theme.py\n"
         "# from WhiteSur's opaque Kvantum theme (GPL-3.0, Vince Liuice), recoloured.\n"
     )
     return head + text
@@ -103,8 +103,8 @@ def kvconfig(text, colours, name):
 def main(src, out):
     src = pathlib.Path(src) / "Kvantum/WhiteSur-opaque"
     for name, base, dark, colours in (
-        ("CIT-OS", "WhiteSur-opaqueDark", True, DARK),
-        ("CIT-OSLight", "WhiteSur-opaque", False, LIGHT),
+        ("CybroidOS", "WhiteSur-opaqueDark", True, DARK),
+        ("CybroidOSLight", "WhiteSur-opaque", False, LIGHT),
     ):
         d = pathlib.Path(out) / "usr/share/Kvantum" / name
         d.mkdir(parents=True, exist_ok=True)

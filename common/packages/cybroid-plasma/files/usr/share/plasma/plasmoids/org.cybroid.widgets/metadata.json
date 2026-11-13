@@ -1,0 +1,15 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [{ "Name": "Cybroid Institute of Technology", "Email": "citos@cybroid.com" }],
+        "Category": "Date and Time",
+        "Description": "Today and this computer as cards on the desktop, like macOS's desktop widgets",
+        "Icon": "preferences-desktop",
+        "Id": "org.cybroid.widgets",
+        "License": "GPL-2.0-or-later",
+        "Name": "CybroidOS Widgets",
+        "Version": "1.0",
+        "Website": "https://cybroid.com"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}

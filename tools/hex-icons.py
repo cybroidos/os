@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""CIT-OS Hex's icon themes: the dock's apps as the design draws them, white
-line icons on tiles, each tile its own shade: navy in CIT-OS-Hex, CIT blue
-and slate in CIT-OS-Hex-Light. Everything else comes from WhiteSur-dark or
+"""CybroidOS Hex's icon themes: the dock's apps as the design draws them, white
+line icons on tiles, each tile its own shade: navy in CybroidOS-Hex, CIT blue
+and slate in CybroidOS-Hex-Light. Everything else comes from WhiteSur-dark or
 WhiteSur-light (Inherits).
 
     tools/hex-icons.py <package root>
 
-Writes usr/share/icons/CIT-OS-Hex and CIT-OS-Hex-Light. The icons are our
+Writes usr/share/icons/CybroidOS-Hex and CybroidOS-Hex-Light. The icons are our
 own drawings (no other company's marks): a grid for Apps, a globe for the
 web browser, a folder, a prompt, code brackets, a gear and a bin.
 """
@@ -24,7 +24,7 @@ GEAR = "M12 9a3 3 0 1 0 0 6a3 3 0 1 0 0-6M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l
 BIN = "M5 7h14M10 7V4h4v3M6 7l1 13h10l1-13"
 
 ICONS = {  # name: (context, top, bottom, path)
-    "citos-apps": ("apps", "#1a4cb0", "#123a8c", GRID),
+    "cybroid-apps": ("apps", "#1a4cb0", "#123a8c", GRID),
     "firefox-esr": ("apps", "#173a7a", "#0f2a5c", GLOBE),
     "firefox": ("apps", "#173a7a", "#0f2a5c", GLOBE),
     "org.kde.dolphin": ("apps", "#155083", "#0e3a63", FOLDER),
@@ -73,7 +73,7 @@ def svg(top, bottom, path):
 
 
 def main(out):
-    for theme, light, inherits in (("CIT-OS-Hex", False, "WhiteSur-dark,breeze-dark"), ("CIT-OS-Hex-Light", True, "WhiteSur-light,breeze")):
+    for theme, light, inherits in (("CybroidOS-Hex", False, "WhiteSur-dark,breeze-dark"), ("CybroidOS-Hex-Light", True, "WhiteSur-light,breeze")):
         root = pathlib.Path(out) / "usr/share/icons" / theme
         for name, (ctx, top, bottom, path) in ICONS.items():
             if light:
@@ -84,7 +84,7 @@ def main(out):
             f.write_text(svg(top, bottom, path))
         (root / "index.theme").write_text(
             "[Icon Theme]\n"
-            f"Name={theme.replace('CIT-OS-', 'CybroidOS ').replace('-', ' ')}\n"
+            f"Name={theme.replace('CybroidOS-', 'CybroidOS ').replace('-', ' ')}\n"
             "Comment=CybroidOS Hex: the dock's apps as tiles, the rest from WhiteSur\n"
             f"Inherits={inherits},hicolor\n"
             "Directories=apps/scalable,places/scalable\n\n"

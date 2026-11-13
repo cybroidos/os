@@ -1,6 +1,6 @@
 # Development environments
 
-How CIT-OS is built and tested. The **canonical environment is the
+How CybroidOS is built and tested. The **canonical environment is the
 devcontainer** (`.devcontainer/`), which is a **Debian 13 "Trixie"** image — the
 same base OS we ship (ADR-0001). "Works in the devcontainer" is the definition of
 a working build.
@@ -25,11 +25,11 @@ Container*.
 
 **Use (CLI, no VS Code):**
 ```bash
-docker build -t citos-build .devcontainer
+docker build -t cybroid-build .devcontainer
 docker run --rm -it \
   -v "$PWD":/workspaces/cit-os \
   -v /var/run/docker.sock:/var/run/docker.sock \
-  -w /workspaces/cit-os citos-build bash
+  -w /workspaces/cit-os cybroid-build bash
 ```
 
 > Building images that need privileged helpers (e.g. `qemu-user-static` binfmt

@@ -1,0 +1,35 @@
+# CybroidOS Hex dock (cybroid-plasma): a translucent deep navy strip with a hairline edge and
+# near-square corners (Plank cannot cut them), cyan badges (the HUD design).
+[PlankTheme]
+TopRoundness=2
+BottomRoundness=2
+LineWidth=1
+OuterStrokeColor=42;;61;;110;;255
+FillStartColor=10;;19;;44;;165
+FillEndColor=6;;12;;30;;165
+InnerStrokeColor=28;;203;;255;;40
+
+[PlankDockTheme]
+HorizPadding=3
+TopPadding=2.5
+BottomPadding=2.5
+ItemPadding=3.5
+IndicatorSize=4
+IconShadowSize=0
+UrgentBounceHeight=1.6666666666666667
+LaunchBounceHeight=0.625
+FadeOpacity=1
+ClickTime=300
+UrgentBounceTime=600
+LaunchBounceTime=600
+ActiveTime=300
+SlideTime=300
+FadeTime=250
+HideTime=250
+GlowSize=30
+GlowTime=10000
+GlowPulseTime=2000
+UrgentHueShift=150
+ItemMoveTime=450
+CascadeHide=true
+BadgeColor=28;;203;;255;;255

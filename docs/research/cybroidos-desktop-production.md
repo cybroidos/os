@@ -76,7 +76,7 @@ what each finding changed in 0.1.1. The work is listed in "Decisions".
   updates, and `ufw` with incoming connections closed except Remote Desktop,
   which is allowed on Tower only.
 
-## Decisions (0.1.1)
+## Decisions (0.1.2)
 
 | Area | Change |
 |---|---|

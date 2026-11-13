@@ -6,8 +6,8 @@ Section: admin
 Priority: optional
 Depends: base-files
 Homepage: https://github.com/cybroidinstitute/cit-os
-Replaces: citos-base (<< 0.1.1~)
-Breaks: citos-base (<< 0.1.1~)
+Replaces: citos-base (<< 0.1.2~)
+Breaks: citos-base (<< 0.1.2~)
 Description: CybroidOS identity and brand assets
  The CybroidOS identity (/etc/os-release), login banners (/etc/issue,
  /etc/motd) and the logo in SVG form under /usr/share/cybroid/branding.

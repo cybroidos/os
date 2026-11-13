@@ -27,8 +27,8 @@ Depends: cybroid-base (>= @VERSION@), cybroid-artwork (>= @VERSION@), cybroid-pl
  cups, cups-filters, print-manager, zram-tools, unzip, p7zip-full, git, cracklib-runtime
 Recommends: cybroid-icons
 Conflicts: cybroid-desktop, citos-desktop
-Replaces: citos-plasma (<< 0.1.1~)
-Breaks: citos-plasma (<< 0.1.1~)
+Replaces: citos-plasma (<< 0.1.2~)
+Breaks: citos-plasma (<< 0.1.2~)
 Description: CybroidOS Desktop: KDE Plasma 6 in the CybroidOS Horizon look
  A modern desktop for CybroidOS: KDE Plasma 6 on X11 with a slim top bar (menu,
  the app's own menu, tray, clock) and a floating dock, the CybroidOS Horizon

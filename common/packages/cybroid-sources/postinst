@@ -1,5 +1,26 @@
 #!/bin/sh
 set -e
+
+# CybroidOS was CIT-OS until 0.1.2. The old citos-* package is now empty, and
+# dpkg keeps its settings files on disk as "obsolete" (a sources list, sign-in
+# and GRUB settings under the old names, read beside the new ones). Remove
+# those the new package doesn't own; an edited one is kept as .dpkg-old.
+drop_citos_conffiles() {
+	old="$1" new="$2"
+	dpkg-query -W -f='${Conffiles}\n' "${old}" 2>/dev/null | awk '$3 == "obsolete" { print $1, $2 }' |
+	while read -r f sum; do
+		[ -e "${f}" ] || continue
+		dpkg-query -W -f='${Conffiles}\n' "${new}" 2>/dev/null | awk '{ print $1 }' | grep -qxF "${f}" && continue
+		if [ "$(md5sum < "${f}" | cut -d' ' -f1)" = "${sum}" ]; then
+			rm -f "${f}"
+		else
+			mv -f "${f}" "${f}.dpkg-old"
+		fi
+	done
+}
+if [ "$1" = "configure" ]; then
+	drop_citos_conffiles citos-sources cybroid-sources
+fi
 # Sets Debian's own source entries aside, so apt uses cybroid.sources only:
 # the deb822 file Debian's images ship moves to /etc/apt/cybroid-replaced/,
 # and deb.debian.org / security.debian.org lines in sources.list are

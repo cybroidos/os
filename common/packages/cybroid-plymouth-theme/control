@@ -6,8 +6,8 @@ Homepage: https://github.com/cybroidinstitute/cit-os
 Section: misc
 Priority: optional
 Depends: plymouth
-Replaces: citos-plymouth-theme (<< 0.1.1~)
-Breaks: citos-plymouth-theme (<< 0.1.1~)
+Replaces: citos-plymouth-theme (<< 0.1.2~)
+Breaks: citos-plymouth-theme (<< 0.1.2~)
 Description: CybroidOS boot splash
  Plymouth theme that plays the CybroidOS logo's draw-in animation on the brand
  background, then holds the logo until the next program draws. Installing

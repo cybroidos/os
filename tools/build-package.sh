@@ -89,7 +89,7 @@ build_one() {
 	echo "built ${deb#"${repo_root}"/}"
 }
 
-# Transitional packages: CybroidOS was CIT-OS until 0.1.1, and its packages
+# Transitional packages: CybroidOS was CIT-OS until 0.1.2, and its packages
 # were citos-*. Each old name becomes an empty package that depends on the
 # new one, so "apt upgrade" moves an installed system across; the new
 # packages Replace and Break the old ones (their control files).

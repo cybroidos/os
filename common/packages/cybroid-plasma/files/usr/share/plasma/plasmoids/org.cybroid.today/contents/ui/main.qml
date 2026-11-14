@@ -42,6 +42,15 @@ PlasmoidItem {
     property real memTotal: 0
     property string disk: ""
     property string tower: ""
+    // The calendar's month, as months from this one (‹ and ›).
+    property int monthShift: 0
+    readonly property date shown: new Date(now.getFullYear(), now.getMonth() + monthShift, 1)
+
+    // One of CybroidOS Settings' pages, and the popup closes.
+    function openSettings(page) {
+        sh.run("sh -c 'cybroid-settings " + page + " >/dev/null 2>&1 &'", () => {})
+        root.expanded = false
+    }
 
     Plasmoid.icon: "preferences-system-time"
     toolTipMainText: Qt.formatDate(now, "dddd d MMMM yyyy")
@@ -85,6 +94,7 @@ PlasmoidItem {
     onExpandedChanged: {
         if (!root.expanded) {
             notifs.lastRead = new Date()
+            root.monthShift = 0
             return
         }
         refresh()
@@ -184,7 +194,24 @@ PlasmoidItem {
     component Card: Item {
         id: cardItem
         default property alias content: inner.data
+        // A card with a page in Settings behind it: the whole card opens it.
+        property string settings: ""
         implicitHeight: inner.implicitHeight + 28
+        MouseArea {
+            id: cardMouse
+            anchors.fill: parent
+            enabled: cardItem.settings !== ""
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onClicked: root.openSettings(cardItem.settings)
+        }
+        Rectangle {
+            anchors.fill: parent
+            z: 1
+            visible: cardMouse.enabled && cardMouse.containsMouse
+            radius: root.hex ? 0 : 18
+            color: Qt.alpha(root.ink, 0.05)
+        }
         // Horizon: a rounded card.
         Rectangle {
             anchors.fill: parent
@@ -232,8 +259,11 @@ PlasmoidItem {
         Layout.preferredWidth: 380
         Layout.minimumWidth: 380
         Layout.maximumWidth: 380
-        Layout.preferredHeight: Math.min(720, body.implicitHeight + 32)
-        Layout.minimumHeight: 320
+        // Exactly as tall as what's in it (up to 720, then it scrolls).
+        // Plasma otherwise reopens a popup at the largest size it ever had.
+        Layout.preferredHeight: Math.min(720, body.implicitHeight + 24)
+        Layout.minimumHeight: Layout.preferredHeight
+        Layout.maximumHeight: Layout.preferredHeight
 
         QQC2.ScrollView {
             anchors.fill: parent
@@ -320,6 +350,7 @@ PlasmoidItem {
                 Card {
                     Layout.fillWidth: true
                     Layout.topMargin: 6
+                    settings: "datetime"
                     QQC2.Label { text: Qt.formatDate(root.now, "dddd"); color: root.accent; font.pixelSize: 13; font.weight: Font.DemiBold }
                     RowLayout {
                         spacing: 6
@@ -337,6 +368,7 @@ PlasmoidItem {
                 // This computer
                 Card {
                     Layout.fillWidth: true
+                    settings: "about"
                     RowLayout {
                         Layout.fillWidth: true
                         QQC2.Label { text: "This computer"; color: root.ink; font.pixelSize: 13; font.weight: Font.DemiBold; Layout.fillWidth: true }
@@ -366,7 +398,37 @@ PlasmoidItem {
                 // The month
                 Card {
                     Layout.fillWidth: true
-                    QQC2.Label { text: Qt.formatDate(root.now, "MMMM yyyy"); color: root.ink; font.pixelSize: 13; font.weight: Font.DemiBold }
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Layout.topMargin: -6; Layout.bottomMargin: -4
+                        // The month's name; when another month is shown, back to this one.
+                        QQC2.Label {
+                            text: Qt.formatDate(root.shown, root.shown.getFullYear() === root.now.getFullYear() ? "MMMM" : "MMMM yyyy")
+                            color: root.ink; font.pixelSize: 13; font.weight: Font.DemiBold
+                            Layout.fillWidth: true
+                            MouseArea {
+                                anchors.fill: parent
+                                enabled: root.monthShift !== 0
+                                cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+                                onClicked: root.monthShift = 0
+                            }
+                        }
+                        QQC2.ToolButton {
+                            icon.name: "go-previous-symbolic"; implicitWidth: 28; implicitHeight: 28
+                            QQC2.ToolTip.text: "Previous month"; QQC2.ToolTip.visible: hovered
+                            onClicked: root.monthShift--
+                        }
+                        QQC2.ToolButton {
+                            icon.name: "go-next-symbolic"; implicitWidth: 28; implicitHeight: 28
+                            QQC2.ToolTip.text: "Next month"; QQC2.ToolTip.visible: hovered
+                            onClicked: root.monthShift++
+                        }
+                        QQC2.ToolButton {
+                            icon.name: "configure-symbolic"; implicitWidth: 28; implicitHeight: 28
+                            QQC2.ToolTip.text: "Date & Time settings"; QQC2.ToolTip.visible: hovered
+                            onClicked: root.openSettings("datetime")
+                        }
+                    }
                     QQC2.DayOfWeekRow {
                         Layout.fillWidth: true
                         locale: Qt.locale("en_GB")
@@ -379,8 +441,8 @@ PlasmoidItem {
                     }
                     QQC2.MonthGrid {
                         Layout.fillWidth: true
-                        month: root.now.getMonth()
-                        year: root.now.getFullYear()
+                        month: root.shown.getMonth()
+                        year: root.shown.getFullYear()
                         locale: Qt.locale("en_GB")
                         // MonthGrid's own delegate pattern: a Label per day (it
                         // sizes the cells), today on an accent disc.
@@ -394,7 +456,7 @@ PlasmoidItem {
                             verticalAlignment: Text.AlignVCenter
                             font.pixelSize: 12
                             font.weight: today ? Font.Bold : Font.Normal
-                            color: today ? root.onAccent : month === root.now.getMonth() ? root.ink : Qt.alpha(root.ink, 0.3)
+                            color: today ? root.onAccent : month === root.shown.getMonth() ? root.ink : Qt.alpha(root.ink, 0.3)
                             background: Rectangle {
                                 anchors.centerIn: parent
                                 width: 26; height: 26; radius: root.hex ? 3 : 13

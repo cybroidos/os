@@ -75,67 +75,35 @@ jobs:
       # is full.
       - name: Build the rounded-corners effect
         if: matrix.image == 'desktop' || matrix.image == 'iso'
-        run: |
-          mkdir -p dist/extra
-          docker run --rm -v "$PWD/dist/extra:/out" -e VERSION=v0.11.0 debian:trixie sh -ec '
-            apt-get update -q
-            apt-get install -y -q --no-install-recommends ca-certificates git cmake g++ gettext extra-cmake-modules \
-              qt6-base-private-dev qt6-base-dev-tools libkf6configwidgets-dev libkf6kcmutils-dev kwin-dev libdrm-dev dpkg-dev file >/dev/null
-            git clone -q --depth 1 --branch "$VERSION" https://github.com/matinlotfali/KDE-Rounded-Corners /src
-            cd /src && cmake . -DCMAKE_BUILD_TYPE=Release >/dev/null && cmake --build . -j"$(nproc)" >/dev/null && cpack -G DEB >/dev/null
-            cp kwin4_effect_shapecorners*.deb /out/cybroid-kwin-effects_amd64.deb'
-          ls -la dist/extra
+        run: tools/build-extras.sh corners
 
       # CybroidOS's own apps (apps/desktop: Cybroid.Ui, Settings, Camera),
       # compiled against Debian 13's Qt in a Debian 13 container and packaged
       # (cybroid-ui, cybroid-settings, cybroid-camera) for amd64.
       - name: Build CybroidOS's own apps
         if: matrix.image == 'desktop' || matrix.image == 'iso'
-        run: |
-          mkdir -p dist/extra
-          docker run --rm -v "$PWD:/src" -w /src -e HOST_UID="$(id -u)" debian:trixie sh -ec '
-            apt-get update -q
-            apt-get install -y -q --no-install-recommends cmake g++ make dpkg-dev python3 \
-              qt6-base-dev qt6-declarative-dev qt6-multimedia-dev >/dev/null
-            tools/build-native.sh /src/dist/extra
-            chown -R "$HOST_UID" /src/dist'
-          ls -la dist/extra
+        run: tools/build-extras.sh apps
 
       # Tower's client (Tailscale, BSD-3-Clause; Debian has none), verified
       # against Tailscale's signing key. In the desktop images and the ISO,
       # and published to deb.cybroid.com with the rest of dist/extra.
       - name: Fetch the Tower client
         if: matrix.image == 'desktop' || matrix.image == 'iso'
-        run: tools/fetch-tailscale.sh dist/extra
+        run: tools/build-extras.sh tower
 
       # Office for the live and installer ISO: ONLYOFFICE Desktop Editors
       # (AGPL-3.0, onlyoffice.com), the vendor's own .deb (Debian has none).
       # About 280 MB; the ISO only, not the VM images.
       - name: Fetch ONLYOFFICE (ISO)
         if: matrix.image == 'iso'
-        run: |
-          mkdir -p dist/extra
-          curl -fsSL --retry 3 -o dist/extra/onlyoffice-desktopeditors_amd64.deb \
-            https://download.onlyoffice.com/install/desktop/editors/linux/onlyoffice-desktopeditors_amd64.deb
-          dpkg-deb -f dist/extra/onlyoffice-desktopeditors_amd64.deb Package Version
+        run: tools/build-extras.sh office
 
       # The dock floats above the screen's edge like macOS's: Debian's own
       # Plank, rebuilt with tools/plank-edge-gap.py (PLANK_EDGE_GAP), as
       # 0.11.89-6+cybroid1 so it takes Debian's place.
       - name: Build the dock (Plank with an edge gap)
         if: matrix.image == 'desktop' || matrix.image == 'iso'
-        run: |
-          docker run --rm -v "$PWD/dist/extra:/out" -v "$PWD/tools:/tools:ro" debian:trixie sh -ec '
-            printf "Types: deb deb-src\nURIs: http://deb.debian.org/debian\nSuites: trixie trixie-updates\nComponents: main\nSigned-By: /usr/share/keyrings/debian-archive-keyring.gpg\n\nTypes: deb deb-src\nURIs: http://deb.debian.org/debian-security\nSuites: trixie-security\nComponents: main\nSigned-By: /usr/share/keyrings/debian-archive-keyring.gpg\n" > /etc/apt/sources.list.d/debian.sources
-            apt-get update -q
-            apt-get install -y -q --no-install-recommends dpkg-dev devscripts python3 >/dev/null
-            apt-get build-dep -y -q plank >/dev/null
-            mkdir /src && cd /src && apt-get source -q plank >/dev/null && cd plank-*/
-            python3 /tools/plank-edge-gap.py .
-            DEBEMAIL=citos@cybroid.com DEBFULLNAME=CybroidOS dch -l +cybroid "Float a bottom dock above the edge of the screen (PLANK_EDGE_GAP)." >/dev/null
-            DEB_BUILD_OPTIONS="nocheck parallel=$(nproc)" dpkg-buildpackage -b -uc -us >/dev/null
-            cp ../plank_*+cybroid*_amd64.deb ../libplank1_*+cybroid*_amd64.deb ../libplank-common_*+cybroid*_all.deb /out/'
-          ls -la dist/extra
+        run: tools/build-extras.sh dock
 
       # App icons: WhiteSur (GPL-3.0, github.com/vinceliuice/WhiteSur-icon-theme)
       # at a fixed release, installed with -a (its own file-manager and store
@@ -144,24 +112,7 @@ jobs:
       # (dark app icons for Dark, as macOS has), packed as cybroid-icons.
       - name: Build the icons (cybroid-icons)
         if: matrix.image == 'desktop' || matrix.image == 'iso'
-        run: |
-          docker run --rm -v "$PWD/dist/extra:/out" -v "$PWD/tools:/tools:ro" -e REF=2026-09-10 debian:trixie sh -ec '
-            apt-get update -q
-            apt-get install -y -q --no-install-recommends ca-certificates git gtk-update-icon-cache libgtk-3-bin >/dev/null 2>&1 || apt-get install -y -q --no-install-recommends ca-certificates git >/dev/null
-            useradd -m build
-            su build -c "git clone -q --depth 1 --branch $REF https://github.com/vinceliuice/WhiteSur-icon-theme /home/build/src && mkdir -p /home/build/out && cd /home/build/src && ./install.sh -a -d /home/build/out -n WhiteSur >/dev/null"
-            sh /tools/icons-fixups.sh /home/build/out
-            apt-get install -y -q --no-install-recommends python3 python3-pil librsvg2-bin >/dev/null
-            python3 /tools/icons-dark.py /home/build/out
-            p=/home/build/pkg; mkdir -p $p/DEBIAN $p/usr/share/icons $p/usr/share/doc/cybroid-icons
-            cp -a /home/build/out/WhiteSur* $p/usr/share/icons/
-            cp /home/build/src/COPYING $p/usr/share/doc/cybroid-icons/copyright 2>/dev/null || cp /home/build/src/LICENSE $p/usr/share/doc/cybroid-icons/copyright
-            printf "Package: cybroid-icons\nVersion: %s\nArchitecture: all\nMaintainer: CybroidOS <citos@cybroid.com>\nSection: x11\nPriority: optional\nReplaces: citos-icons\nBreaks: citos-icons\nProvides: citos-icons\nDescription: CybroidOS app icons (WhiteSur, %s)\n Rounded-square app icons for CybroidOS Desktop: WhiteSur by Vince Liuice,\n GPL-3.0, with CybroidOS fixups.\n" "$(echo $REF | tr -d -)+cybroid1" "$REF" > $p/DEBIAN/control
-            printf "#!/bin/sh\nset -e\nif [ \"\$1\" = configure ] && command -v gtk-update-icon-cache >/dev/null; then for t in /usr/share/icons/WhiteSur*; do gtk-update-icon-cache -q -f \"\$t\" || true; done; fi\n" > $p/DEBIAN/postinst
-            chmod 0755 $p/DEBIAN/postinst
-            chown -R root:root $p
-            dpkg-deb --root-owner-group -Zxz --build $p /out/cybroid-icons_all.deb >/dev/null'
-          ls -la dist/extra
+        run: tools/build-extras.sh icons
 
       - name: Build the desktop VM image (CybroidOS Desktop, KDE Plasma)
         if: matrix.image == 'desktop'
@@ -216,25 +167,8 @@ jobs:
           KNOWN_HOSTS: ${{ secrets.CYBROID_APT_KNOWN_HOSTS }}
           FORCE: ${{ github.event.inputs.publish }}
         run: |
-          [ -n "$SIGNING_KEY" ] && [ -n "$PUBLISH_KEY" ] || { echo "::warning::No CYBROID_APT_* secrets: packages not published"; exit 0; }
-          version="$(python3 -c 'import tomllib; print(tomllib.load(open("common/branding/brand.toml","rb"))["identity"]["version"])')"
-          have="$(curl -fsSL https://deb.cybroid.com/cybroid/dists/trixie/main/binary-amd64/Packages 2>/dev/null |
-            awk '/^Package: cybroid-plasma$/{p=1;next} p&&/^Version:/{print $2;exit}')"
-          if [ "$have" = "$version" ] && [ "$FORCE" != true ]; then
-            echo "deb.cybroid.com already has $version"; exit 0
-          fi
           sudo apt-get install -y -q --no-install-recommends reprepro rsync >/dev/null
-          printf '%s\n' "$SIGNING_KEY" | gpg --batch --import
-          tools/build-package.sh --all >/dev/null
-          debs="$(ls dist/*_"$version"_all.deb; ls dist/extra/*.deb | grep -v onlyoffice)"
-          tools/publish-apt-repo.sh $debs
-          cp "dist/cybroid-sources_${version}_all.deb" apt-repo/published/cybroid-sources.deb
-          install -m 700 -d ~/.ssh
-          printf '%s\n' "$PUBLISH_KEY" > ~/.ssh/apt_publish && chmod 600 ~/.ssh/apt_publish
-          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
-          rsync -rlt --delete -e "ssh -i $HOME/.ssh/apt_publish -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes" \
-            apt-repo/published/ debpublish@deb.cybroid.com:/
-          curl -fsSL https://deb.cybroid.com/cybroid/dists/trixie/InRelease | head -12
+          tools/ci-publish.sh
 
       # The ISO is also kept with the run for a week, to download for testing
       # on real machines: gh run download <run> -n cybroidos-desktop-iso
@@ -256,33 +190,4 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.CITOS_IMAGES_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.CITOS_IMAGES_SECRET }}
           AWS_DEFAULT_REGION: garage
-        run: |
-          [ -n "$AWS_ACCESS_KEY_ID" ] || { echo "::warning::No CITOS_IMAGES_KEY_ID secret: built but not uploaded"; exit 0; }
-          # Hangar's storage sits behind an office line: the classic transfer
-          # engine (no minimum speed), two parts at a time, three tries.
-          aws configure set default.s3.preferred_transfer_client classic
-          # Hangar's storage is at home, behind Cloudflare, which gives up on a
-          # request after 100 s (error 524): small parts, one at a time, and a
-          # failed part is sent again by itself (max_attempts) instead of the
-          # whole 2 GB file starting over.
-          aws configure set default.s3.max_concurrent_requests 1
-          aws configure set default.s3.multipart_chunksize 8MB
-          aws configure set default.retry_mode standard
-          aws configure set default.max_attempts 10
-          s3() { for try in 1 2 3; do aws --endpoint-url "$S3_URL" --cli-read-timeout 300 s3 "$@" && return 0; echo "upload try $try failed, retrying"; sleep 60; done; return 1; }
-          # The VM and container images keep their storage names: Hangar's
-          # image catalogue fetches them by these keys (internal/pve/images.go).
-          if [ "${{ matrix.image }}" = iso ]; then
-            f=$(ls out/cybroidos-desktop-*-amd64.iso); key=iso/cybroidos-desktop-amd64.iso
-          elif [ "${{ matrix.image }}" = vm ]; then
-            f=$(ls out/cybroid-server-*-amd64.qcow2); key=server/citos-server-amd64.qcow2
-          elif [ "${{ matrix.image }}" = desktop ]; then
-            f=$(ls out/cybroid-${{ matrix.image }}-*-amd64.qcow2); key=desktop/citos-${{ matrix.image }}-amd64.qcow2
-          else
-            f=$(ls out/cybroid-server_*_amd64.tar.zst); key=server/citos-server_amd64.tar.zst
-          fi
-          sum=$(sha256sum "$f" | cut -d' ' -f1)
-          s3 cp --only-show-errors "$f" "s3://$BUCKET/$key" --metadata "sha256=$sum,commit=$GITHUB_SHA"
-          echo "$sum  $(basename "$key")" > "$f.sha256"
-          s3 cp --only-show-errors "$f.sha256" "s3://$BUCKET/$key.sha256"
-          echo "Uploaded $key ($(du -h "$f" | cut -f1), sha256 $sum)" >> "$GITHUB_STEP_SUMMARY"
+        run: COMMIT="$GITHUB_SHA" tools/ci-upload.sh ${{ matrix.image }}

@@ -1,0 +1,84 @@
+# CybroidOS's installer ISO and packages, built on Hangar's Forgejo
+# (git.cybroid.com) by our own machines: any computer set up with
+# tools/setup-builder.sh registers as a runner labelled cybroid-builder
+# (Docker and sudo on the machine itself; live-build runs in a container).
+# The same steps as GitHub's server-images.yml, through the same scripts
+# (tools/build-extras.sh, tools/ci-publish.sh, tools/ci-upload.sh).
+#
+# Secrets (the repository's or the organisation's Actions secrets in
+# Forgejo): CYBROID_APT_SIGNING_KEY, CYBROID_APT_PUBLISH_KEY,
+# CYBROID_APT_KNOWN_HOSTS (deb.cybroid.com), CITOS_IMAGES_KEY_ID and
+# CITOS_IMAGES_SECRET (Hangar's storage). Without them it builds, and says
+# what it skipped.
+name: Images
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish the packages to deb.cybroid.com even if it has this version
+        type: boolean
+        default: false
+  push:
+    paths:
+      - 'common/**'
+      - 'apps/desktop/**'
+      - 'targets/lib/**'
+      - 'targets/desktop/**'
+      - 'tools/**'
+      - '.forgejo/workflows/images.yml'
+
+env:
+  S3_URL: https://s3.cybroid.com
+  BUCKET: citos-images
+
+jobs:
+  iso:
+    name: Build the ISO
+    runs-on: cybroid-builder
+    timeout-minutes: 180
+    steps:
+      # Plain git (no Node on the builder): this commit, nothing left from
+      # an earlier build.
+      - name: Check out
+        env:
+          TOKEN: ${{ github.token }}
+        run: |
+          git init -q .
+          git -c http.extraHeader="Authorization: token $TOKEN" fetch -q --depth 1 "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY.git" "$GITHUB_SHA"
+          git checkout -q --force FETCH_HEAD
+          git clean -q -ffdx
+          git log --oneline -1
+
+      - name: Build the packages from outside Debian (dist/extra)
+        run: tools/build-extras.sh iso
+
+      - name: Build the installer ISO (CybroidOS Desktop, live and install)
+        run: |
+          df -h . | tail -1
+          sudo EXTRA_DEBS="$PWD/dist/extra" OUT="$PWD/out" targets/desktop/build-iso.sh
+          sudo chown -R "$(id -u):$(id -g)" out dist
+          ls -lh out/cybroidos-desktop-*-amd64.iso
+
+      - name: Publish the packages to deb.cybroid.com
+        env:
+          SIGNING_KEY: ${{ secrets.CYBROID_APT_SIGNING_KEY }}
+          PUBLISH_KEY: ${{ secrets.CYBROID_APT_PUBLISH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.CYBROID_APT_KNOWN_HOSTS }}
+          FORCE: ${{ inputs.publish }}
+        run: tools/ci-publish.sh
+
+      - name: Upload to Hangar's storage
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.CITOS_IMAGES_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.CITOS_IMAGES_SECRET }}
+          AWS_DEFAULT_REGION: garage
+        run: COMMIT="$GITHUB_SHA" tools/ci-upload.sh iso
+
+      # The builder is someone's computer: the 2+ GB of output and the
+      # root-owned build files go, whatever happened.
+      - name: Clean up
+        if: always()
+        run: |
+          sudo rm -rf out dist apt-repo/db apt-repo/published
+          docker image prune -f --filter "until=168h" >/dev/null || true

@@ -60,9 +60,17 @@ if [ "$1" = "configure" ]; then
 	if command -v flatpak >/dev/null 2>&1; then
 		flatpak remote-add --system --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo >/dev/null 2>&1 || true
 	fi
-	# zram: compressed swap in memory, half of it (helps machines with 4 GB).
-	if [ -f /etc/default/zramswap ] && ! grep -q '^PERCENT=' /etc/default/zramswap; then
-		printf '\n# CybroidOS: half the memory as compressed swap.\nALGO=zstd\nPERCENT=50\n' >> /etc/default/zramswap
+	# zram: compressed swap in memory, half of it, zstd (holds more than
+	# lz4 on a 4 GB machine). Debian 13's file already has ALGO=lz4 and
+	# PERCENT=50 set, so the stock lz4 line is changed, once (an
+	# administrator who sets lz4 again keeps it); older files get both.
+	if [ -f /etc/default/zramswap ] && [ ! -e /var/lib/cybroid/zram-zstd ]; then
+		mkdir -p /var/lib/cybroid && : > /var/lib/cybroid/zram-zstd
+		if grep -q '^ALGO=lz4$' /etc/default/zramswap; then
+			sed -i 's/^ALGO=lz4$/ALGO=zstd/' /etc/default/zramswap
+		elif ! grep -q '^PERCENT=' /etc/default/zramswap; then
+			printf '\n# CybroidOS: half the memory as compressed swap.\nALGO=zstd\nPERCENT=50\n' >> /etc/default/zramswap
+		fi
 	fi
 	# The firewall on the first start; systemd-oomd against out-of-memory
 	# freezes (its limits: usr/lib/systemd/system/*.d/10-cybroid-oomd.conf).

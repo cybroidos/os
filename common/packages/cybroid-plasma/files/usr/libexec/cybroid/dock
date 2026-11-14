@@ -13,11 +13,25 @@ if [ ! -f "$conf/cybroid/dock-set" ]; then
 	[ -d /run/live/medium ] && apps="install-debian ${apps}"
 	for a in ${apps}; do
 		f=/usr/share/cybroid/apps/applications/$a.desktop
+		# Apps whose windows don't name their .desktop file (Firefox): the
+		# dock's matcher (BAMF) ties them to the original, so the launcher
+		# is the original too, or the running app shows as a second icon.
+		case "$a" in firefox-esr) f=/usr/share/applications/$a.desktop ;; esac
 		[ -f "$f" ] || f=/usr/share/applications/$a.desktop
 		[ -f "$f" ] || continue
 		printf '[PlankDockItemPreferences]\nLauncher=file://%s\n' "$f" > "$dir/$a.dockitem"
+		items="${items:+$items, }'$a.dockitem'"
 	done
+	# The order too: Plank puts items its settings don't list at the end
+	# (the live system's installer went last instead of first).
+	gsettings set net.launchpad.plank.dock.settings:/net/launchpad/plank/docks/dock1/ dock-items "[$items]" 2>/dev/null || true
 	mkdir -p "$conf/cybroid" && : > "$conf/cybroid/dock-set"
+fi
+# Firefox's launcher, set before 0.1.6 to the renamed copy: the original
+# (see above). Once.
+if [ ! -f "$conf/cybroid/firefox-launcher" ] && [ -f "$dir/firefox-esr.dockitem" ]; then
+	sed -i 's|file:///usr/share/cybroid/apps/applications/firefox-esr.desktop|file:///usr/share/applications/firefox-esr.desktop|' "$dir/firefox-esr.dockitem"
+	mkdir -p "$conf/cybroid" && : > "$conf/cybroid/firefox-launcher"
 fi
 # CybroidOS 0.1.3 has its own Settings (cybroid-settings): a dock set up
 # before then has KDE's in its place, switched over once.

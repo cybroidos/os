@@ -4,7 +4,7 @@ Architecture: all
 Maintainer: CybroidOS maintainers <citos@cybroid.com>
 Section: admin
 Priority: optional
-Depends: base-files
+Depends: base-files, apparmor
 Homepage: https://github.com/cybroidinstitute/cit-os
 Replaces: citos-base (<< 0.1.2~)
 Breaks: citos-base (<< 0.1.2~)

@@ -118,6 +118,9 @@ printf '[Autologin]\nUser=%s\nSession=plasmax11\n' "${user}" > /etc/sddm.conf.d/
 printf '[Autologin]\nUser=%s\nSession=plasmax11\n' "${user}" > /etc/sddm.conf
 # An easy password, to try the sign-in screen (sign out): the user's name.
 echo "${user}:cybroid" | chpasswd
+# The live password is public: no remote desktop on the live system (an
+# installed one keeps it, and only over Tower; cybroid-firewall-setup).
+systemctl mask xrdp.service xrdp-sesman.service >/dev/null 2>&1 || true
 # sudo and the installer without asking.
 printf '%s ALL=(ALL) NOPASSWD: ALL\n' "${user}" > /etc/sudoers.d/live
 chmod 0440 /etc/sudoers.d/live

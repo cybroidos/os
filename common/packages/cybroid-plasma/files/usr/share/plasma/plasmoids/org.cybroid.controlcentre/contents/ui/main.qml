@@ -162,15 +162,18 @@ PlasmoidItem {
     P5Support.DataSource {
         id: sh
         engine: "executable"
-        property var handlers: ({})
+        // A Map, not an object: keys added and deleted every few seconds on
+        // a plain object crash Qt 6.8's JavaScript engine (QV4::Object::
+        // insertMember; Hex's plasmashell fell over every minute, 2026-11-14).
+        property var handlers: new Map()
         function run(cmd, handler) {
-            handlers[cmd] = handler
+            handlers.set(cmd, handler)
             connectSource(cmd)
         }
         onNewData: (source, data) => {
-            const h = handlers[source]
+            const h = handlers.get(source)
             disconnectSource(source)
-            delete handlers[source]
+            handlers.delete(source)
             if (h) h(String(data["stdout"] || ""), Number(data["exit code"]))
         }
     }

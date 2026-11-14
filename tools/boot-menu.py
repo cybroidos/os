@@ -86,8 +86,11 @@ title-text: ""
 message-font: "Unifont Regular 16"
 message-color: "{MUTED}"
 terminal-font: "Unifont Regular 16"
-# GRUB's terminal (where it loads the system) without its black box: after
-# an entry is chosen the picture stays until the boot splash.
+# GRUB's terminal ("Booting...", "Loading Linux..." once an entry is
+# chosen) with a clear frame; its background is the picture's navy
+# (background_color: the ISO's config.cfg, the installed 06_cybroid_background),
+# so it reads as a quiet panel, not a black box. Debian's GRUB can't be told
+# not to print the lines (quiet_boot=0).
 terminal-box: "clear_*.png"
 
 + boot_menu {{

@@ -1,0 +1,10 @@
+#!/bin/sh
+# CybroidOS (cybroid-plasma): once an entry is chosen GRUB writes "Booting"
+# and "Loading Linux..." in a box over the boot picture, black by default.
+# Its background becomes the picture's own navy, so it reads as a quiet
+# panel on the picture, not a black box. (The picture itself behind the text
+# was drawn from the box's corner: a second, offset logo.) Debian's GRUB
+# can't be told not to print the lines (quiet_boot=0 in 10_linux).
+set -e
+[ -n "${GRUB_THEME:-}" ] || exit 0
+echo 'background_color "#081833"'

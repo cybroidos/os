@@ -12,6 +12,11 @@ SettingsPage {
     property var vpns: []          // {name, type, active}
     property string tower: ""      // Running, NeedsLogin, Stopped, "" (not installed)
     property string towerName: ""
+    property string towerIp: ""
+    property int towerPeers: 0
+    property string towerCode: ""   // waiting for Hangar to approve this code
+    property string towerUrl: ""
+    property bool towerKey: false   // the join key field is open
     property bool hotspot: false
     property bool canHotspot: false
     property string hsName: ""
@@ -53,9 +58,40 @@ SettingsPage {
                 })
             }
         })
-        System.run(["tailscale", "status", "--json", "--peers=false"], (o, code) => {
+        System.run(["tailscale", "status", "--json"], (o, code) => {
             if (code === 127) { tower = ""; return }
-            try { const j = JSON.parse(o); tower = j.BackendState || ""; towerName = (j.Self && j.Self.DNSName || "").replace(/\.$/, "") } catch (e) { tower = "Stopped" }
+            try {
+                const j = JSON.parse(o)
+                tower = j.BackendState || ""
+                towerName = (j.Self && j.Self.DNSName || "").split(".")[0]
+                towerIp = (j.TailscaleIPs || [])[0] || ""
+                towerPeers = Object.values(j.Peer || {}).filter(p => p.Online).length
+                if (tower === "Running") { towerCode = ""; towerUrl = ""; towerKey = false }
+                // Waiting for approval (also after Settings was closed and opened again).
+                else if (j.AuthURL) { towerUrl = j.AuthURL; towerCode = j.AuthURL.split("/").pop() }
+            } catch (e) { tower = "Stopped" }
+        })
+    }
+    // The key from Hangar's join command (…--authkey KEY / --auth-key=KEY), or a bare key.
+    function keyOf(t) {
+        t = t.trim()
+        const m = t.match(/--auth-?key[= ]['"]?([A-Za-z0-9_-]+)/)
+        return m ? m[1] : t.split(/\s+/).pop().replace(/['"]/g, "")
+    }
+    // Tower, through cybroid-tower (pkexec: an administrator, once).
+    function towerDo(args) {
+        busy = "tower"; error = ""
+        // On and off as this computer's Tower operator first (no password).
+        const cmd = args[0] === "on" || args[0] === "off"
+            ? ["sh", "-c", "/usr/libexec/cybroid/cybroid-tower \"$1\" 2>/dev/null || pkexec /usr/libexec/cybroid/cybroid-tower \"$1\"", "sh", args[0]]
+            : ["pkexec", "/usr/libexec/cybroid/cybroid-tower"].concat(args)
+        System.run(cmd, (out, code) => {
+            busy = ""
+            if (code === 126) { refresh(); return }            // the password prompt was dismissed
+            const c = (out.match(/^CODE (\S+)/m) || [])[1], u = (out.match(/^URL (\S+)/m) || [])[1]
+            if (c) { towerCode = c; towerUrl = u || "" }
+            else if (code !== 0) error = "Tower: " + (out.trim().split("\n").pop() || "couldn't connect")
+            refresh()
         })
     }
     function run(what, args) {
@@ -99,10 +135,70 @@ SettingsPage {
     Card {
         SettingRow {
             title: "Tower"
-            subtitle: page.tower === "" ? "Not installed" : page.tower === "Running" ? "Connected" + (page.towerName ? " as " + page.towerName : "")
-                    : page.tower === "NeedsLogin" ? "Not linked yet: link this computer from Control Centre" : "Off"
+            subtitle: page.busy === "tower" ? "Working…"
+                    : page.tower === "" ? "Tower's client isn't installed"
+                    : page.tower === "Running" ? "Connected as " + page.towerName + (page.towerIp ? " · " + page.towerIp : "") + " · " + page.towerPeers + (page.towerPeers === 1 ? " device online" : " devices online")
+                    : page.towerCode !== "" ? "Waiting for approval in Hangar"
+                    : page.tower === "Stopped" ? "Linked, switched off"
+                    : "Not linked: approve this computer in Hangar, or paste a join command from it"
             icon: "network-vpn-symbolic"
             iconColor: page.tower === "Running" ? Theme.ok : Theme.soft
+            // Linked: on and off. Not linked: Link.
+            Toggle {
+                visible: page.tower === "Running" || page.tower === "Stopped"
+                checked: page.tower === "Running"
+                enabled: page.busy === ""
+                onToggled: (on) => page.towerDo([on ? "on" : "off"])
+            }
+            Btn {
+                visible: page.tower !== "" && page.tower !== "Running" && page.tower !== "Stopped" && page.towerCode === ""
+                text: "Link"
+                primary: true
+                enabled: page.busy === ""
+                onClicked: page.towerDo(["link"])
+            }
+        }
+        // Approving: the code Hangar asks for (Tower → Approve a device).
+        SettingRow {
+            visible: page.towerCode !== "" && page.tower !== "Running"
+            title: page.towerCode
+            subtitle: "In Hangar: Network → Add a device, paste this code and press Approve. This page updates by itself."
+            icon: "dialog-password-symbolic"
+            iconColor: Theme.accent
+            TextEdit { id: clip; visible: false; text: page.towerCode }
+            Btn { text: "Copy"; onClicked: { clip.selectAll(); clip.copy() } }
+        }
+        // Or a one-time join key, made in Hangar (Tower → Join key).
+        SettingRow {
+            visible: page.tower !== "" && page.tower !== "Running" && page.tower !== "Stopped"
+            title: "Have a join command?"
+            subtitle: "Hangar's Network → Add a device → Make a join command: paste it (or its key) here"
+            icon: "network-connect-symbolic"
+            iconColor: Theme.soft
+            Field {
+                id: joinKey
+                visible: page.towerKey
+                implicitWidth: 220
+                placeholderText: "Paste the command or key"
+                echoMode: TextInput.Password
+                onAccepted: if (text.trim()) { page.towerDo(["link", page.keyOf(text)]); text = "" }
+            }
+            Btn {
+                text: page.towerKey ? "Join" : "Paste"
+                enabled: page.busy === "" && (!page.towerKey || joinKey.text.trim() !== "")
+                onClicked: {
+                    if (!page.towerKey) { page.towerKey = true; joinKey.forceActiveFocus(); return }
+                    page.towerDo(["link", page.keyOf(joinKey.text)]); joinKey.text = ""
+                }
+            }
+        }
+        SettingRow {
+            visible: page.tower === "Running" || page.tower === "Stopped"
+            title: "Leave Tower"
+            subtitle: "This computer is removed from your private network until linked again"
+            clickable: true
+            chevron: false
+            onClicked: page.towerDo(["unlink"])
         }
         Repeater {
             model: page.vpns

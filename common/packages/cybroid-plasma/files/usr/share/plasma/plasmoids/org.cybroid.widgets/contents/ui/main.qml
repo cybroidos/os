@@ -154,7 +154,7 @@ PlasmoidItem {
         sh.run(root.hud ? "tailscale status --json" : "tailscale status --json --peers=false", (out) => {
             try {
                 const s = JSON.parse(out)
-                root.tower = s.BackendState === "Running" ? "On Tower" : "Not on Tower"
+                root.tower = s.BackendState === "Running" ? "On Tower" : s.BackendState === "Stopped" ? "Off" : "Not on Tower"
                 const peers = []
                 for (const k in (s.Peer || {})) {
                     const p = s.Peer[k]
@@ -531,6 +531,12 @@ PlasmoidItem {
                     valueColor: root.hudBright
                     Spark { width: col.width; values: root.cpuHist; ceiling: 0.25 }
                 }
+                // Tower's devices, or linking this computer: Settings → Network.
+                MouseArea {
+                    x: tw.x; y: tw.y; width: tw.width; height: tw.height
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: sh.run("sh -c 'cybroid-settings network >/dev/null 2>&1 &'", () => {})
+                }
                 HudReadout {
                     width: col.width
                     y: root.hudRowY(col, 2) - height / 2
@@ -586,7 +592,7 @@ PlasmoidItem {
                     label: "TOWER"
                     value: root.tower === "On Tower"
                         ? root.towerPeers.filter((p) => p.online).length + " DEVICES ONLINE"
-                        : "NOT LINKED"
+                        : root.tower === "Off" ? "SWITCHED OFF" : "NOT LINKED"
                     valueColor: root.tower === "On Tower" ? root.hudMuted : root.hudDim
                     // This computer in the middle, up to four of Tower's
                     // devices round it (online ones first).

@@ -206,10 +206,10 @@ PlasmoidItem {
         })
         refreshBluetooth()
         sh.run("tailscale status --json --peers=false", (out, code) => {
-            if (code !== 0 && !out) { root.towerState = "Off"; root.towerAddress = ""; return }
+            if (code !== 0 && !out) { root.towerState = "Not linked"; root.towerAddress = ""; return }
             try {
                 const s = JSON.parse(out)
-                root.towerState = s.BackendState === "Running" ? "Connected" : "Not joined"
+                root.towerState = s.BackendState === "Running" ? "Connected" : s.BackendState === "Stopped" ? "Off" : "Not linked"
                 root.towerAddress = (s.TailscaleIPs || [])[0] || ""
             } catch (e) { root.towerState = "Off" }
         })
@@ -611,8 +611,15 @@ PlasmoidItem {
                             title: "Tower"
                             detail: root.towerState === "Connected" ? root.towerAddress : root.towerState
                             on: root.towerState === "Connected"
-                            onOpened: Qt.openUrlExternally("https://tower.cybroid.com")
-                            onToggled: Qt.openUrlExternally("https://tower.cybroid.com")
+                            // Linked: on and off (this computer's operator needs no
+                            // password). Not linked yet: Settings → Network links it.
+                            onOpened: { root.expanded = false; sh.run("cybroid-settings network", () => {}) }
+                            onToggled: {
+                                if (root.towerState === "Not linked") { root.expanded = false; sh.run("cybroid-settings network", () => {}); return }
+                                const what = root.towerState === "Connected" ? "off" : "on"
+                                root.towerState = what === "on" ? "Connecting…" : "Off"
+                                sh.run("sh -c '/usr/libexec/cybroid/cybroid-tower " + what + " || pkexec /usr/libexec/cybroid/cybroid-tower " + what + "'", () => root.refresh())
+                            }
                         }
                     }
                 }

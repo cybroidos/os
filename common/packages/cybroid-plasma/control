@@ -5,7 +5,7 @@ Maintainer: CybroidOS maintainers <citos@cybroid.com>
 Homepage: https://github.com/cybroidinstitute/cit-os
 Section: kde
 Priority: optional
-Depends: cybroid-base (>= @VERSION@), cybroid-artwork (>= @VERSION@), cybroid-settings (>= @VERSION@), cybroid-camera (>= @VERSION@), cybroid-plymouth-theme (>= @VERSION@),
+Depends: cybroid-base (>= @VERSION@), cybroid-artwork (>= @VERSION@), cybroid-settings (>= @VERSION@), cybroid-camera (>= @VERSION@), tailscale, cybroid-plymouth-theme (>= @VERSION@),
  plasma-desktop, plasma-workspace, kwin-x11, plasma-integration, kde-cli-tools, kscreen, powerdevil,
  polkit-kde-agent-1, kactivitymanagerd, milou, kinfocenter, systemsettings, xdg-desktop-portal-kde,
  breeze, breeze-cursor-theme, papirus-icon-theme, fonts-inter, fonts-jetbrains-mono, appmenu-gtk3-module, x11-utils, x11-xserver-utils,

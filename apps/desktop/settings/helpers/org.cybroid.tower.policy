@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policyconfig PUBLIC "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/PolicyKit/1/policyconfig.dtd">
+<!-- CybroidOS: joining this computer to Tower, leaving it, and switching
+     it on or off before it is linked (cybroid-tower) need an administrator. -->
+<policyconfig>
+  <vendor>CybroidOS</vendor>
+  <vendor_url>https://cybroid.com</vendor_url>
+  <action id="org.cybroid.tower">
+    <description>Join Tower</description>
+    <message>Joining Tower, your private network, needs an administrator's password</message>
+    <icon_name>network-vpn</icon_name>
+    <defaults>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
+      <allow_active>auth_admin_keep</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/libexec/cybroid/cybroid-tower</annotate>
+  </action>
+</policyconfig>

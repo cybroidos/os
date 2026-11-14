@@ -19,7 +19,7 @@ Depends: cybroid-base (>= @VERSION@), cybroid-artwork (>= @VERSION@), cybroid-se
  bluez, bluedevil, xserver-xorg-input-libinput, pipewire-pulse, pipewire-alsa, plasma-pa,
  pipewire-audio, libspa-0.2-bluetooth, alsa-ucm-conf, alsa-utils, rtkit,
  mesa-va-drivers, intel-media-va-driver, iio-sensor-proxy, switcheroo-control,
- udisks2, kio-extras, ffmpegthumbs, kdegraphics-thumbnailers, exfatprogs, ntfs-3g, dosfstools,
+ udisks2, kio-extras, libmtp-runtime, usbmuxd, ffmpegthumbs, kdegraphics-thumbnailers, exfatprogs, ntfs-3g, dosfstools,
  power-profiles-daemon, brightnessctl, xdg-utils,
  vlc, okular, kcalc, kde-spectacle, kate, plasma-systemmonitor,
  plasma-discover, plasma-discover-backend-flatpak, flatpak, fwupd,

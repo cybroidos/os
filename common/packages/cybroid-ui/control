@@ -5,7 +5,7 @@ Maintainer: CybroidOS maintainers <citos@cybroid.com>
 Homepage: https://github.com/cybroidinstitute/cit-os
 Section: libs
 Priority: optional
-Depends: libqt6core6t64 (>= 6.8), libqt6gui6 (>= 6.8), libqt6qml6 (>= 6.8), libqt6quick6 (>= 6.8), libstdc++6, libc6,
+Depends: libqt6core6t64 (>= 6.8), libqt6gui6 (>= 6.8), libqt6qml6 (>= 6.8), libqt6quick6 (>= 6.8), libqt6dbus6 (>= 6.8), libstdc++6, libc6,
  qml6-module-qtquick, qml6-module-qtquick-controls, qml6-module-qtquick-layouts, qml6-module-qtquick-shapes,
  qml6-module-qtquick-window, qml6-module-qtqml-workerscript, qml6-module-org-kde-kirigami, fonts-inter, fonts-jetbrains-mono
 Description: CybroidOS's own app controls and theme (Cybroid.Ui)

@@ -7,7 +7,7 @@
 cmake_minimum_required(VERSION 3.25)
 project(cybroid-desktop-apps VERSION 0.1 LANGUAGES CXX)
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2 Network Multimedia)
+find_package(Qt6 6.5 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2 Network Multimedia DBus)
 qt_standard_project_setup(REQUIRES 6.5)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

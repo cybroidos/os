@@ -30,7 +30,7 @@ qt_add_qml_module(cybroidui
         qml/Choice.qml
         qml/SettingsPage.qml
 )
-target_link_libraries(cybroidui PRIVATE Qt6::Core Qt6::Gui Qt6::Qml Qt6::Quick)
+target_link_libraries(cybroidui PRIVATE Qt6::Core Qt6::Gui Qt6::Qml Qt6::Quick Qt6::DBus)
 
 install(TARGETS cybroidui LIBRARY DESTINATION ${CYBROID_QML_DIR}/Cybroid/Ui COMPONENT cybroid-ui)
 install(FILES

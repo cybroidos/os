@@ -35,6 +35,11 @@ public:
     Q_INVOKABLE bool makeDir(const QString &path) const;
     // "pictures", "videos", "home", "config"
     Q_INVOKABLE QString folder(const QString &which) const;
+    // Joins a Wi-Fi network through NetworkManager's D-Bus API, so the
+    // password is never on a command line (any user can read those in
+    // /proc). security: "" (open), "wpa-psk" or "sae" (WPA3). Calls
+    // done(ok, message).
+    Q_INVOKABLE void joinWifi(const QString &ssid, const QString &password, const QString &security, const QJSValue &done = QJSValue());
     // The newest files in the folders matching the name filters, newest first.
     Q_INVOKABLE QStringList newest(const QStringList &dirs, const QStringList &filters, int count) const;
 

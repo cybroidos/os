@@ -27,6 +27,7 @@ qt_add_qml_module(cybroid-settings
         qml/UsersPage.qml
         qml/RegionPage.qml
         qml/DefaultAppsPage.qml
+        qml/UpdatesPage.qml
 )
 target_include_directories(cybroid-settings PRIVATE ${CMAKE_SOURCE_DIR}/common)
 target_link_libraries(cybroid-settings PRIVATE Qt6::Gui Qt6::Qml Qt6::Quick Qt6::QuickControls2 Qt6::Network)
@@ -35,3 +36,6 @@ install(FILES cybroid-settings.desktop DESTINATION share/applications COMPONENT 
 # Appearance's previews: screenshots of the desktop in each look (taken on
 # the test VM at 1280×800, shown at 640×400).
 install(DIRECTORY previews/ DESTINATION share/cybroid/settings/previews COMPONENT cybroid-settings)
+# Updates: the root helper (run through pkexec) and its polkit action.
+install(PROGRAMS helpers/cybroid-update DESTINATION libexec/cybroid COMPONENT cybroid-settings)
+install(FILES helpers/org.cybroid.update.policy DESTINATION share/polkit-1/actions COMPONENT cybroid-settings)

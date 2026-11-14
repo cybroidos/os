@@ -38,6 +38,7 @@ Window {
             { id: "users", name: "Users", icon: "system-users-symbolic", page: "UsersPage.qml" },
             { id: "region", name: "Language & Region", icon: "preferences-desktop-locale-symbolic", page: "RegionPage.qml" },
             { id: "datetime", name: "Date & Time", icon: "clock-symbolic", page: "DateTimePage.qml" },
+            { id: "updates", name: "Updates", icon: "system-software-update-symbolic", page: "UpdatesPage.qml" },
             { id: "apps", name: "Default Apps", icon: "applications-all-symbolic", page: "DefaultAppsPage.qml" },
             { id: "about", name: "About", icon: "help-about-symbolic", page: "AboutPage.qml" }
         ]

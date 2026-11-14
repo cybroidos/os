@@ -1,0 +1,38 @@
+#!/bin/sh
+# CybroidOS Settings' updates (cybroid-settings), run as root through pkexec:
+#   cybroid-update now              fetch and install every update, without
+#                                   questions (a changed settings file is
+#                                   kept: --force-confold), writing
+#                                   /var/log/cybroid-update.log (fixed: a
+#                                   path from the caller would let it write
+#                                   anywhere as root)
+#   cybroid-update auto on|off      install updates by themselves, or not
+#                                   (/etc/apt/apt.conf.d/20auto-upgrades)
+set -eu
+export DEBIAN_FRONTEND=noninteractive LC_ALL=C.UTF-8
+case "${1:-}" in
+now)
+	log=/var/log/cybroid-update.log
+	: >"$log"
+	chmod 644 "$log"
+	{
+		echo "== Checking for updates"
+		apt-get update -q
+		# When the lists were last fetched, as apt's own daily run records it.
+		mkdir -p /var/lib/apt/periodic && touch /var/lib/apt/periodic/update-success-stamp
+		echo "== Installing"
+		apt-get -y -q -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold full-upgrade
+		apt-get -y -q autoremove --purge
+		echo "== Done"
+	} >"$log" 2>&1 || { echo "== Failed" >>"$log"; exit 1; }
+	;;
+auto)
+	case "${2:-}" in on) v=1 ;; off) v=0 ;; *) exit 2 ;; esac
+	printf 'APT::Periodic::Update-Package-Lists "1";\nAPT::Periodic::Unattended-Upgrade "%s";\n' "$v" \
+		> /etc/apt/apt.conf.d/20auto-upgrades
+	;;
+*)
+	echo "usage: cybroid-update now | auto on|off" >&2
+	exit 2
+	;;
+esac

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policyconfig PUBLIC "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/PolicyKit/1/policyconfig.dtd">
+<!-- CybroidOS Settings: installing updates and turning automatic updates on
+     or off (cybroid-update) need an administrator, asked once for a while. -->
+<policyconfig>
+  <vendor>CybroidOS</vendor>
+  <vendor_url>https://cybroid.com</vendor_url>
+  <action id="org.cybroid.update">
+    <description>Install updates</description>
+    <message>Installing updates needs an administrator's password</message>
+    <icon_name>system-software-update</icon_name>
+    <defaults>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
+      <allow_active>auth_admin_keep</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/libexec/cybroid/cybroid-update</annotate>
+  </action>
+</policyconfig>

@@ -25,20 +25,20 @@ work="$(mktemp -d)"
 trap 'rm -rf "${work}"' EXIT
 cd "${work}"
 
-curl -fsSL --retry 3 -o key.gpg "${base}/${suite}.noarmor.gpg"
+curl -fsSL --retry 5 --retry-all-errors --retry-delay 10 -o key.gpg "${base}/${suite}.noarmor.gpg"
 got="$(gpg --show-keys --with-colons key.gpg 2>/dev/null | awk -F: '/^fpr:/{print $10; exit}')"
 [ "${got}" = "${fingerprint}" ] || { echo "error: Tailscale's key changed (${got})" >&2; exit 1; }
 
-curl -fsSL --retry 3 -o InRelease "${base}/dists/${suite}/InRelease"
+curl -fsSL --retry 5 --retry-all-errors --retry-delay 10 -o InRelease "${base}/dists/${suite}/InRelease"
 gpgv --keyring ./key.gpg InRelease 2>/dev/null || { echo "error: bad signature on Tailscale's index" >&2; exit 1; }
 
-curl -fsSL --retry 3 -o Packages "${base}/dists/${suite}/main/binary-${arch}/Packages"
+curl -fsSL --retry 5 --retry-all-errors --retry-delay 10 -o Packages "${base}/dists/${suite}/main/binary-${arch}/Packages"
 want="$(awk -v p="main/binary-${arch}/Packages" '/^SHA256:/{s=1;next} /^[A-Z]/{s=0} s&&$3==p{print $1}' InRelease)"
 echo "${want}  Packages" | sha256sum -c --quiet
 
 read -r version file sum < <(awk '/^Package: /{p=($2=="tailscale")} p&&/^Version:/{v=$2} p&&/^Filename:/{f=$2} p&&/^SHA256:/{print v, f, $2}' Packages | sort -V | tail -1)
 deb="$(basename "${file}")"
-curl -fsSL --retry 3 -o "${deb}" "${base}/${file}"
+curl -fsSL --retry 5 --retry-all-errors --retry-delay 10 -o "${deb}" "${base}/${file}"
 echo "${sum}  ${deb}" | sha256sum -c --quiet
 
 mkdir -p "${out}"

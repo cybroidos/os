@@ -54,7 +54,7 @@ build_debs $CYBROID_PACKAGES
 base="${BASE:-${out}/debian-13-genericcloud-amd64.qcow2}"
 if [ ! -f "${base}" ]; then
 	echo "Downloading Debian 13's cloud image"
-	curl -fL --retry 3 -o "${base}.part" "${base_url}" && mv "${base}.part" "${base}"
+	curl -fL --retry 5 --retry-all-errors --retry-delay 10 -o "${base}.part" "${base_url}" && mv "${base}.part" "${base}"
 fi
 qemu-img convert -O raw "${base}" "${work}/disk.raw"
 # The desktop needs room: 8 GB, the root partition and filesystem grown to fill it.

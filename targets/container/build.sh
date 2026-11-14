@@ -46,7 +46,7 @@ if [ -z "${base}" ]; then
 	name="$(curl -fsSL http://download.proxmox.com/images/system/ | grep -o 'debian-13-standard_[^"]*_amd64.tar.zst' | sort -uV | tail -1)"
 	[ -n "${name}" ] || die "couldn't find Debian 13 on download.proxmox.com"
 	base="${out}/${name}"
-	[ -f "${base}" ] || curl -fL --retry 3 -o "${base}" "http://download.proxmox.com/images/system/${name}"
+	[ -f "${base}" ] || curl -fL --retry 5 --retry-all-errors --retry-delay 10 -o "${base}" "http://download.proxmox.com/images/system/${name}"
 fi
 echo "Base: ${base}"
 

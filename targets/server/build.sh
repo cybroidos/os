@@ -33,7 +33,7 @@ base_url="https://cloud.debian.org/images/cloud/trixie/latest/debian-13-genericc
 out="${OUT:-${repo}/out}"
 mkdir -p "${out}"
 image="${out}/cybroid-${VARIANT}-${VERSION}-amd64.qcow2"
-work="$(mktemp -d)"
+work="$(build_dir 15)"
 loop="" mnt="${work}/root"
 
 cleanup() {

@@ -29,6 +29,8 @@ on:
       - '.forgejo/workflows/images.yml'
 
 env:
+  # Steps run Python as root (sudo); no root-owned __pycache__ left in the checkout.
+  PYTHONDONTWRITEBYTECODE: "1"
   S3_URL: https://s3.cybroid.com
   BUCKET: citos-images
 
@@ -81,4 +83,5 @@ jobs:
         if: always()
         run: |
           sudo rm -rf out dist apt-repo/db apt-repo/published
+          sudo chown -R "$(id -u):$(id -g)" .
           docker image prune -f --filter "until=168h" >/dev/null || true

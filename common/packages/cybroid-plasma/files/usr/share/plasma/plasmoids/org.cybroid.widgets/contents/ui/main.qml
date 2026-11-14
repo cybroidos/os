@@ -76,8 +76,11 @@ PlasmoidItem {
     property var towerPeers: []
     readonly property bool hud: look === "hud"
     // Hex's small motions (a light along the headings, the Tower link
-    // flowing, a pulse round this computer) stop when animations are off.
-    readonly property bool moving: hud && Kirigami.Units.longDuration > 0
+    // flowing, a pulse round this computer) stop when animations are off,
+    // and on battery: each motion has the desktop redrawn at the screen's
+    // rate, and Hex idled at half a core (a Dell Latitude 7290, 2026-11-14).
+    property bool onMains: true
+    readonly property bool moving: hud && Kirigami.Units.longDuration > 0 && onMains
 
     readonly property real memShare: memTotal ? Math.min(1, memUsed / memTotal) : 0
     readonly property real diskShare: diskSize ? Math.min(1, (diskSize - diskFree) / diskSize) : 0
@@ -113,7 +116,9 @@ PlasmoidItem {
         sh.run("kreadconfig6 --file kdeglobals --group General --key ColorScheme", (out) => {
             root.hudLight = /Light/.test(out)
         })
-        sh.run("sh -c 'hostname; nproc; grep -E \"^(MemTotal|MemAvailable):\" /proc/meminfo; df -B1 --output=avail,size / | tail -1'", (out) => {
+        sh.run("sh -c 'm=yes; for s in /sys/class/power_supply/*; do [ \"$(cat $s/type 2>/dev/null)\" = Mains ] && { m=no; [ \"$(cat $s/online 2>/dev/null)\" = 1 ] && { m=yes; break; }; }; done; echo MAINS=$m; hostname; nproc; grep -E \"^(MemTotal|MemAvailable):\" /proc/meminfo; df -B1 --output=avail,size / | tail -1'", (out) => {
+            root.onMains = !/MAINS=no/.test(out)
+            out = out.replace(/^MAINS=\w+\n/, "")
             const l = out.trim().split("\n")
             root.host = l[0] || ""
             root.cpus = l[1] || ""
@@ -373,7 +378,7 @@ PlasmoidItem {
             SequentialAnimation on t {
                 running: root.moving; loops: Animation.Infinite
                 NumberAnimation { from: 0; to: 1; duration: 2600; easing.type: Easing.OutCubic }
-                PauseAnimation { duration: 4400 }
+                PauseAnimation { duration: 27400 }
             }
         }
     }
@@ -612,14 +617,19 @@ PlasmoidItem {
                                         strokeWidth: 1.2; fillColor: "transparent"
                                         strokeStyle: index === 0 && peer.online ? ShapePath.DashLine : ShapePath.SolidLine
                                         dashPattern: [3, 4]
-                                        // The link to the first device flows outwards.
-                                        NumberAnimation on dashOffset {
-                                            running: root.moving && index === 0 && peer.online
-                                            from: 7; to: 0; duration: 900; loops: Animation.Infinite
-                                        }
+                                        // The link to the first device flows outwards, in
+                                        // steps (two a second), not at the screen's rate.
+                                        id: link
+                                        property int step: 0
+                                        dashOffset: 7 - (step % 4) * 1.75
                                         startX: map.width / 2; startY: map.height / 2
                                         PathLine { x: px; y: py }
                                     }
+                                }
+                                Timer {
+                                    interval: 500; repeat: true
+                                    running: root.moving && index === 0 && peer.online
+                                    onTriggered: link.step++
                                 }
                                 Hex { x: px - r; y: py - r; fill: root.hudHole; edge: peer.online ? root.hudNode : root.hudLine }
                                 QQC2.Label {
@@ -642,7 +652,7 @@ PlasmoidItem {
                             SequentialAnimation on g {
                                 running: root.moving; loops: Animation.Infinite
                                 NumberAnimation { from: 0; to: 1; duration: 1800; easing.type: Easing.OutQuad }
-                                PauseAnimation { duration: 1400 }
+                                PauseAnimation { duration: 13200 }
                             }
                         }
                         Hex { x: map.width / 2 - r; y: map.height / 2 - r; r: 11; fill: root.hudAcc; edge: root.hudAcc }

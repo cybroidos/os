@@ -15,7 +15,7 @@ cd "$(dirname "$0")/.."
 [ -n "${SIGNING_KEY:-}" ] && [ -n "${PUBLISH_KEY:-}" ] || { echo "::warning::No CYBROID_APT_* secrets: packages not published"; exit 0; }
 version="$(python3 -c 'import tomllib; print(tomllib.load(open("common/branding/brand.toml","rb"))["identity"]["version"])')"
 have="$(curl -fsSL --retry 5 --retry-all-errors --retry-delay 10 https://deb.cybroid.com/cybroid/dists/trixie/main/binary-amd64/Packages 2>/dev/null |
-	awk '/^Package: cybroid-plasma$/{p=1;next} p&&/^Version:/{print $2;exit}')"
+	awk '/^Package: cybroid-plasma$/{p=1;next} p&&/^Version:/{v=$2;p=0} END{print v}')"  # reads it all: exiting early broke the pipe (curl error 23)
 if [ "${have}" = "${version}" ] && [ "${FORCE:-}" != true ]; then
 	echo "deb.cybroid.com already has ${version}"; exit 0
 fi

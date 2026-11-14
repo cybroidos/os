@@ -23,7 +23,7 @@ need tar zstd curl
 out="${OUT:-${repo}/out}"
 mkdir -p "${out}"
 tarball="${out}/cybroid-server_${VERSION}-1_amd64.tar.zst"
-work="$(build_dir 10)"
+work="$(build_dir 4)"
 root="${work}/root"
 
 cleanup() {

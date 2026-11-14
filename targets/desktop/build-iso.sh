@@ -21,7 +21,7 @@ need docker python3
 
 out="${OUT:-${repo}/out}"
 mkdir -p "${out}"
-work="$(build_dir 20)"
+work="$(build_dir 15)"
 trap 'rm -rf "${work}"' EXIT
 
 CYBROID_PACKAGES="cybroid-base cybroid-sources cybroid-artwork cybroid-plymouth-theme cybroid-plasma"

@@ -13,6 +13,8 @@ set -euo pipefail
 
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 out="${1:-${here}/../dist/extra}"
+mkdir -p "${out}"
+out="$(cd "${out}" && pwd)"   # absolute: the work below happens in a temporary folder
 base=https://pkgs.tailscale.com/stable/debian
 suite=trixie
 arch="$(dpkg --print-architecture 2>/dev/null || echo amd64)"

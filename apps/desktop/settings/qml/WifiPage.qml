@@ -46,7 +46,7 @@ SettingsPage {
             for (const l of out.split("\n")) {
                 const f = split(l)
                 if (f.length < 4 || f[1] === "") continue
-                const n = { ssid: f[1], signal: parseInt(f[2]) || 0, secure: f[3] !== "" && f[3] !== "--", inUse: f[0] === "*", saved: saved.indexOf(f[1]) >= 0 }
+                const n = { ssid: f[1], signal: parseInt(f[2]) || 0, secure: f[3] !== "" && f[3] !== "--", sec: f[3], inUse: f[0] === "*", saved: saved.indexOf(f[1]) >= 0 }
                 const o = best[n.ssid]
                 if (!o || n.inUse || (!o.inUse && n.signal > o.signal)) best[n.ssid] = n
             }
@@ -55,19 +55,25 @@ SettingsPage {
     }
     function join(n, password) {
         error = ""
+        // Enterprise networks (a username and certificate) in the full settings.
+        if (/802\.1X/.test(n.sec) && !n.saved) { System.launch(["systemsettings", "kcm_networkmanagement"]); return }
         if (n.secure && !n.saved && password === undefined) { asking = n.ssid; return }
         joining = n.ssid
         asking = ""
-        const args = n.saved ? ["nmcli", "connection", "up", "id", n.ssid]
-                             : ["nmcli", "device", "wifi", "connect", n.ssid].concat(password ? ["password", password] : [])
-        System.run(args, (out, code) => {
+        const done = (ok, message) => {
             joining = ""
-            if (code !== 0) {
-                error = /secrets|password|802-1x|psk/i.test(out) ? "The password for " + n.ssid + " wasn't accepted." : "Couldn't join " + n.ssid + "."
-                if (!n.saved) System.run(["nmcli", "connection", "delete", "id", n.ssid], () => {})
-            }
+            if (!ok) error = /secrets|password|psk|key/i.test(message) ? "The password for " + n.ssid + " wasn't accepted." : "Couldn't join " + n.ssid + "."
+            if (!ok && !n.saved) System.run(["nmcli", "connection", "delete", "id", n.ssid], () => {})
             refresh()
-        })
+        }
+        if (n.saved) {
+            System.run(["nmcli", "connection", "up", "id", n.ssid], (out, code) => done(code === 0, out))
+            return
+        }
+        // A new network: straight to NetworkManager over D-Bus, so the
+        // password never sits on a command line (others can read those).
+        const sec = !n.secure ? "" : (/WPA3/.test(n.sec) && !/WPA2|WPA1/.test(n.sec)) ? "sae" : "wpa-psk"
+        System.joinWifi(n.ssid, password || "", sec, done)
     }
     function forget(n) {
         System.run(["nmcli", "connection", "delete", "id", n.ssid], () => refresh())

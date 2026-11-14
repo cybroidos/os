@@ -328,6 +328,7 @@ lb config \
 	--firmware-chroot true --firmware-binary true \
 	--apt-recommends false \
 	--apt-indices false \
+	--cache-packages true --cache-stages none \
 	--chroot-squashfs-compression-type zstd \
 	--iso-application "CybroidOS" \
 	--iso-publisher "Cybroid" \
@@ -339,5 +340,11 @@ sh /build/tools/iso-brand.sh "\$iso" "/out/cybroidos-desktop-${VERSION}-amd64.is
 EOF
 chmod 0755 "${work}/run.sh"
 
-docker run --rm --privileged -v "${work}:/build" -v "${out}:/out" debian:trixie /build/run.sh
+# live-build's downloaded packages stay between builds (about 1,700 .debs;
+# fetching them again took most of an hour on Wi-Fi). Only the packages,
+# never a built stage: each build starts from a fresh bootstrap.
+cache="${CYBROID_BUILD_CACHE:-/var/cache/cybroid-build}/live-build"
+mkdir -p "${cache}" "${lb}/cache"
+find "${cache}" -name '*.deb' -mtime +30 -delete 2>/dev/null || true
+docker run --rm --privileged -v "${work}:/build" -v "${cache}:/build/lb/cache" -v "${out}:/out" debian:trixie /build/run.sh
 ls -lh "${out}"/cybroidos-desktop-*-amd64.iso

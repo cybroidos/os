@@ -21,26 +21,26 @@ Window {
     // id, name, icon, page (ours) or kcm (KDE's)
     readonly property var groups: [
         [
-            { id: "wifi", name: "Wi-Fi", icon: "network-wireless-symbolic", page: "WifiPage.qml" },
-            { id: "bluetooth", name: "Bluetooth", icon: "bluetooth-symbolic", page: "BluetoothPage.qml" },
-            { id: "network", name: "Network", icon: "network-wired-symbolic", page: "NetworkPage.qml" }
+            { id: "wifi", keys: "wireless internet network password hotspot", name: "Wi-Fi", icon: "network-wireless-symbolic", page: "WifiPage.qml" },
+            { id: "bluetooth", keys: "headphones headset earbuds speaker mouse keyboard pair phone", name: "Bluetooth", icon: "bluetooth-symbolic", page: "BluetoothPage.qml" },
+            { id: "network", keys: "ethernet cable wired vpn tower hotspot proxy dns ip address internet", name: "Network", icon: "network-wired-symbolic", page: "NetworkPage.qml" }
         ], [
-            { id: "appearance", name: "Appearance", icon: "color-management-symbolic", page: "AppearancePage.qml" },
-            { id: "display", name: "Displays", icon: "video-display-symbolic", page: "DisplaysPage.qml" },
-            { id: "sound", name: "Sound", icon: "audio-volume-high-symbolic", page: "SoundPage.qml" },
-            { id: "notifications", name: "Notifications", icon: "notifications-symbolic", page: "NotificationsPage.qml" },
-            { id: "power", name: "Battery & Power", icon: "battery-full-symbolic", page: "PowerPage.qml" }
+            { id: "appearance", keys: "dark light theme design hex horizon night light wallpaper background colour color fonts", name: "Appearance", icon: "color-management-symbolic", page: "AppearancePage.qml" },
+            { id: "display", keys: "screen monitor resolution scale size rotation projector mirror refresh hdmi", name: "Displays", icon: "video-display-symbolic", page: "DisplaysPage.qml" },
+            { id: "sound", keys: "audio volume speakers headphones microphone mic mute input output", name: "Sound", icon: "audio-volume-high-symbolic", page: "SoundPage.qml" },
+            { id: "notifications", keys: "do not disturb dnd alerts popups quiet sounds", name: "Notifications", icon: "notifications-symbolic", page: "NotificationsPage.qml" },
+            { id: "power", keys: "battery sleep suspend screen off dim lid power button energy performance saver", name: "Battery & Power", icon: "battery-full-symbolic", page: "PowerPage.qml" }
         ], [
-            { id: "keyboard", name: "Keyboard", icon: "input-keyboard-symbolic", page: "KeyboardPage.qml" },
-            { id: "touchpad", name: "Mouse & Touchpad", icon: "input-touchpad-symbolic", page: "PointerPage.qml" },
-            { id: "printers", name: "Printers", icon: "printer-symbolic", page: "PrintersPage.qml" }
+            { id: "keyboard", keys: "layout language typing repeat num lock shortcuts keys", name: "Keyboard", icon: "input-keyboard-symbolic", page: "KeyboardPage.qml" },
+            { id: "touchpad", keys: "mouse trackpad tap click scroll natural speed pointer left-handed", name: "Mouse & Touchpad", icon: "input-touchpad-symbolic", page: "PointerPage.qml" },
+            { id: "printers", keys: "printer print scanner scan cups", name: "Printers", icon: "printer-symbolic", page: "PrintersPage.qml" }
         ], [
-            { id: "users", name: "Users", icon: "system-users-symbolic", page: "UsersPage.qml" },
-            { id: "region", name: "Language & Region", icon: "preferences-desktop-locale-symbolic", page: "RegionPage.qml" },
-            { id: "datetime", name: "Date & Time", icon: "clock-symbolic", page: "DateTimePage.qml" },
-            { id: "updates", name: "Updates", icon: "system-software-update-symbolic", page: "UpdatesPage.qml" },
-            { id: "apps", name: "Default Apps", icon: "applications-all-symbolic", page: "DefaultAppsPage.qml" },
-            { id: "about", name: "About", icon: "help-about-symbolic", page: "AboutPage.qml" }
+            { id: "users", keys: "account password name picture photo avatar administrator people", name: "Users", icon: "system-users-symbolic", page: "UsersPage.qml" },
+            { id: "region", keys: "language locale formats date currency translation", name: "Language & Region", icon: "preferences-desktop-locale-symbolic", page: "RegionPage.qml" },
+            { id: "datetime", keys: "time date clock timezone time zone ntp automatic windows", name: "Date & Time", icon: "clock-symbolic", page: "DateTimePage.qml" },
+            { id: "updates", keys: "update upgrade security software version install apps", name: "Updates", icon: "system-software-update-symbolic", page: "UpdatesPage.qml" },
+            { id: "apps", keys: "default browser email pdf open with files music video", name: "Default Apps", icon: "applications-all-symbolic", page: "DefaultAppsPage.qml" },
+            { id: "about", keys: "computer name hostname version processor memory graphics storage disk system info", name: "About", icon: "help-about-symbolic", page: "AboutPage.qml" }
         ]
     ]
     property string current: startPage
@@ -86,6 +86,12 @@ Window {
                         Layout.bottomMargin: 8
                         placeholderText: "Search"
                         leftPadding: 34
+                        // Enter opens the first page that matches.
+                        onAccepted: {
+                            const q = text.toLowerCase().trim()
+                            for (const g of win.groups) for (const e of g)
+                                if ((e.name + " " + (e.keys || "")).toLowerCase().indexOf(q) >= 0) { win.open(e); return }
+                        }
                         Kirigami.Icon {
                             x: 10; anchors.verticalCenter: parent.verticalCenter
                             width: 16; height: 16
@@ -135,7 +141,8 @@ Window {
                             required property int index
                             Layout.fillWidth: true
                             spacing: 2
-                            readonly property var shown: modelData.filter(e => search.text === "" || e.name.toLowerCase().indexOf(search.text.toLowerCase()) >= 0)
+                            // A page's name or one of its words ("password", "tap", "dark").
+                            readonly property var shown: modelData.filter(e => search.text === "" || (e.name + " " + (e.keys || "")).toLowerCase().indexOf(search.text.toLowerCase().trim()) >= 0)
                             visible: shown.length > 0
                             Item { implicitHeight: index > 0 && search.text === "" ? 10 : 0 }
                             Repeater {

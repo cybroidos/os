@@ -38,7 +38,7 @@ jobs:
   iso:
     name: Build the ISO
     runs-on: cybroid-builder
-    timeout-minutes: 180
+    timeout-minutes: 300
     steps:
       # Plain git (no Node on the builder): this commit, nothing left from
       # an earlier build.

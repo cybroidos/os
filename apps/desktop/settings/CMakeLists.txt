@@ -19,6 +19,14 @@ qt_add_qml_module(cybroid-settings
         qml/BluetoothPage.qml
         qml/DisplaysPage.qml
         qml/PowerPage.qml
+        qml/NotificationsPage.qml
+        qml/KeyboardPage.qml
+        qml/PointerPage.qml
+        qml/NetworkPage.qml
+        qml/PrintersPage.qml
+        qml/UsersPage.qml
+        qml/RegionPage.qml
+        qml/DefaultAppsPage.qml
 )
 target_include_directories(cybroid-settings PRIVATE ${CMAKE_SOURCE_DIR}/common)
 target_link_libraries(cybroid-settings PRIVATE Qt6::Gui Qt6::Qml Qt6::Quick Qt6::QuickControls2 Qt6::Network)

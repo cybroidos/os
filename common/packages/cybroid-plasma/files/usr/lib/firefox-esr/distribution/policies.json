@@ -50,6 +50,13 @@
       "Pocket": false,
       "SponsoredPocket": false,
       "Snippets": false
+    },
+    "HttpsOnlyMode": "enabled",
+    "EnableTrackingProtection": {
+      "Value": true,
+      "Cryptomining": true,
+      "Fingerprinting": true,
+      "EmailTracking": true
     }
   }
 }

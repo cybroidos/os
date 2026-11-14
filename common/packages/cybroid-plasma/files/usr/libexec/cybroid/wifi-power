@@ -1,0 +1,21 @@
+#!/bin/sh
+# CybroidOS: Wi-Fi power saving only on battery. On an Intel card (a Dell
+# Latitude 7290's 8265) power saving made a plugged-in laptop answer in
+# 200-400 ms and drop off the network for minutes: remote help, KDE Connect
+# and file sharing stalled. On mains it is off; on battery, on.
+# Run by udev when the charger is plugged in or out
+# (90-cybroid-wifi-power.rules) and by NetworkManager when Wi-Fi connects.
+command -v iw >/dev/null 2>&1 || exit 0
+mains=""
+for s in /sys/class/power_supply/*; do
+	[ "$(cat "$s/type" 2>/dev/null)" = Mains ] || continue
+	mains=no
+	[ "$(cat "$s/online" 2>/dev/null)" = 1 ] && { mains=yes; break; }
+done
+# No battery and no charger reported (a desktop PC): it is always on mains.
+[ -z "$mains" ] && mains=yes
+[ "$mains" = yes ] && mode=off || mode=on
+for dev in $(iw dev 2>/dev/null | awk '/Interface/{print $2}'); do
+	iw dev "$dev" set power_save "$mode" 2>/dev/null
+done
+exit 0

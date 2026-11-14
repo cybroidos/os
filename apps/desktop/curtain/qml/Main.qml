@@ -6,8 +6,13 @@ import QtQuick.Window
 QtObject {
     id: root
     property real shown: 0
-    Behavior on shown { NumberAnimation { duration: 220; easing.type: Easing.InOutQuad } }
-    Component.onCompleted: shown = 1
+    // True once the picture has faded fully in (the caller then changes
+    // the desktop underneath).
+    property bool covered: false
+    property int loaded: 0
+    Behavior on shown { NumberAnimation { duration: 180; easing.type: Easing.InOutQuad } }
+    onLoadedChanged: if (loaded >= Qt.application.screens.length) { shown = 1; coveredLater.start() }
+    property Timer coveredLater: Timer { interval: 220; onTriggered: root.covered = true }
     function finish() { shown = 0; quit.start() }
     property Timer quit: Timer { interval: 260; onTriggered: Qt.quit() }
 
@@ -29,6 +34,9 @@ QtObject {
                 fillMode: Image.PreserveAspectCrop
                 sourceSize.width: 1920
                 opacity: root.shown
+                // Shown only once decoded: a window up before its picture
+                // was a black frame.
+                onStatusChanged: if (status === Image.Ready || status === Image.Error) root.loaded++
             }
         }
     }

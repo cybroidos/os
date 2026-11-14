@@ -1,0 +1,2 @@
+# CybroidOS: Wi-Fi power saving follows the charger (/usr/libexec/cybroid/wifi-power).
+SUBSYSTEM=="power_supply", ATTR{type}=="Mains", ACTION=="change", RUN+="/usr/libexec/cybroid/wifi-power"

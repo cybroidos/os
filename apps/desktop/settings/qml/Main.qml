@@ -23,22 +23,22 @@ Window {
         [
             { id: "wifi", name: "Wi-Fi", icon: "network-wireless-symbolic", page: "WifiPage.qml" },
             { id: "bluetooth", name: "Bluetooth", icon: "bluetooth-symbolic", page: "BluetoothPage.qml" },
-            { id: "network", name: "Network", icon: "network-wired-symbolic", kcm: "kcm_networkmanagement" }
+            { id: "network", name: "Network", icon: "network-wired-symbolic", page: "NetworkPage.qml" }
         ], [
             { id: "appearance", name: "Appearance", icon: "color-management-symbolic", page: "AppearancePage.qml" },
             { id: "display", name: "Displays", icon: "video-display-symbolic", page: "DisplaysPage.qml" },
             { id: "sound", name: "Sound", icon: "audio-volume-high-symbolic", page: "SoundPage.qml" },
-            { id: "notifications", name: "Notifications", icon: "notifications-symbolic", kcm: "kcm_notifications" },
+            { id: "notifications", name: "Notifications", icon: "notifications-symbolic", page: "NotificationsPage.qml" },
             { id: "power", name: "Battery & Power", icon: "battery-full-symbolic", page: "PowerPage.qml" }
         ], [
-            { id: "keyboard", name: "Keyboard", icon: "input-keyboard-symbolic", kcm: "kcm_keyboard" },
-            { id: "touchpad", name: "Mouse & Touchpad", icon: "input-touchpad-symbolic", kcm: "kcm_touchpad" },
-            { id: "printers", name: "Printers", icon: "printer-symbolic", kcm: "kcm_printer_manager" }
+            { id: "keyboard", name: "Keyboard", icon: "input-keyboard-symbolic", page: "KeyboardPage.qml" },
+            { id: "touchpad", name: "Mouse & Touchpad", icon: "input-touchpad-symbolic", page: "PointerPage.qml" },
+            { id: "printers", name: "Printers", icon: "printer-symbolic", page: "PrintersPage.qml" }
         ], [
-            { id: "users", name: "Users", icon: "system-users-symbolic", kcm: "kcm_users" },
-            { id: "region", name: "Language & Region", icon: "preferences-desktop-locale-symbolic", kcm: "kcm_regionandlang" },
+            { id: "users", name: "Users", icon: "system-users-symbolic", page: "UsersPage.qml" },
+            { id: "region", name: "Language & Region", icon: "preferences-desktop-locale-symbolic", page: "RegionPage.qml" },
             { id: "datetime", name: "Date & Time", icon: "clock-symbolic", page: "DateTimePage.qml" },
-            { id: "apps", name: "Default Apps", icon: "applications-all-symbolic", kcm: "kcm_componentchooser" },
+            { id: "apps", name: "Default Apps", icon: "applications-all-symbolic", page: "DefaultAppsPage.qml" },
             { id: "about", name: "About", icon: "help-about-symbolic", page: "AboutPage.qml" }
         ]
     ]

@@ -7,7 +7,8 @@ Section: kde
 Priority: optional
 Depends: cybroid-ui (= @VERSION@), libqt6core6t64 (>= 6.8), libqt6gui6 (>= 6.8), libqt6qml6 (>= 6.8), libqt6quick6 (>= 6.8),
  libqt6network6 (>= 6.8), libqt6quickcontrols2-6 (>= 6.8), libstdc++6, libc6,
- network-manager, pulseaudio-utils, pciutils, pci.ids, systemd, kinfocenter, systemsettings
+ network-manager, pulseaudio-utils, pciutils, pci.ids, systemd, kinfocenter, systemsettings,
+ xinput, x11-xserver-utils, cups-client, accountsservice, qml6-module-qtquick-dialogs, xdg-utils
 Description: CybroidOS Settings
  The settings people use most, in CybroidOS's own design (Horizon or Hex,
  Dark or Light): Wi-Fi, sound, appearance, date and time, and this

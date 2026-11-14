@@ -1,0 +1,6 @@
+#!/bin/sh
+# CybroidOS: when Wi-Fi connects, power saving set by the charger
+# (/usr/libexec/cybroid/wifi-power): NetworkManager turns it back on.
+[ "$2" = up ] || exit 0
+case "$(nmcli -g GENERAL.TYPE device show "$1" 2>/dev/null)" in wifi) ;; *) exit 0 ;; esac
+exec /usr/libexec/cybroid/wifi-power

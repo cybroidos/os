@@ -91,6 +91,23 @@ hex-light)
 	;;
 esac
 mode="$1"
+# Between designs, the new design's wallpaper covers the screens from the
+# first change to the desktop drawn again (cybroid-curtain): no half-changed
+# desktop and no black second while it restarts. The changes start once the
+# cover is fully shown (its .shown file; 3 s at most).
+curtain=""
+if [ "$mode" != refresh ] && [ "$design" != "$was_design" ] && [ -x /usr/libexec/cybroid/cybroid-curtain ]; then
+	curtain="${XDG_RUNTIME_DIR:-/tmp}/cybroid-curtain.$$"
+	: > "$curtain"
+	# However this ends (an error stops it: set -e), the cover goes.
+	trap 'rm -f "$curtain" "$curtain.shown"' EXIT
+	/usr/libexec/cybroid/cybroid-curtain "/usr/share/backgrounds/cybroid/$wall-1920x1080.png" "$curtain" >/dev/null 2>&1 &
+	for _ in $(seq 1 60); do
+		[ -e "$curtain.shown" ] && break
+		sleep 0.05
+	done
+	rm -f "$curtain.shown"
+fi
 # A screen change only moves the wallpaper and widgets: the theme stays.
 if [ "$mode" != refresh ]; then
 kwriteconfig6 --file kdeglobals --group KDE --key LookAndFeelPackage "$lnf"
@@ -254,15 +271,6 @@ if [ "$mode" = refresh ]; then
 	case "$places" in *moved*) moved=yes ;; esac
 fi
 if [ "$design" != "$was_design" ] || [ -n "$moved" ]; then
-	# Between designs, the new design's wallpaper covers the screens while
-	# the desktop restarts (cybroid-curtain), instead of a black second.
-	curtain=""
-	if [ "$design" != "$was_design" ] && [ -x /usr/libexec/cybroid/cybroid-curtain ]; then
-		curtain="${XDG_RUNTIME_DIR:-/tmp}/cybroid-curtain.$$"
-		: > "$curtain"
-		/usr/libexec/cybroid/cybroid-curtain "/usr/share/backgrounds/cybroid/$wall-1920x1080.png" "$curtain" >/dev/null 2>&1 &
-		sleep 0.4
-	fi
 	if systemctl --user stop plasma-plasmashell >/dev/null 2>&1; then
 		printf '%s\n' "$places" | while read -r cid size where; do
 			[ -n "$where" ] || continue

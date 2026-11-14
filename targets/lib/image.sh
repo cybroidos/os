@@ -7,6 +7,20 @@ VERSION="$(python3 -c 'import tomllib,sys; print(tomllib.load(open(sys.argv[1],"
 die() { echo "error: $*" >&2; exit 1; }
 need() { for c in "$@"; do command -v "$c" >/dev/null || die "$c not found"; done; }
 
+# A working folder for building an image, on disk: /tmp is often a small
+# tmpfs in memory (7.8 GB on a 16 GB laptop), and a desktop chroot, its
+# squashfs and the ISO take far more. Under /var/tmp unless
+# CYBROID_BUILD_TMP says otherwise; stops early when there's less free
+# than the build needs.
+#   work="$(build_dir 30)"   (GB needed)
+build_dir() {
+	local base="${CYBROID_BUILD_TMP:-/var/tmp}" need_gb="${1:-10}" free_gb
+	mkdir -p "${base}"
+	free_gb=$(( $(df -Pk "${base}" | awk 'NR==2{print $4}') / 1048576 ))
+	(( free_gb >= need_gb )) || die "${base} has ${free_gb} GB free; this build needs about ${need_gb} GB (set CYBROID_BUILD_TMP to a bigger disk)"
+	mktemp -d -p "${base}" cybroid-build.XXXXXX
+}
+
 # Build the named CybroidOS packages into dist/ unless they're there already.
 build_debs() {
 	local p

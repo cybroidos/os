@@ -83,5 +83,7 @@ jobs:
         if: always()
         run: |
           sudo rm -rf out dist apt-repo/db apt-repo/published
+          # A build that was killed leaves its chroot (targets/lib/image.sh build_dir).
+          sudo rm -rf /var/tmp/cybroid-build.*
           sudo chown -R "$(id -u):$(id -g)" .
           docker image prune -f --filter "until=168h" >/dev/null || true

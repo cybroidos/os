@@ -37,5 +37,5 @@ install(FILES cybroid-settings.desktop DESTINATION share/applications COMPONENT 
 # the test VM at 1280×800, shown at 640×400).
 install(DIRECTORY previews/ DESTINATION share/cybroid/settings/previews COMPONENT cybroid-settings)
 # Updates: the root helper (run through pkexec) and its polkit action.
-install(PROGRAMS helpers/cybroid-update DESTINATION libexec/cybroid COMPONENT cybroid-settings)
-install(FILES helpers/org.cybroid.update.policy DESTINATION share/polkit-1/actions COMPONENT cybroid-settings)
+install(PROGRAMS helpers/cybroid-update helpers/cybroid-tower DESTINATION libexec/cybroid COMPONENT cybroid-settings)
+install(FILES helpers/org.cybroid.update.policy helpers/org.cybroid.tower.policy DESTINATION share/polkit-1/actions COMPONENT cybroid-settings)

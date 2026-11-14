@@ -1,0 +1,51 @@
+#!/bin/sh
+# cybroid-tower: joins this computer to Tower, Cybroid's private network
+# (Headscale at tower.cybroid.com; the client is Tailscale's). Run through
+# pkexec by Settings and the Control Centre (org.cybroid.tower).
+#
+#   link [key]   join Tower: with a one-time join key from Hangar at once;
+#                without one, prints the code to approve in Hangar
+#                ("CODE <key>") and the link ("URL <url>")
+#   on | off     connect or disconnect a linked computer
+#   unlink       leave Tower (sign this computer out)
+#
+# The person who linked becomes Tower's operator on this computer, so on and
+# off need no password afterwards (tailscale up/down as them).
+set -eu
+
+server=https://tower.cybroid.com
+user="$(id -un "${PKEXEC_UID:-$(id -u)}" 2>/dev/null || id -un)"
+name="$(hostname -s | tr 'A-Z' 'a-z' | tr -c 'a-z0-9-\n' '-')"
+# The same settings every time: tailscale up refuses a change it isn't told
+# about in full.
+up() { tailscale up --login-server="${server}" --operator="${user}" --hostname="${name}" --accept-routes "$@"; }
+
+command -v tailscale >/dev/null || { echo "Tower's client isn't installed" >&2; exit 3; }
+systemctl is-active --quiet tailscaled || systemctl enable --now tailscaled
+
+case "${1:-}" in
+link)
+	key="${2:-}"
+	if [ -n "${key}" ]; then
+		case "${key}" in *[!A-Za-z0-9_-]*) echo "That isn't a join key" >&2; exit 2 ;; esac
+		up --reset --auth-key="${key}" --timeout=40s
+		exit $?
+	fi
+	# Without a key: Tower answers with a link whose last part is the code
+	# Hangar approves; the client keeps waiting for it in the background.
+	out="$(up --reset --timeout=12s 2>&1)" || true
+	url="$(printf '%s\n' "${out}" | grep -Eo "${server}/register/[A-Za-z0-9_-]+" | head -1)"
+	[ -n "${url}" ] || url="$(tailscale status --json 2>/dev/null | sed -n 's/.*"AuthURL": *"\([^"]*\)".*/\1/p' | head -1)"
+	if [ -z "${url}" ]; then
+		tailscale status --json 2>/dev/null | grep -q '"BackendState": *"Running"' && { echo "LINKED"; exit 0; }
+		printf '%s\n' "${out}" >&2
+		exit 1
+	fi
+	echo "URL ${url}"
+	echo "CODE ${url##*/}"
+	;;
+on) up ;;
+off) tailscale down ;;
+unlink) tailscale logout ;;
+*) echo "usage: $0 link [key] | on | off | unlink" >&2; exit 2 ;;
+esac

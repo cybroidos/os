@@ -101,6 +101,13 @@ jobs:
             chown -R "$HOST_UID" /src/dist'
           ls -la dist/extra
 
+      # Tower's client (Tailscale, BSD-3-Clause; Debian has none), verified
+      # against Tailscale's signing key. In the desktop images and the ISO,
+      # and published to deb.cybroid.com with the rest of dist/extra.
+      - name: Fetch the Tower client
+        if: matrix.image == 'desktop' || matrix.image == 'iso'
+        run: tools/fetch-tailscale.sh dist/extra
+
       # Office for the live and installer ISO: ONLYOFFICE Desktop Editors
       # (AGPL-3.0, onlyoffice.com), the vendor's own .deb (Debian has none).
       # About 280 MB; the ISO only, not the VM images.

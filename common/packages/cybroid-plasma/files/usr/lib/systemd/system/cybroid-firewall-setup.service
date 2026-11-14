@@ -1,7 +1,9 @@
 [Unit]
 Description=CybroidOS: set up the firewall (once)
+# The live system too: it has a well-known password, and nothing may come
+# in. Its marker is in memory there, so an installed system sets its own up
+# on its first start.
 ConditionPathExists=!/var/lib/cybroid/firewall-set
-ConditionPathExists=!/run/live/medium
 After=network-pre.target
 Before=network.target
 

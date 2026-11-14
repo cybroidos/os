@@ -38,6 +38,31 @@ QtObject {
                 // was a black frame.
                 onStatusChanged: if (status === Image.Ready || status === Image.Error) root.loaded++
             }
+            // After half a second, a quiet word that it is working.
+            Rectangle {
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: Math.round(parent.height * 0.12)
+                // As wide as with all three dots, so it doesn't change size.
+                width: full.implicitWidth + 36
+                height: 34
+                radius: 17
+                color: Qt.rgba(0.02, 0.05, 0.12, 0.55)
+                opacity: root.shown * (late.running ? 0 : 1)
+                Behavior on opacity { NumberAnimation { duration: 300 } }
+                Text { id: full; visible: false; text: "Changing design..."; font: hint.font }
+                Text {
+                    id: hint
+                    x: 18
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "Changing design" + ".".repeat(1 + dots.n % 3)
+                    color: "#e8eefc"
+                    font.family: "Inter"
+                    font.pixelSize: 14
+                }
+                Timer { id: dots; property int n: 0; interval: 450; repeat: true; running: true; onTriggered: n++ }
+            }
+            Timer { id: late; interval: 600; running: true }
         }
     }
 }

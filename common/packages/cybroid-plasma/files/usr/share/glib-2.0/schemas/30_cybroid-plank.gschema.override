@@ -8,4 +8,4 @@ hide-mode='intelligent'
 position='bottom'
 alignment='center'
 show-dock-item=false
-dock-items=['cybroid-apps.dockitem', 'firefox-esr.dockitem', 'org.kde.dolphin.dockitem', 'org.kde.konsole.dockitem', 'org.kde.kwrite.dockitem', 'systemsettings.dockitem', 'cybroid-trash.dockitem']
+dock-items=['cybroid-apps.dockitem', 'firefox-esr.dockitem', 'org.kde.dolphin.dockitem', 'org.kde.konsole.dockitem', 'org.kde.kwrite.dockitem', 'cybroid-settings.dockitem', 'cybroid-trash.dockitem']

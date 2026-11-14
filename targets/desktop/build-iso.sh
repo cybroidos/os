@@ -328,7 +328,7 @@ lb config \
 	--firmware-chroot true --firmware-binary true \
 	--apt-recommends false \
 	--apt-indices false \
-	--cache-packages true --cache-stages none \
+	--cache-packages true \
 	--chroot-squashfs-compression-type zstd \
 	--iso-application "CybroidOS" \
 	--iso-publisher "Cybroid" \
@@ -348,6 +348,9 @@ chmod 0755 "${work}/run.sh"
 cache="${CYBROID_BUILD_CACHE:-/var/cache/cybroid-build}/live-build"
 if [ -d "${cache}" ]; then
 	find "${cache}" -name '*.deb' -mtime +30 -delete 2>/dev/null || true
+	# live-build keeps the base system too (its installer step reads it);
+	# dropped so every build bootstraps fresh.
+	rm -rf "${cache}/bootstrap"
 	mv "${cache}" "${lb}/cache"
 fi
 trap 'mkdir -p "$(dirname "${cache}")"; [ -d "${lb}/cache" ] && mv "${lb}/cache" "${cache}"; rm -rf "${work}"' EXIT

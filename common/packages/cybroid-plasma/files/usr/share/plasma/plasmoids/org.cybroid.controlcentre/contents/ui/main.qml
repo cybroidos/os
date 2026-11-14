@@ -540,7 +540,10 @@ PlasmoidItem {
         Layout.preferredHeight: (root.page === "wifi" ? wifiPage.implicitHeight
             : root.page === "bluetooth" ? btPage.implicitHeight
             : root.page === "sound" ? soundPage.implicitHeight : mainPage.implicitHeight) + 24
+        // Exactly as tall as the page shown: Plasma otherwise reopens a
+        // popup at the largest size it ever had (the Wi-Fi list's).
         Layout.minimumHeight: Layout.preferredHeight
+        Layout.maximumHeight: Layout.preferredHeight
         Keys.onEscapePressed: root.page !== "main" ? root.page = "main" : root.expanded = false
 
         // ---- Main ----

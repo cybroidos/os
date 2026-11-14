@@ -137,7 +137,8 @@ SettingsPage {
         SettingRow {
             title: "Updates"
             subtitle: "CybroidOS and security updates install by themselves"
-            Label { text: "Automatic"; color: Theme.ok }
+            clickable: true
+            onClicked: System.launch(["cybroid-settings", "updates"])
         }
         SettingRow { visible: page.plasma !== ""; title: "Desktop"; Label { text: "KDE Plasma " + page.plasma; color: Theme.soft } }
         SettingRow { visible: page.kernel !== ""; title: "Kernel"; Label { text: "Linux " + page.kernel; color: Theme.soft } }

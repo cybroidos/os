@@ -136,6 +136,8 @@ jobs:
       - name: Check the image
         run: |
           sudo chown -R "$(id -u)" out
+          # The ISO build leaves dist/ root-owned; publishing rebuilds packages there.
+          if [ -d dist ]; then sudo chown -R "$(id -u)" dist; fi
           ls -lh out/
           if [ "${{ matrix.image }}" = iso ]; then
             ls -lh out/cybroidos-desktop-*-amd64.iso

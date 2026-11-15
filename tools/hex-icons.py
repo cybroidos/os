@@ -22,6 +22,8 @@ PROMPT = "M5 8l4 4-4 4M12 16h7"
 CODE = "M9 7l-5 5 5 5M15 7l5 5-5 5"
 GEAR = "M12 9a3 3 0 1 0 0 6a3 3 0 1 0 0-6M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"
 BIN = "M5 7h14M10 7V4h4v3M6 7l1 13h10l1-13"
+# A folder with an arrow out of it: the open and save dialog.
+OPEN = FOLDER + "M12 17v-6M9.5 13.5L12 11l2.5 2.5"
 
 ICONS = {  # name: (context, top, bottom, path)
     "cybroid-apps": ("apps", "#1a4cb0", "#123a8c", GRID),
@@ -29,6 +31,7 @@ ICONS = {  # name: (context, top, bottom, path)
     "firefox": ("apps", "#173a7a", "#0f2a5c", GLOBE),
     "org.kde.dolphin": ("apps", "#155083", "#0e3a63", FOLDER),
     "system-file-manager": ("apps", "#155083", "#0e3a63", FOLDER),
+    "cybroid-open-save": ("apps", "#155083", "#0e3a63", OPEN),
     "utilities-terminal": ("apps", "#1c2746", "#141c33", PROMPT),
     "org.kde.konsole": ("apps", "#1c2746", "#141c33", PROMPT),
     "kwrite": ("apps", "#243872", "#1a2a55", CODE),

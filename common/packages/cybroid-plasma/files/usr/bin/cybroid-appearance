@@ -152,6 +152,11 @@ kwriteconfig6 --file kwinrc --group org.kde.kdecoration2 --key theme "$deco"
 kwriteconfig6 --file auroraerc --group org.cybroid.hex --key light "$([ "$tone" = light ] && echo true || echo false)"
 kwriteconfig6 --file kwinrc --group Round-Corners --key Size "$radius"
 kwriteconfig6 --file kwinrc --group Round-Corners --key InactiveCornerRadius "$radius"
+# Hex's windows cut their own top-left corner: the effect's outline would
+# trace the window's square corner through the cut, so Hex has none.
+outline=1; [ "$radius" -le 2 ] && outline=0
+kwriteconfig6 --file kwinrc --group Round-Corners --key OutlineThickness "$outline"
+kwriteconfig6 --file kwinrc --group Round-Corners --key InactiveOutlineThickness "$outline"
 qdbus6 org.kde.KWin /KWin reconfigure >/dev/null 2>&1 || true
 
 # GTK apps and the dock read their icons from GTK's settings.

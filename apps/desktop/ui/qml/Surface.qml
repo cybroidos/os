@@ -23,7 +23,11 @@ Item {
     Shape {
         visible: Theme.hex
         anchors.fill: parent
-        preferredRendererType: Shape.CurveRenderer
+        // Not the curve renderer: in Qt 6.8 a curve-rendered frame made at
+        // size 0 (a card in a Repeater filled after the page loads) never
+        // redrew at its real size, and showed as a thin line or a stub.
+        preferredRendererType: Shape.GeometryRenderer
+        antialiasing: true
         ShapePath {
             id: sp
             fillColor: s.fill

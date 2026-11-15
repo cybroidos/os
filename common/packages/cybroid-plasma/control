@@ -38,7 +38,7 @@ Depends: cybroid-base (>= @VERSION@), cybroid-artwork (>= @VERSION@), cybroid-se
  openssh-client, openssh-server, curl, wget, less, man-db, nano, htop, pciutils, usbutils, lsof, file,
  bind9-dnsutils, traceroute, ethtool, wireguard-tools, network-manager-openvpn,
  smartmontools, lm-sensors, nvme-cli, thermald, mokutil, xz-utils, bzip2, gnupg, pinentry-qt,
- cifs-utils, nfs-common, kdeconnect, partitionmanager, fonts-noto-core, fonts-noto-cjk
+ cifs-utils, nfs-common, kdeconnect, partitionmanager, fonts-noto-core, fonts-noto-cjk, systemd-coredump
 Recommends: cybroid-icons
 Conflicts: cybroid-desktop, citos-desktop
 Replaces: citos-plasma (<< 0.1.2~)

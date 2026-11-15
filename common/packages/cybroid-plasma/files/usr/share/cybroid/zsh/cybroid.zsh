@@ -44,7 +44,6 @@ zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'   # any case
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
 zstyle ':completion:*' group-name ''
 zstyle ':completion:*:descriptions' format '%F{cyan}%d%f'
-zstyle ':completion:*' rehash true
 zstyle ':completion:*' use-cache on
 zstyle ':completion:*' cache-path "${XDG_CACHE_HOME:-$HOME/.cache}/zsh"
 
@@ -95,7 +94,11 @@ fi
 if [ -f /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]; then
 	. /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 	ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=#6b7a9c'
-	ZSH_AUTOSUGGEST_STRATEGY=(history completion)
+	# History only: the "completion" strategy ran zsh's whole completion
+	# system in a hidden terminal on every key, which lagged typing (badly
+	# from a live USB) and made zsh 5.9 hang or crash.
+	ZSH_AUTOSUGGEST_STRATEGY=(history)
+	ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=80
 	# Tab: take the grey suggestion when there is one, else complete.
 	_cybroid_tab() {
 		if [[ -n $POSTDISPLAY ]]; then

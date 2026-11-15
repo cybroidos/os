@@ -57,9 +57,10 @@ PlasmoidItem {
     toolTipSubText: notifs.count > 0 ? notifs.count + (notifs.count === 1 ? " notification" : " notifications") : ""
     Plasmoid.status: notifs.unreadNotificationsCount > 0 ? PlasmaCore.Types.NeedsAttentionStatus : PlasmaCore.Types.ActiveStatus
 
+    // On the minute: the panel's clock shows no seconds.
     Timer {
         interval: 1000; running: true; repeat: true; triggeredOnStart: true
-        onTriggered: root.now = new Date()
+        onTriggered: { root.now = new Date(); interval = 60050 - Date.now() % 60000 }
     }
 
     compactRepresentation: MouseArea {

@@ -334,7 +334,18 @@ lb config \
 	--iso-publisher "Cybroid" \
 	--iso-volume "CybroidOS ${VERSION}" \
 	--bootappend-live "boot=live components quiet splash loglevel=3 rd.udev.log_level=3 systemd.show_status=false vt.global_cursor_default=0 username=cybroid user-fullname=Cybroid hostname=cybroid keyboard-layouts=us locales=en_GB.UTF-8 timezone=Africa/Kampala"
-lb build 2>&1 | tail -n 200
+# live-build's stages one by one: at the end of "chroot" it writes
+# /etc/apt/sources.list with Debian's own mirrors (no option turns that
+# off), after cybroid-sources has set them aside. Cleared before the ISO is
+# made, so the live system and every install use deb.cybroid.com only
+# (cybroid.sources).
+{
+	lb bootstrap && lb chroot &&
+	printf '%s\n' '# CybroidOS takes its packages from deb.cybroid.com:' \
+		'# see /etc/apt/sources.list.d/cybroid.sources.' > chroot/etc/apt/sources.list &&
+	! grep -rlE 'deb\.debian\.org|security\.debian\.org' chroot/etc/apt/sources.list chroot/etc/apt/sources.list.d/ &&
+	lb installer && lb binary
+} 2>&1 | tail -n 200
 iso=\$(ls /build/lb/*.iso | head -1)
 sh /build/tools/iso-brand.sh "\$iso" "/out/cybroidos-desktop-${VERSION}-amd64.iso"
 EOF

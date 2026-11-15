@@ -27,7 +27,9 @@ if [ -n "${hook}" ]; then
 fi
 
 # The entries: names, a safe-graphics entry with the live options and
-# nomodeset, the hook, no beep, a 5 s timeout.
+# nomodeset, one copied into memory (toram: the whole system read once
+# from the stick at boot, then at memory speed; live-boot falls back to the
+# stick when memory is short), the hook, no beep, a 5 s timeout.
 python3 - "${work}" "${hookarg}" <<'PY'
 import pathlib, re, sys
 root, hookarg = pathlib.Path(sys.argv[1]), sys.argv[2]
@@ -38,6 +40,7 @@ live = re.search(r'menuentry "Live system \(amd64\)".*?\n\s*linux\s+(\S+)\s+(.*?
 kernel, opts, initrd = live.group(1), live.group(2), live.group(3)
 opts = opts.replace(hookarg.strip(), "").rstrip() + hookarg
 main = (f'menuentry "Try or install CybroidOS" --hotkey=t {{\n\tlinux\t{kernel} {opts}\n\tinitrd\t{initrd}\n}}\n'
+        f'menuentry "Try CybroidOS from memory (smoother on slow USB sticks)" --hotkey=m {{\n\tlinux\t{kernel} {opts} toram\n\tinitrd\t{initrd}\n}}\n'
         f'menuentry "Try CybroidOS with safe graphics" --hotkey=s {{\n\tlinux\t{kernel} {opts} nomodeset\n\tinitrd\t{initrd}\n}}\n')
 s = re.sub(r'# Live boot\n.*?(?=\n# You can add more entries)', "# Live boot\n" + main, s, flags=re.S)
 g.write_text(s)
@@ -60,6 +63,8 @@ append = re.search(r"label live-amd64\n.*?append ([^\n]*)", s, re.S).group(1)
 append = append.replace(hookarg.strip(), "").rstrip() + hookarg
 s = ("label live-amd64\n\tmenu label ^Try or install CybroidOS\n\tmenu default\n\tlinux /live/vmlinuz\n"
      f"\tinitrd /live/initrd.img\n\tappend {append}\n\n"
+     "label live-amd64-toram\n\tmenu label Try CybroidOS from ^memory (smoother on slow USB sticks)\n\tlinux /live/vmlinuz\n"
+     f"\tinitrd /live/initrd.img\n\tappend {append} toram\n\n"
      "label live-amd64-safe\n\tmenu label Try CybroidOS with ^safe graphics\n\tlinux /live/vmlinuz\n"
      f"\tinitrd /live/initrd.img\n\tappend {append} nomodeset\n")
 l.write_text(s)

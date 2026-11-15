@@ -75,6 +75,10 @@ if [ "$1" = "configure" ]; then
 	# The firewall on the first start; systemd-oomd against out-of-memory
 	# freezes (its limits: usr/lib/systemd/system/*.d/10-cybroid-oomd.conf).
 	systemctl enable cybroid-firewall-setup.service systemd-oomd.service >/dev/null 2>&1 || true
+	# Machines already set up get this version's new firewall rules (SSH over
+	# Tower, KDE Connect), keeping their own. SSH starts at boot.
+	/usr/libexec/cybroid/firewall-setup --add-rules >/dev/null 2>&1 || true
+	systemctl enable ssh.service >/dev/null 2>&1 || true
 	# SSDs stay fast: a weekly trim (util-linux's timer).
 	systemctl enable fstrim.timer >/dev/null 2>&1 || true
 	# Start graphical, on the CybroidOS sign-in screen.

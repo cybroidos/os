@@ -85,13 +85,19 @@ PlasmoidItem {
     readonly property real memShare: memTotal ? Math.min(1, memUsed / memTotal) : 0
     readonly property real diskShare: diskSize ? Math.min(1, (diskSize - diskFree) / diskSize) : 0
 
+    // The clock shows minutes, so it changes on the minute, not every second:
+    // a redraw of the whole desktop each second kept plasmashell and KWin busy
+    // and made typing lag on slow machines and live USBs.
     Timer {
         interval: 1000; running: true; repeat: true; triggeredOnStart: true
-        onTriggered: root.now = new Date()
+        onTriggered: { root.now = new Date(); interval = 60050 - Date.now() % 60000 }
     }
-    // Machine facts every 15 s; the weather every 20 minutes.
+    // The HUD's readouts follow the panel and screen; checked every 5 s.
+    property int placeTick: 0
+    Timer { interval: 5000; running: root.hud; repeat: true; onTriggered: root.placeTick++ }
+    // Machine facts every 15 s (10 s on the HUD); the weather every 20 minutes.
     Timer {
-        interval: root.hud ? 3000 : 15000; running: root.card === "system" || root.hud; repeat: true; triggeredOnStart: true
+        interval: root.hud ? 10000 : 15000; running: root.card === "system" || root.hud; repeat: true; triggeredOnStart: true
         onTriggered: root.refresh()
     }
     Timer {
@@ -478,7 +484,7 @@ PlasmoidItem {
         return { U: s * up, cy: oy + s * (Hp / 2 - 10 * up), portrait: W < H }
     }
     function hudRowY(item, i) {
-        void root.now  // re-placed each second: cheap, and follows moves
+        void root.placeTick  // re-placed every few seconds, so it follows moves
         if (!Screen.width || !Screen.height) return 0
         const g = hudGeom()
         // Portrait: the readouts are a band above or below the dial, the

@@ -34,7 +34,11 @@ Depends: cybroid-base (>= @VERSION@), cybroid-artwork (>= @VERSION@), cybroid-se
  cups, cups-filters, cups-browsed, print-manager, avahi-daemon, libnss-mdns, ipp-usb,
  printer-driver-hpcups, printer-driver-brlaser, printer-driver-gutenprint, printer-driver-splix,
  sane-airscan, sane-utils, skanlite, zram-tools, unzip, p7zip-full, git, cracklib-runtime,
- unattended-upgrades, ufw, plasma-firewall, systemd-oomd, systemd-timesyncd
+ unattended-upgrades, ufw, plasma-firewall, systemd-oomd, systemd-timesyncd,
+ openssh-client, openssh-server, curl, wget, less, man-db, nano, htop, pciutils, usbutils, lsof, file,
+ bind9-dnsutils, traceroute, ethtool, wireguard-tools, network-manager-openvpn,
+ smartmontools, lm-sensors, nvme-cli, thermald, mokutil, xz-utils, bzip2, gnupg, pinentry-qt,
+ cifs-utils, nfs-common, kdeconnect, partitionmanager, fonts-noto-core, fonts-noto-cjk
 Recommends: cybroid-icons
 Conflicts: cybroid-desktop, citos-desktop
 Replaces: citos-plasma (<< 0.1.2~)

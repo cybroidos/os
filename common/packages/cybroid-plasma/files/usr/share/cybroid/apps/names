@@ -33,3 +33,5 @@ org.kde.discover.urlhandler.desktop hide
 org.kde.discover.notifier.desktop  hide
 org.kde.print-queue.desktop        hide
 zsh.desktop                        hide
+# The open and save dialog (KDE's portal) shows in the dock while it's open.
+org.freedesktop.impl.portal.desktop.kde.desktop  Open or Save

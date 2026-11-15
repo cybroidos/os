@@ -166,7 +166,11 @@ jobs:
           compression-level: 0
           if-no-files-found: error
 
+      # An upload that fails (storage down, keys being changed) must not
+      # stop the packages below from being published: the ISO is kept with
+      # the run either way.
       - name: Upload to Hangar's storage
+        continue-on-error: true
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.CITOS_IMAGES_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.CITOS_IMAGES_SECRET }}

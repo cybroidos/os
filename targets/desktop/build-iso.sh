@@ -329,11 +329,17 @@ lb config \
 	--apt-recommends false \
 	--apt-indices false \
 	--cache-packages true \
+	--apt-options "--yes -o Acquire::Retries=5 --allow-downgrades" \
 	--chroot-squashfs-compression-type zstd \
 	--iso-application "CybroidOS" \
 	--iso-publisher "Cybroid" \
 	--iso-volume "CybroidOS ${VERSION}" \
 	--bootappend-live "boot=live components quiet splash loglevel=3 rd.udev.log_level=3 systemd.show_status=false vt.global_cursor_default=0 username=cybroid user-fullname=Cybroid hostname=cybroid keyboard-layouts=us locales=en_GB.UTF-8 timezone=Africa/Kampala"
+# --allow-downgrades: once deb.cybroid.com has a package at the version
+# built here (plank, the icons, a CybroidOS version being rebuilt), lb
+# binary's upgrade swaps the local copy for the published one, which apt
+# calls a downgrade (same version, other bytes). The ISO then carries what
+# installed machines get.
 # live-build's stages one by one: at the end of "chroot" it writes
 # /etc/apt/sources.list with Debian's own mirrors (no option turns that
 # off), after cybroid-sources has set them aside. Cleared before the ISO is

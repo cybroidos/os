@@ -302,4 +302,10 @@ if [ "$design" != "$was_design" ] || [ -n "$moved" ]; then
 		sleep 0.4
 	fi
 fi
+# The open and save dialog is drawn by a background program (KDE's portal)
+# that keeps the app controls it started with: restarted, it follows the new
+# design (otherwise light and dark get mixed, and text can't be read).
+if [ "$mode" != refresh ]; then
+	systemctl --user try-restart plasma-xdg-desktop-portal-kde.service >/dev/null 2>&1 || true
+fi
 "$0" status

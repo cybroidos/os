@@ -7,6 +7,7 @@
 # CybroidOS name shows in every language until it has its own translations.
 set -e
 names=/usr/share/cybroid/apps/names
+icons=/usr/share/cybroid/apps/icons
 out=/usr/share/cybroid/apps/applications
 mkdir -p "$out"
 rm -f "$out"/*.desktop
@@ -23,4 +24,18 @@ grep -v -e '^#' -e '^[[:space:]]*$' "$names" | while read -r id name; do
 			if (name == "hide") print "NoDisplay=true"; else print "Name=" name
 		}
 	' "$src" > "$out/$id"
+done
+# Icons: our own in place of another project's mark (the copy made above,
+# or a new copy of the installed file).
+[ -f "$icons" ] || exit 0
+grep -v -e '^#' -e '^[[:space:]]*$' "$icons" | while read -r id icon; do
+	src=$out/$id
+	[ -f "$src" ] || src=/usr/share/applications/$id
+	[ -f "$src" ] || continue
+	awk -v icon="$icon" '
+		/^\[/ { main = ($0 == "[Desktop Entry]") }
+		main && /^Icon=/ { print "Icon=" icon; next }
+		{ print }
+	' "$src" > "$out/$id.new"
+	mv "$out/$id.new" "$out/$id"
 done

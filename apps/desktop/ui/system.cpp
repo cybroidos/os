@@ -74,9 +74,15 @@ void System::run(const QStringList &args, const QJSValue &done)
     if (args.isEmpty())
         return;
     auto *p = new QProcess(this);
-    p->setProcessChannelMode(QProcess::MergedChannels);
+    // Output and warnings apart: a tool's warning on stderr (Qt's "Detected
+    // locale ..." when a locale is missing) was read as data and broke
+    // pages (layouts, timeouts, choices). Warnings are added only when the
+    // command failed, so error messages still reach the page.
+    p->setProcessChannelMode(QProcess::SeparateChannels);
     auto finish = [p, done](int code) {
-        const QString out = QString::fromUtf8(p->readAll());
+        QString out = QString::fromUtf8(p->readAllStandardOutput());
+        if (code != 0)
+            out += QString::fromUtf8(p->readAllStandardError());
         p->deleteLater();
         if (done.isCallable())
             QJSValue(done).call({QJSValue(out), QJSValue(code)});

@@ -1,0 +1,17 @@
+#!/bin/sh
+# CybroidOS (cybroid-plasma): Bluetooth shows this computer's name to phones
+# and headsets. BlueZ names the adapter from the "pretty" hostname, and with
+# none set it says "BlueZ 5.82". Run after bluetoothd starts; a name someone
+# chose in Settings is left alone.
+name="$(hostnamectl --pretty 2>/dev/null)"
+[ -n "${name}" ] || name="$(hostnamectl --static 2>/dev/null || hostname)"
+[ -n "${name}" ] || exit 0
+for _ in 1 2 3 4 5; do
+	alias="$(bluetoothctl show 2>/dev/null | sed -n 's/^[[:space:]]*Alias: //p' | head -1)"
+	[ -n "${alias}" ] && break
+	sleep 1
+done
+case "${alias}" in
+"" | BlueZ*) timeout 10 bluetoothctl system-alias "${name}" >/dev/null 2>&1 || true ;;
+esac
+exit 0

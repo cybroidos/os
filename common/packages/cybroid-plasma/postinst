@@ -79,6 +79,8 @@ if [ "$1" = "configure" ]; then
 	# Tower, KDE Connect), keeping their own. SSH starts at boot.
 	/usr/libexec/cybroid/firewall-setup --add-rules >/dev/null 2>&1 || true
 	systemctl enable ssh.service >/dev/null 2>&1 || true
+	# Bluetooth says this computer's name, not "BlueZ 5.82".
+	systemctl enable cybroid-bluetooth-name.service >/dev/null 2>&1 || true
 	# SSDs stay fast: a weekly trim (util-linux's timer).
 	systemctl enable fstrim.timer >/dev/null 2>&1 || true
 	# Start graphical, on the CybroidOS sign-in screen.

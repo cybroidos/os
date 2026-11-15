@@ -1,0 +1,11 @@
+[Unit]
+Description=CybroidOS: name the Bluetooth adapter after this computer
+After=bluetooth.service
+Requisite=bluetooth.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/cybroid/bluetooth-name
+
+[Install]
+WantedBy=bluetooth.service

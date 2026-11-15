@@ -44,7 +44,7 @@ SettingsPage {
             for (const l of o.split("\n")) {
                 const f = (l.match(/"[^"]*"/g) || []).map(x => x.slice(1, -1))
                 if (f.length < 3 || !/VGA|3D|Display/.test(f[0])) continue
-                const vendor = /NVIDIA/i.test(f[1]) ? "NVIDIA" : /AMD|ATI/i.test(f[1]) ? "AMD" : /Intel/i.test(f[1]) ? "Intel" : f[1].replace(/,? (Inc|Corporation|Corp|Ltd)\.?$/, "")
+                const vendor = /NVIDIA/i.test(f[1]) ? "NVIDIA" : /\bIntel\b/i.test(f[1]) ? "Intel" : /\bAMD\b|\bATI\b|Advanced Micro Devices/.test(f[1]) ? "AMD" : f[1].replace(/,? (Inc|Corporation|Corp|Ltd)\.?$/, "")  // whole words: "Intel Corporation" contains "ati"
                 const dev = (f[2].match(/\[([^\]]+)\]/) || [null, f[2]])[1]
                 names.push(vendor + " " + dev)
             }

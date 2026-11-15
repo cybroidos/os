@@ -61,19 +61,42 @@ Decoration {
     }
 
     // The shadow: a few faint layers close round the window (heavy shadows
-    // muddied the design), lighter below a window that isn't in front.
+    // muddied the design), lighter below a window that isn't in front. Each
+    // layer is a ring with the window's rectangle cut out: a filled layer
+    // showed through the bar's cut corner as a grey square corner.
     Repeater {
         model: root.max ? 0 : 6
-        Rectangle {
+        Shape {
+            id: ring
             required property int index
             readonly property real k: (index + 1) * 2
+            // Below the cut corner, where the bar covers the ring's top edge.
+            readonly property real ringTop: k - 3 + root.cut
             x: root.fx - k
             y: root.fy - k + 3
             width: root.fw + 2 * k
             height: root.fh + 2 * k
-            radius: k
-            color: "#000000"
             opacity: (root.act ? 0.016 : 0.009) * (root.light ? 0.7 : 1)
+            ShapePath {
+                fillRule: ShapePath.OddEvenFill
+                fillColor: "#000000"
+                strokeWidth: 0; strokeColor: "transparent"
+                // The ring's outside, from below the cut corner down: no
+                // shadow edge where the cut leaves the bar transparent (it
+                // showed as a grey line), and none above the window (the
+                // shadow falls 3 px low anyway)...
+                startX: 0; startY: ring.ringTop
+                PathLine { x: ring.width; y: ring.ringTop }
+                PathLine { x: ring.width; y: ring.height }
+                PathLine { x: 0; y: ring.height }
+                PathLine { x: 0; y: ring.ringTop }
+                // ...and the window's rectangle, left empty.
+                PathMove { x: ring.k; y: ring.ringTop }
+                PathLine { x: ring.k + root.fw; y: ring.ringTop }
+                PathLine { x: ring.k + root.fw; y: ring.k - 3 + root.fh }
+                PathLine { x: ring.k; y: ring.k - 3 + root.fh }
+                PathLine { x: ring.k; y: ring.ringTop }
+            }
         }
     }
 

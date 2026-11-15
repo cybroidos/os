@@ -1,0 +1,76 @@
+/* Cybroid Hex: the one look for CybroidOS's Hex design, Hangar, Zitadel's
+   sign-in, Forgejo and every web app of ours. The single source: apps copy
+   these values (Zitadel takes them through its branding settings, which
+   accept colours, logo and font only).
+
+   Combined from CybroidOS Hex (navy and cyan, Inter and JetBrains Mono,
+   matching the desktop) and Hangar's HUD (the faint grid, hexagon gauges,
+   the glow, Chakra Petch for big headings). Cyan or blue is the action
+   colour; amber is kept for attention only. Dark first; light when chosen. */
+
+:root {
+	/* surfaces */
+	--hex-bg: #060c1e;
+	--hex-side: #081026;
+	--hex-panel: rgba(11, 21, 48, 0.9);
+	--hex-card: #0b1530;
+	--hex-card-hover: #102044;
+	--hex-field: #081026;
+	--hex-selected: #0c4f72;
+	--hex-grid: rgba(28, 203, 255, 0.06);
+	--hex-glow: rgba(28, 203, 255, 0.07);
+	/* lines */
+	--hex-line: #16264a;
+	--hex-edge: #2a4686;
+	--hex-track: #1b2f63;
+	/* text */
+	--hex-ink: #e8eefc;
+	--hex-soft: #8fa3c8;
+	--hex-faint: #4a5b85;
+	/* colour that means something */
+	--hex-accent: #1ccbff;
+	--hex-accent-dim: rgba(28, 203, 255, 0.35);
+	--hex-on-accent: #04101f;
+	--hex-blue: #3a7cff;
+	--hex-attention: #f0a63c;
+	--hex-ok: #3ee0a0;
+	--hex-warn: #ffb547;
+	--hex-bad: #ff6b5a;
+	/* type */
+	--hex-font: 'Inter', 'Inter Variable', system-ui, sans-serif;
+	--hex-mono: 'JetBrains Mono', 'JetBrains Mono Variable', ui-monospace, monospace;
+	--hex-display: 'Chakra Petch', 'Inter', system-ui, sans-serif;
+	/* shape: corners cut, not rounded */
+	--hex-cut: 9px;
+	--hex-cut-large: 16px;
+	--hex-radius: 0;
+	color-scheme: dark;
+}
+
+[data-theme='light'],
+.hex-light {
+	--hex-bg: #e9eff9;
+	--hex-side: #dfe7f5;
+	--hex-panel: rgba(255, 255, 255, 0.88);
+	--hex-card: #ffffff;
+	--hex-card-hover: #f1f5fd;
+	--hex-field: #ffffff;
+	--hex-selected: #cfdcf8;
+	--hex-grid: rgba(31, 95, 224, 0.08);
+	--hex-glow: rgba(31, 95, 224, 0.06);
+	--hex-line: #c5d5f1;
+	--hex-edge: #7d9bd3;
+	--hex-track: #c5d5f1;
+	--hex-ink: #0b1634;
+	--hex-soft: #4a5b85;
+	--hex-faint: #8a9cc2;
+	--hex-accent: #1f5fe0;
+	--hex-accent-dim: rgba(31, 95, 224, 0.4);
+	--hex-on-accent: #ffffff;
+	--hex-blue: #0b8fc4;
+	--hex-attention: #b86a00;
+	--hex-ok: #0f7a4b;
+	--hex-warn: #a86400;
+	--hex-bad: #c8102e;
+	color-scheme: light;
+}

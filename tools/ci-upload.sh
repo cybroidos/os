@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Uploads a built image from out/ to Hangar's storage (Garage, S3 at S3_URL,
+# Uploads a built image from out/ to Hangar's storage (SeaweedFS, S3 at S3_URL,
 # bucket BUCKET) with its sha256, under the key Hangar's image catalogue
 # fetches it by (internal/pve/images.go).
 #
@@ -11,7 +11,7 @@ cd "$(dirname "$0")/.."
 image="${1:?usage: $0 <vm|desktop|container|iso>}"
 
 [ -n "${AWS_ACCESS_KEY_ID:-}" ] || { echo "::warning::No CITOS_IMAGES_KEY_ID secret: built but not uploaded"; exit 0; }
-export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-garage}"
+export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-us-east-1}"
 # Its settings in a temporary folder: a self-hosted runner keeps nothing.
 conf="$(mktemp -d)"
 trap 'rm -rf "${conf}"' EXIT

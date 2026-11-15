@@ -67,7 +67,7 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.CITOS_IMAGES_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.CITOS_IMAGES_SECRET }}
-          AWS_DEFAULT_REGION: garage
+          AWS_DEFAULT_REGION: us-east-1
         run: COMMIT="$GITHUB_SHA" tools/ci-upload.sh iso
 
       - name: Publish the packages to deb.cybroid.com

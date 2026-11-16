@@ -35,3 +35,24 @@ org.kde.print-queue.desktop        hide
 zsh.desktop                        hide
 # The open and save dialog (KDE's portal) shows in the dock while it's open.
 org.freedesktop.impl.portal.desktop.kde.desktop  Open or Save
+# Hidden entries that claim a running window (StartupWMClass): renamed too,
+# or the dock shows their name while the app runs ("Install Debian").
+calamares-install-debian.desktop   Install CybroidOS
+org.kde.gwenview_importer.desktop  Photos
+calamares.desktop                  hide
+# Upstream names and duplicates in the menu (found by listing every entry
+# a CybroidOS desktop install has, 16 Nov 2026).
+org.kde.partitionmanager.desktop   Disks
+kdesystemsettings.desktop          hide
+org.kde.kwalletmanager.desktop     Passwords
+org.kde.kdeconnect-settings.desktop  Phone Link
+org.kde.kdeconnect.nonplasma.desktop hide
+org.kde.kdeconnect.sms.desktop     hide
+onboard.desktop                    On-screen Keyboard
+onboard-settings.desktop           hide
+org.kde.skanlite.desktop           Scanner
+org.kde.khelpcenter.desktop        Help
+org.kde.drkonqi.coredump.gui.desktop  Crash Reports
+org.kde.plasma-welcome.desktop     hide
+htop.desktop                       hide
+zutty.desktop                      hide

@@ -1,0 +1,25 @@
+#!/bin/sh
+# CybroidOS on-screen keyboard (Onboard) for the session: in the tray, hidden
+# until asked for; on a computer with a touchscreen it also comes up by
+# itself when a text field is tapped. Set up once per person (they can
+# change it in Onboard's own settings), then started.
+command -v onboard >/dev/null 2>&1 || exit 0
+mark="${XDG_CONFIG_HOME:-$HOME/.config}/cybroid/osk-set"
+if [ ! -e "$mark" ] && command -v gsettings >/dev/null 2>&1; then
+	touch=false
+	# A touchscreen: an input device the kernel marks as direct (its
+	# INPUT_PROP_DIRECT bit, 0x2), as touchscreens and pen displays are and
+	# touchpads aren't.
+	if sed -n 's/^B: PROP=//p' /proc/bus/input/devices 2>/dev/null | grep -qi '[2367abef]$'; then
+		touch=true
+	fi
+	gsettings set org.onboard start-minimized true
+	gsettings set org.onboard show-status-icon true
+	gsettings set org.onboard.window docking-enabled true
+	gsettings set org.onboard.window force-to-top true
+	gsettings set org.onboard layout '/usr/share/onboard/layouts/Compact.onboard' 2>/dev/null
+	gsettings set org.onboard theme '/usr/share/onboard/themes/Nightshade.theme' 2>/dev/null
+	gsettings set org.onboard.auto-show enabled "$touch"
+	mkdir -p "$(dirname "$mark")" && : > "$mark"
+fi
+exec onboard

@@ -5,6 +5,7 @@
 // sessionModel.
 import QtQuick
 import QtQuick.Controls.Basic
+import QtQuick.VirtualKeyboard
 
 Rectangle {
     id: root
@@ -18,6 +19,8 @@ Rectangle {
     property string message: ""
     property bool otherUser: false
     property bool showPass: false
+    // The on-screen keyboard: off until asked for (the Keyboard button).
+    property bool keyboardOn: false
     // SDDM's keyboard model follows the Caps Lock light.
     readonly property bool capsLock: typeof keyboard !== "undefined" && keyboard.capsLock
 
@@ -68,8 +71,11 @@ Rectangle {
     }
 
     Column {
+        id: signInColumn
         anchors.horizontalCenter: parent.horizontalCenter
-        y: root.height * 0.73
+        // Above the on-screen keyboard while it's open.
+        y: root.keyboardOn ? Math.min(root.height * 0.73, root.height - inputPanel.height - height - 32) : root.height * 0.73
+        Behavior on y { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
         spacing: 10
 
         TextField {
@@ -227,6 +233,7 @@ Rectangle {
         spacing: 10
         Repeater {
             model: [
+                { label: root.keyboardOn ? "Hide keyboard" : "Keyboard", glyph: "⌨", act: function () { root.keyboardOn = !root.keyboardOn; (root.otherUser && userField.text.length === 0 ? userField : passField).forceActiveFocus() }, ok: true },
                 { label: root.otherUser ? "Back" : "Other user", glyph: "◐", act: function () { root.otherUser = !root.otherUser; if (root.otherUser) userField.forceActiveFocus(); else passField.forceActiveFocus() }, ok: true },
                 { label: "Restart", glyph: "↻", act: function () { sddm.reboot() }, ok: sddm.canReboot },
                 { label: "Shut down", glyph: "⏻", act: function () { sddm.powerOff() }, ok: sddm.canPowerOff }
@@ -288,6 +295,17 @@ Rectangle {
             passField.text = ""
             passField.forceActiveFocus()
         }
+    }
+
+    // Qt's virtual keyboard, along the bottom while it's switched on.
+    InputPanel {
+        id: inputPanel
+        z: 99
+        width: Math.min(parent.width, 1100)
+        anchors.horizontalCenter: parent.horizontalCenter
+        y: root.keyboardOn ? parent.height - height : parent.height
+        visible: root.keyboardOn
+        Behavior on y { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
     }
 
     Component.onCompleted: passField.forceActiveFocus()

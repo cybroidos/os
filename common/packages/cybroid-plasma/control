@@ -25,6 +25,7 @@ Depends: cybroid-base (>= @VERSION@), cybroid-artwork (>= @VERSION@), cybroid-se
  system-config-printer-udev, smbclient, colord, libpam-kwallet5, ksshaskpass, bolt, plasma-thunderbolt,
  plasma-discover-backend-fwupd, plasma-disks, kde-config-screenlocker, unar, zip, qt6-image-formats-plugins,
  xdg-desktop-portal-gtk, xsettingsd, hunspell-en-us, sonnet6-plugins, libcanberra-pulse, at-spi2-core, kamera,
+ onboard, qml6-module-qtquick-virtualkeyboard, qt6-virtualkeyboard-plugin,
  xserver-xorg-input-wacom,
  vlc, okular, kcalc, kde-spectacle, kate, plasma-systemmonitor,
  plasma-discover, plasma-discover-backend-flatpak, flatpak, fwupd,
@@ -54,4 +55,6 @@ Description: CybroidOS Desktop: KDE Plasma 6 in the CybroidOS Horizon look
  broadband and Bluetooth, the touchpad, sound, USB drives and phones,
  printing, media playback (VLC), documents (Okular), an app centre (Discover
  with Flathub), zsh with suggestions from history, and zram for small
- memory. Defaults only: each person can change them.
+ memory. An on-screen keyboard on the sign-in screen and on the
+ desktop (Onboard, which comes up by itself on touchscreens).
+ Defaults only: each person can change them.

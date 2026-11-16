@@ -279,12 +279,15 @@ if [ -f /etc/calamares/settings.conf ]; then
 fi
 # Debian 13 names Calamares' launcher calamares-install-debian.desktop; the
 # dock looks for install-debian.desktop, so the CybroidOS one is made under that
-# name and Debian's is hidden (and its desktop shortcut left out).
+# name and Debian's is renamed and hidden (and its desktop shortcut left out).
 src=/usr/share/applications/calamares-install-debian.desktop
 if [ -f "$src" ] && [ ! -f /usr/share/applications/install-debian.desktop ]; then
 	cp "$src" /usr/share/applications/install-debian.desktop
 fi
-for f in /usr/share/applications/install-debian.desktop /etc/skel/Desktop/install-debian.desktop; do
+# Debian's own launcher is renamed too, not only hidden: while Calamares
+# runs, the dock finds its window through that file (StartupWMClass), and
+# showed "Install Debian".
+for f in /usr/share/applications/install-debian.desktop /etc/skel/Desktop/install-debian.desktop "$src"; do
 	[ -f "$f" ] || continue
 	sed -i -e 's/^Name=.*/Name=Install CybroidOS/' -e '/^Name\[/d' \
 		-e 's/^GenericName=.*/GenericName=Put CybroidOS on this computer/' -e '/^GenericName\[/d' \
@@ -295,6 +298,9 @@ if [ -f "$src" ] && ! grep -q '^NoDisplay=true' "$src"; then
 	echo 'NoDisplay=true' >> "$src"
 fi
 rm -f /etc/xdg/autostart/calamares-desktop-icon.desktop
+# The renamed copies (cybroid-plasma's app-names) were made while packages
+# installed, before the edits above: made again from the edited files.
+[ -x /usr/libexec/cybroid/app-names ] && /usr/libexec/cybroid/app-names || true
 # No stray blank wallpaper text on the desktop of the live user.
 rm -rf /etc/skel/Desktop
 EOF

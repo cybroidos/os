@@ -7,7 +7,7 @@
 - **Owner:** CIT-OS maintainers (Cybroid Institute of Technology)
 - **Base OS decision:** [ADR-0001](adr/ADR-0001-base-distribution.md) — **Debian 13
   "Trixie"** for all targets; Raspberry Pi OS (Debian Trixie) lineage for the Pi.
-- **Repository:** https://github.com/cybroidinstitute/cit-os
+- **Repository:** https://github.com/cybroidtech/os
 - **Last updated:** 2026-10-11
 
 ---

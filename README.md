@@ -3,32 +3,35 @@
 Branded operating-system images for **CIT** (Cybroid Institute of Technology) and
 its customers, built from one repository and one build system.
 
-Four targets, one shared base and branding layer:
+Four targets are planned around one shared base and branding layer. The
+**Raspberry Pi kiosk** is the first implemented target; the others are on the
+roadmap.
 
-| Target | Artefact |
-|---|---|
-| Raspberry Pi | flashable `.img` → branded kiosk (develop/test on Pi 3; runs on Pi 4) |
-| Desktop | bootable, installable ISO — CIT school computers |
-| Server | minimal cloud-init image + `qcow2` (ship to customers) |
-| Docker | base container images (amd64 + arm64) |
+| Target | Artefact | Status |
+|---|---|---|
+| Raspberry Pi | flashable `.img` → branded kiosk (develop/test on Pi 3; runs on Pi 4) | Implemented (`targets/rpi`) |
+| Desktop | bootable, installable ISO — CIT school computers | Planned |
+| Server | minimal cloud-init image + `qcow2` (ship to customers) | Planned |
+| Docker | base container images (amd64 + arm64) | Planned |
 
 - **Base OS:** Debian 13 "Trixie" — see [`docs/adr/ADR-0001-base-distribution.md`](docs/adr/ADR-0001-base-distribution.md)
 - **Plan of record:** [`docs/PLAN.md`](docs/PLAN.md) (living document)
 
 ## Status
 
-Early foundation. The base-distro ADR is accepted; the repo skeleton and build
-environment are being set up. See the status dashboard in `docs/PLAN.md`.
+Early foundation. The base-distro ADR is accepted and the Raspberry Pi kiosk
+target builds a branded image. Desktop, server and Docker are designed but not
+yet implemented. See the status dashboard in `docs/PLAN.md`.
 
 ## Layout
 
 ```
 common/     shared branding, config, systemd units, <brand>-base packaging
-targets/    per-target builders/overlays: rpi, desktop, server, docker
-apt-repo/   signed CIT APT repository tooling
+targets/    per-target builders/overlays — implemented: rpi (desktop/server/docker planned)
+apt-repo/   signed CIT APT repository tooling (planned)
 tests/      QEMU, container and real-hardware validation
-ci/         CI helper scripts (workflows in .github/workflows)
-tools/      helper scripts
+ci/         CI helper scripts (workflows in .github/workflows; planned)
+tools/      helper scripts (brand rendering, packaging, release manifests)
 docs/       guides + ADRs
 ```
 
@@ -36,6 +39,15 @@ docs/       guides + ADRs
 
 Build environment is the devcontainer (or any Debian 13 host). Instructions land
 with Phase 2 — see `docs/PLAN.md`.
+
+## Licensing
+
+The build system is free software under **GPL-3.0-or-later** ([`LICENSE`](LICENSE)).
+Brand artwork is **CC BY-NC 4.0** ([`LICENSE-ASSETS`](LICENSE-ASSETS)). The CIT /
+Cybroid names and logos are trademarks with a de-branding policy for derivatives
+([`NOTICE.md`](NOTICE.md)). See [`docs/LICENSING.md`](docs/LICENSING.md) for the
+rationale and [`docs/PROPRIETARY-COMPONENTS.md`](docs/PROPRIETARY-COMPONENTS.md)
+for the register of non-free components (kept out of the public image).
 
 ## Contributing
 

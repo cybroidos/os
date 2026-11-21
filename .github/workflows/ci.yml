@@ -70,6 +70,12 @@ jobs:
         run: |
           for f in \
             README.md \
+            LICENSE \
+            LICENSE-ASSETS \
+            NOTICE.md \
+            docs/LICENSING.md \
+            docs/PROPRIETARY-COMPONENTS.md \
+            tools/release-manifest.sh \
             docs/PLAN.md \
             docs/dev-environments.md \
             docs/adr/ADR-0001-base-distribution.md \

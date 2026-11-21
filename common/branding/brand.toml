@@ -18,8 +18,8 @@ version         = "0.1.0"
 default_hostname = "citos"
 support_url     = "https://cybroid.com"
 home_url        = "https://cybroid.com"
-documentation   = "https://github.com/cybroidinstitute/cit-os"
-bug_report_url  = "https://github.com/cybroidinstitute/cit-os/issues"
+documentation   = "https://github.com/cybroidtech/os"
+bug_report_url  = "https://github.com/cybroidtech/os/issues"
 
 [colors]
 # Roles. Derived from the CIT logo SVG; see header note.

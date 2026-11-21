@@ -5,7 +5,7 @@ Maintainer: CIT-OS maintainers <citos@cybroid.com>
 Build-Depends: debhelper-compat (= 13)
 Standards-Version: 4.6.2
 Rules-Requires-Root: no
-Homepage: https://github.com/cybroidinstitute/cit-os
+Homepage: https://github.com/cybroidtech/os
 
 Package: citos-base
 Architecture: all

@@ -38,6 +38,11 @@ cp "${srcdir}/etc/issue" "${srcdir}/usr/share/citos/issue"
 cp "${srcdir}/etc/motd" "${srcdir}/usr/share/citos/motd"
 cp -a "${repo_root}/common/branding/logo/." "${srcdir}/usr/share/citos/branding/"
 
+# Ship the licence texts with the binary package (paths in debian/install).
+install -d "${srcdir}/usr/share/doc/${name}"
+cp "${repo_root}/LICENSE" "${srcdir}/usr/share/doc/${name}/LICENSE"
+cp "${repo_root}/LICENSE-ASSETS" "${srcdir}/usr/share/doc/${name}/LICENSE-ASSETS"
+
 # Keep the changelog version in sync with brand.toml.
 cat > "${srcdir}/debian/changelog" <<EOF
 ${name} (${version}) ${release}; urgency=medium

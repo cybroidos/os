@@ -1,10 +1,10 @@
-# ADR-0003: Desktop environment across the CIT-OS image family
+# ADR-0003: Desktop environment across the Cybroid OS image family
 
 - **Status:** Accepted (2026-10-11) — **KDE Plasma** is the default desktop;
   **Xfce** is used on the **server/pods** target; **Calamares** is the installer.
   A few items in §7 remain open.
 - **Date:** 2026-10-11
-- **Deciders:** CIT-OS maintainers (Cybroid Institute of Technology / CIT)
+- **Deciders:** Cybroid OS maintainers (Cybroid Institute of Technology / CIT)
 - **Supersedes:** the "desktop environment" and "installer" parts of ADR-0001 §5
   and PLAN open items 5 and 9.
 - **Related:** `docs/research/desktop-environment.md`,
@@ -12,7 +12,7 @@
 
 ## 1. Context
 
-The desktop target (CIT school computers + a few customers who choose CIT-OS
+The desktop target (CIT school computers + a few customers who choose Cybroid OS
 over Windows) needs a branded, manageable desktop. Separately, the **server/pods**
 target is now expected to **also feature a desktop environment** (the pods run on
 servers and need a GUI reachable over the network). The owner's direction:
@@ -54,7 +54,7 @@ versions; Debian's own live images are built with `live-build` and use the
 
 Plasma has the **deepest branding hooks** of any Debian DE (one **global theme**
 covers colours, widgets, splash, wallpaper, cursor, fonts; a themable **SDDM**
-greeter; plymouth splash) which matches the CIT-OS "brand once, apply everywhere"
+greeter; plymouth splash) which matches the Cybroid OS "brand once, apply everywhere"
 goal. It is the only Debian DE with a **built-in Kiosk/lockdown framework**
 (per-user/per-group restrictions) — the single most valuable feature for **shared
 school computers**. Its default taskbar/application-menu layout resembles Windows,
@@ -84,7 +84,7 @@ graphical, brandable install flow suitable for students/customers.
 1. **Desktop target:** default DE = **KDE Plasma 6.3** (Wayland default, X11
    fallback). Branding via a Plasma **global theme** + **SDDM** greeter theme +
    Plymouth splash; lockdown via **KDE Kiosk** profiles for school machines.
-   Also publish an optional **"CIT-OS Lite" ISO on Xfce 4.20** for low-spec lab
+   Also publish an optional **"Cybroid OS Lite" ISO on Xfce 4.20** for low-spec lab
    hardware.
 2. **Server/pods target:** ships **Xfce 4.20** as a lightweight, network-reachable
    desktop (with a display-manager greeter and remote-access path).

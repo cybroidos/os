@@ -1,4 +1,4 @@
-# CIT-OS
+# Cybroid OS
 
 Branded operating-system images for **CIT** (Cybroid Institute of Technology) and
 its customers, built from one repository and one build system.
@@ -56,7 +56,7 @@ time: **commit and push small, reviewable changes often.**
 
 ## Branding
 
-Name `CIT-OS`, id `citos`, hostname `citos`, support `https://cybroid.com`.
+Name `Cybroid OS`, id `cybroidos`, hostname `cybroid`, support `https://cybroid.com`.
 Logo assets and palette live in [`common/branding/`](common/branding/) (imported
 from the CIT web repo). Palette is derived from the logo and awaits brand-owner
 confirmation — see `common/branding/README.md`.

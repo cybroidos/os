@@ -1,18 +1,18 @@
-# Research: Mobile app to control the CIT-OS desktop from a phone
+# Research: Mobile app to control the Cybroid OS desktop from a phone
 
 - **Status:** **decided — see [ADR-0004 (accepted)](../adr/ADR-0004-mobile-client.md)**
   (Flutter/Android client + KDE Connect transport; LAN + internet; actions + full
   screen; Phone Link parity; rebrand later). This doc remains the option survey.
 - **Date:** 2026-10-11
 - **Related:** [PLAN](../PLAN.md), ADR-0003 (desktop environment), ADR-0004
-- **Ask:** a **customized KDE app** that lets a phone **control the CIT-OS
+- **Ask:** a **customized KDE app** that lets a phone **control the Cybroid OS
   desktop** remotely (owner's requirement).
 
 ## TL;DR recommendation
 
 - **Desktop side:** ship **KDE Connect** (`kdeconnect-kde`) as the transport and
   the **`krdp`** RDP server (both are in Debian 13) for optional full-screen
-  *view + control*. Add a small CIT daemon (`citos-control`) exposing
+  *view + control*. Add a small CIT daemon (`cybroidos-control`) exposing
   CIT-specific actions over D-Bus / KDE Connect commands.
 - **Phone side:** build a **branded Kirigami (Qt/KDE) Android app** — the
   KDE-native answer to "customized KDE app". Reuse the KDE Connect protocol and
@@ -29,7 +29,7 @@
 | Run actions (lock, shutdown, launch app, script) | KDE Connect "Run Commands" plugin | customizable commands |
 | Media + clipboard + notifications + file/URL share | KDE Connect | already exists |
 | Full screen **view + control** (see the plasma desktop) | **`krdp`** (RDP) + an RDP client on the phone | packaged in trixie |
-| Push/mirror content, app launcher, workspace control | custom `citos-control` D-Bus service | to build |
+| Push/mirror content, app launcher, workspace control | custom `cybroidos-control` D-Bus service | to build |
 
 Most "control" asks are already covered by **KDE Connect**; full remote-screen
 control is **KRDP**. A custom app mainly adds **branding** and **CIT-specific
@@ -68,12 +68,12 @@ commands / UX**.
 
 - **Phase 1 (low effort):** ship **KDE Connect + `krdp`** on the desktop and treat
   the stock KDE Connect phone app as the interim control tool. Ship a small
-  **`citos-control`** package (D-Bus service + KDE Connect "Run Commands" entries)
+  **`cybroidos-control`** package (D-Bus service + KDE Connect "Run Commands" entries)
   for CIT actions.
 - **Phase 2 (the "customized KDE app"):** build a **branded Kirigami Android app**
   on the KDE Connect protocol (Option A/C), OR a **Flutter** client (Option D) if
   cross-platform + one codebase is preferred. Decide in ADR-0004.
-- **Pods/server (Xfce):** control via the same `citos-control` + an Xfce-appropriate
+- **Pods/server (Xfce):** control via the same `cybroidos-control` + an Xfce-appropriate
   remote path (VNC/RDP); confirm with ADR-0003 open item 1.
 
 ## Open questions (need answers before ADR-0004)
@@ -87,7 +87,7 @@ commands / UX**.
    internet** (needs a relay/VPN; bigger security scope)?
 4. **Build vs reuse:** rebrand/fork **KDE Connect**, or build a **new app** on its
    protocol? (Maintenance vs control.)
-5. **Branding:** is the phone app in scope for CIT-OS branding now or later?
+5. **Branding:** is the phone app in scope for Cybroid OS branding now or later?
 6. **Do pods** (server/Xfce) also need phone control?
 
 ## Sources

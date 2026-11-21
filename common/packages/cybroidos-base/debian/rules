@@ -1,5 +1,5 @@
 #!/usr/bin/make -f
-# CIT-OS package build. Files are staged by tools/build-package.sh (branding is
+# Cybroid OS package build. Files are staged by tools/build-package.sh (branding is
 # rendered from common/branding/brand.toml into the source tree before build).
 %:
 	dh $@

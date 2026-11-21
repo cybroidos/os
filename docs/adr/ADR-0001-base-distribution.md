@@ -1,14 +1,14 @@
-# ADR-0001: Base distribution for the CIT-OS image family
+# ADR-0001: Base distribution for the Cybroid OS image family
 
 - **Status:** Accepted (2026-10-11) — base = Debian 13 "Trixie" for all targets;
   Pi dev/test on Pi 3, images must also run on Pi 4. A few items in §7 remain open.
 - **Date:** 2026-10-11
-- **Deciders:** CIT-OS maintainers (Cybroid Institute of Technology / CIT)
+- **Deciders:** Cybroid OS maintainers (Cybroid Institute of Technology / CIT)
 - **Supersedes:** none
 
 ## 1. Context
 
-CIT-OS is one repository/build system that must produce branded images for four
+Cybroid OS is one repository/build system that must produce branded images for four
 targets while sharing as much configuration as possible:
 
 | Target | Artefact | Required |
@@ -135,11 +135,11 @@ burden for exactly what we are doing (rebranding). Raspberry Pi marks only requi
 that we not use their logo without a licence and that we attribute the trademark;
 we will strip Pi-branded artwork from our images and keep the board-support
 packages (which retain their own licences). Net: Debian is the lowest-friction
-base to rebrand into CIT-OS.
+base to rebrand into Cybroid OS.
 
 ### 4.7 Update strategy — **tie**
 
-Both base on signed archives with security teams. Either way CIT-OS adds its own
+Both base on signed archives with security teams. Either way Cybroid OS adds its own
 signed APT repo (aptly/reprepro) for `<brand>-*` packages and a nightly rebuild.
 Debian's model (security + LTS) is well understood and matches the Pi lineage.
 
@@ -201,39 +201,39 @@ Debian/Raspberry Pi OS regardless, because of 4.1 and 4.2.
 ## 7. Resolved decisions
 
 **Q1 — Engineering workflow (mandated question). — PARTIALLY OPEN.**
-No engineer has started on CIT-OS yet; the immediate plan is that an engineer
+No engineer has started on Cybroid OS yet; the immediate plan is that an engineer
 flashes the stock Raspberry Pi OS image to an SD card today, and switches to the
-CIT-OS image once it is ready. Decisions taken:
+Cybroid OS image once it is ready. Decisions taken:
   - Build the OS on a **Debian-compatible `.deb`/APT** model regardless (the target
     images are Debian-based either way).
   - Keep the existing `cit` CLI / VS Code extension installed independently
     (npm / extension), **not** by renaming or colliding with it. Our OS id is
-    `citos`, so there is no path clash with `/usr/bin/cit`.
+    `cybroidos`, so there is no path clash with `/usr/bin/cit`.
   - Re-confirm the engineers' exact languages/runtimes and any hard package-name
     or absolute-path dependencies before the desktop ISO phase.
 
-**Q2 — Redistribution scope. — ANSWERED.** CIT-OS is for **CIT and its customers**:
+**Q2 — Redistribution scope. — ANSWERED.** Cybroid OS is for **CIT and its customers**:
   - **Server images** → shipped to customers.
   - **Desktop** → **CIT school computers** (primary use), with a few customers who
-    may choose CIT-OS over Windows.
+    may choose Cybroid OS over Windows.
   - Therefore the base is **redistributable**, so we **strip all upstream brand
     marks** (Ubuntu / Raspberry Pi OS / Raspberry Pi logos) and rely on package
     licences. A "Powered by Raspberry Pi" trademark licence is optional and only
     needed if we later want to show the Pi logo on our own packaging.
 
-**Q3 — Brand.** Name = **CIT-OS**; OS `id` = **citos**; default hostname
-**citos**; support URL **https://cybroid.com**. **Still needed:** logo (SVG + PNG)
+**Q3 — Brand.** Name = **Cybroid OS**; OS `id` = **cybroidos**; default hostname
+**cybroid**; support URL **https://cybroid.com**. **Still needed:** logo (SVG + PNG)
 and primary/secondary hex colours. *Until provided:* a placeholder logo and a
 deep-navy/blue palette live in `common/branding/`.
 
 **Q4 — CI/CD. — ANSWERED.** **GitHub Actions** (repo is on GitHub under the
-`cybroidinstitute` org). Pipeline started in `.github/workflows/` (`ci.yml`
+`cybroidtech` org). Pipeline started in `.github/workflows/` (`ci.yml`
 validation now; build jobs added per phase; `nightly.yml` scheduled).
 
 **Q3 (assets) — PARTIALLY ANSWERED.** Logo assets were taken from the existing
 **`novaoneltd/cit`** web repository and placed in `common/branding/logo/`
-(`cit-logo.svg`, `cit-logo.png`, `cit-mark.png`, `cit-icon-64.png`,
-`cit-favicon.png`). Palette in `common/branding/brand.toml` is derived from the
+(`cybroid-logo.svg`, `cybroid-logo.png`, `cybroid-mark.png`, `cybroid-icon-64.png`,
+`cybroid-favicon.png`). Palette in `common/branding/brand.toml` is derived from the
 logo SVG gradients (`#557fc0` → `#69cce1` over navy `#112649` / `#0e2044`) and is
 a **v0 default pending brand-owner confirmation** (monochrome variant, true
 primary, wallpaper art).
@@ -255,7 +255,7 @@ images + GitHub Container Registry for Docker; revisit if customers need a CDN.
 
 ### Own APT repository — confirmed
 
-Yes, CIT-OS needs its **own signed APT repository**. It will carry our own
+Yes, Cybroid OS needs its **own signed APT repository**. It will carry our own
 packages: `<brand>-base`, the per-target meta-packages (`<brand>-rpi`,
 `<brand>-desktop`, `<brand>-server`), the kiosk service and app packages, and any
 future `cit`-branded tooling we choose to package as `.deb`. Reasons: our packages

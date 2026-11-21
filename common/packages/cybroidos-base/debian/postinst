@@ -6,11 +6,11 @@ set -e
 # /etc/issue and /etc/motd are conffiles owned by base-files and are not shipped
 # as package files (that would trigger a conffile prompt). preinst divers
 # base-files' copies aside; here we install our branded ones in their place.
-if [ -f /usr/share/citos/issue ]; then
-	cp /usr/share/citos/issue /etc/issue
+if [ -f /usr/share/cybroidos/issue ]; then
+	cp /usr/share/cybroidos/issue /etc/issue
 fi
-if [ -f /usr/share/citos/motd ]; then
-	cp /usr/share/citos/motd /etc/motd
+if [ -f /usr/share/cybroidos/motd ]; then
+	cp /usr/share/cybroidos/motd /etc/motd
 fi
 
 exit 0

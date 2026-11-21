@@ -2,7 +2,7 @@
 
 - **Status:** Accepted (2026-10-11)
 - **Date:** 2026-10-11
-- **Deciders:** CIT-OS maintainers (Cybroid Institute of Technology / CIT)
+- **Deciders:** Cybroid OS maintainers (Cybroid Institute of Technology / CIT)
 - **Related:** ADR-0001 (base distribution), ADR-0006 (Pi image builder),
   `docs/research/kiosk-runtime.md`, `docs/PLAN.md` (Phase 3).
 

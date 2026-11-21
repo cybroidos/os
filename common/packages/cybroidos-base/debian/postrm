@@ -6,7 +6,7 @@ set -e
 # Undo the diversions set up in preinst (restores base-files' originals).
 if [ "$1" = "remove" ] || [ "$1" = "purge" ]; then
 	for f in /usr/lib/os-release /etc/issue; do
-		dpkg-divert --package citos-base --remove --rename \
+		dpkg-divert --package cybroidos-base --remove --rename \
 			--divert "${f}.base-files" "$f" || true
 	done
 fi

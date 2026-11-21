@@ -5,7 +5,7 @@
   official GTK embedder on desktop). This doc remains the feasibility research.
 - **Date:** 2026-10-11
 - **Related:** [PLAN §6 Phase 3](../PLAN.md), ADR-0001 (Debian 13 Trixie), ADR-0002
-- **Question:** which runtime renders the CIT-OS kiosk / system UI on the Pi and
+- **Question:** which runtime renders the Cybroid OS kiosk / system UI on the Pi and
   desktop targets? The owner prefers **Flutter**; confirm feasibility and pick the
   embedder.
 

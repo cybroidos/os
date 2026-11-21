@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Generate a reproducible release manifest for CIT-OS artifacts.
+# Generate a reproducible release manifest for Cybroid OS artifacts.
 # Usage: tools/release-manifest.sh [artifact-dir] [output-file]
 set -euo pipefail
 
@@ -40,7 +40,7 @@ find "$artifact_dir" -maxdepth 2 -type f \
   -print0 > "$artifact_tmp" 2>/dev/null || true
 
 {
-  printf '# CIT-OS release manifest\n\n'
+  printf '# Cybroid OS release manifest\n\n'
   printf 'generated_utc: %s\n' "$generated"
   printf 'git_commit: %s\n' "$commit"
   printf 'git_branch: %s\n' "$branch"

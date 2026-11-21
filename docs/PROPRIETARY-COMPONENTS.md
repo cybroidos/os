@@ -25,7 +25,7 @@ and under what terms.
 ## Hangar
 
 Hangar is referenced here because it is a real proprietary tool used in the
-wider environment but it is **not** part of CIT-OS. It must not be implied to
-be open source, and it must not be baked into a public CIT-OS image. If a
+wider environment but it is **not** part of Cybroid OS. It must not be implied to
+be open source, and it must not be baked into a public Cybroid OS image. If a
 future release bundles it, this table must be updated first and the image
 must carry the vendor EULA.

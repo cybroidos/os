@@ -1,18 +1,18 @@
-# Research: Desktop environment for the CIT-OS desktop target
+# Research: Desktop environment for the Cybroid OS desktop target
 
 - **Status:** **decided — see [ADR-0003](../adr/ADR-0003-desktop-environment.md)**
   (KDE Plasma default desktop; Xfce for the server/pods target; Calamares).
 - **Date:** 2026-10-11
 - **Related:** [PLAN §6 Phase 6](../PLAN.md), ADR-0001 (Debian 13 Trixie),
   ADR-0003 (desktop environment), `desktop-mobile-control.md`
-- **Question:** which desktop environment should the CIT-OS **desktop** target
+- **Question:** which desktop environment should the Cybroid OS **desktop** target
   ship? The owner asked to evaluate **KDE Plasma** specifically, "or anything
   better than it". The server/pods target also needs a DE → **Xfce**.
 
 ## TL;DR recommendation
 
 - **Default desktop: KDE Plasma 6.3** (what Debian 13 ships). It is the best fit
-  for CIT-OS because it has, by a wide margin, the **deepest branding hooks**
+  for Cybroid OS because it has, by a wide margin, the **deepest branding hooks**
   (global theme, SDDM greeter theme, splash, wallpaper, colour schemes) **and a
   built-in Kiosk/lockdown framework** for managing shared school machines.
 - **Also offer a "Lite" variant on Xfce 4.20** for older lab hardware (2 GB RAM),
@@ -40,11 +40,11 @@ Frameworks 6 stack. Upstream Plasma 6.6 is the current **LTS** branch (KDE
 support to 2029), but Debian freezes the version in the release and ships only
 security/point fixes — this is the normal, expected "stable distro" trade-off.
 
-## Why Plasma for the CIT-OS desktop
+## Why Plasma for the Cybroid OS desktop
 
 1. **Branding depth.** Plasma is built to be re-skinned: a single **global
    theme** (colours, widgets, splash, wallpaper, cursor, fonts), a themable
-   **SDDM** login greeter, and a themable boot splash. This matches the CIT-OS
+   **SDDM** login greeter, and a themable boot splash. This matches the Cybroid OS
    goal "every visible surface is branded … defined once, shared across targets"
    better than any other Debian DE.
 2. **Built-in Kiosk / lockdown.** The **KDE Kiosk framework** lets us restrict
@@ -53,7 +53,7 @@ security/point fixes — this is the normal, expected "stable distro" trade-off.
    the single most valuable feature and it is unique among the Debian DEs.
 3. **Familiar layout.** Plasma's default (taskbar + application menu) resembles
    Windows, reducing retraining for students/staff coming from Windows — relevant
-   since a few customers also choose CIT-OS over Windows.
+   since a few customers also choose Cybroid OS over Windows.
 4. **Wayland-ready and actively maintained** in Debian's supported stack for the
    whole trixie lifetime.
 5. **Ships with the tooling our plan already assumes.** `live-build` has a KDE
@@ -62,7 +62,7 @@ security/point fixes — this is the normal, expected "stable distro" trade-off.
 
 ## Alternatives and when to pick them
 
-- **Xfce 4.20 — "CIT-OS Lite" for old hardware.** Low footprint, very stable,
+- **Xfce 4.20 — "Cybroid OS Lite" for old hardware.** Low footprint, very stable,
   easy to brand via GTK theme + LightDM. X11-first (Wayland session is
   experimental). Pick this for lab machines with ≤ 2 GB RAM.
 - **Cinnamon 6.4 — the "Windows-like" option.** Familiar, themable, good for
@@ -80,11 +80,11 @@ security/point fixes — this is the normal, expected "stable distro" trade-off.
 
 ## Recommendation in context
 
-- **Ship KDE Plasma 6.3 as the CIT-OS desktop default.** Wire branding through a
+- **Ship KDE Plasma 6.3 as the Cybroid OS desktop default.** Wire branding through a
   Plasma **global theme** + **SDDM** theme + Plymouth splash (all from
   `common/branding/`), and apply **KDE Kiosk** profiles per group for school
   machines.
-- **Also publish a "CIT-OS Lite" (Xfce 4.20) ISO** for low-spec lab PCs; keep
+- **Also publish a "Cybroid OS Lite" (Xfce 4.20) ISO** for low-spec lab PCs; keep
   Cinnamon as a documented alternative if requested.
 - **Installer:** Debian's live images use **Calamares**; default Phase 6 to
   Calamares + live-build (matches upstream Debian Live).

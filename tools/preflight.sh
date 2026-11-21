@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# CIT-OS preflight: report whether the build toolchain is present.
+# Cybroid OS preflight: report whether the build toolchain is present.
 # Run inside the devcontainer (docs/dev-environments.md) or on a build host.
 set -euo pipefail
 

@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Render CIT-OS identity files from common/branding/brand.toml.
+"""Render Cybroid OS identity files from common/branding/brand.toml.
 
 Emits into an overlay directory that pi-gen copies into the image:
 
   usr/lib/os-release            OS identity
   etc/motd, etc/issue           login banner
-  usr/share/citos/kiosk/        the kiosk web app (cage + Chromium)
-  usr/share/plymouth/themes/citos/  the boot splash theme
+  usr/share/cybroidos/kiosk/        the kiosk web app (cage + Chromium)
+  usr/share/plymouth/themes/cybroidos/  the boot splash theme
 
 Branding is defined once (brand.toml) and flows to the Pi stage (and later the
 shared <brand>-base package). Logo/wallpaper images are copied in by the caller
@@ -97,8 +97,8 @@ def plymouth_conf(name: str) -> str:
             "ModuleName=script",
             "",
             "[script]",
-            "ImageDir=/usr/share/plymouth/themes/citos",
-            "ScriptFile=/usr/share/plymouth/themes/citos/citos.script",
+            "ImageDir=/usr/share/plymouth/themes/cybroidos",
+            "ScriptFile=/usr/share/plymouth/themes/cybroidos/cybroidos.script",
             "",
         ]
     )
@@ -166,14 +166,14 @@ def main() -> None:
         f"{ident['pretty_name']} {ident['version']} \\n \\l\n"
     )
 
-    kiosk = out / "usr/share/citos/kiosk"
+    kiosk = out / "usr/share/cybroidos/kiosk"
     kiosk.mkdir(parents=True, exist_ok=True)
     (kiosk / "index.html").write_text(kiosk_html(ident, colors))
 
-    theme = out / "usr/share/plymouth/themes/citos"
+    theme = out / "usr/share/plymouth/themes/cybroidos"
     theme.mkdir(parents=True, exist_ok=True)
-    (theme / "citos.plymouth").write_text(plymouth_conf(ident["pretty_name"]))
-    (theme / "citos.script").write_text(plymouth_script(colors))
+    (theme / "cybroidos.plymouth").write_text(plymouth_conf(ident["pretty_name"]))
+    (theme / "cybroidos.script").write_text(plymouth_script(colors))
 
     print(f"rendered branding into {out}")
 

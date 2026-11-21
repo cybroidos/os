@@ -1,10 +1,10 @@
-# CIT-OS — Development Plan
+# Cybroid OS — Development Plan
 
 > Living document. **Update the status tables and checkboxes as work lands, and
 > add an entry to §12 Change log every time you edit it.** This file is the single
 > source of truth for "what are we doing and where are we".
 
-- **Owner:** CIT-OS maintainers (Cybroid Institute of Technology)
+- **Owner:** Cybroid OS maintainers (Cybroid Institute of Technology)
 - **Base OS decision:** [ADR-0001](adr/ADR-0001-base-distribution.md) — **Debian 13
   "Trixie"** for all targets; Raspberry Pi OS (Debian Trixie) lineage for the Pi.
 - **Repository:** https://github.com/cybroidtech/os
@@ -12,7 +12,7 @@
 
 ---
 
-## 1. What CIT-OS is
+## 1. What Cybroid OS is
 
 One repository and one build system that produces **branded operating-system
 images** for four targets, sharing as much configuration as possible.
@@ -20,7 +20,7 @@ images** for four targets, sharing as much configuration as possible.
 | # | Target | Artefact | Who uses it |
 |---|---|---|---|
 | 1 | **Raspberry Pi** | flashable `.img` → branded kiosk | CIT labs / customers |
-| 2 | **Desktop** | bootable, installable ISO (x86_64; arm64 optional) | **CIT school computers** (+ a few customers who choose CIT-OS over Windows) |
+| 2 | **Desktop** | bootable, installable ISO (x86_64; arm64 optional) | **CIT school computers** (+ a few customers who choose Cybroid OS over Windows) |
 | 3 | **Server / pods** | image/ISO (cloud-init capable) + `qcow2` VM image; **now includes an Xfce desktop** (pods run on servers and need a GUI) | CIT + **customers (shipped)** |
 | 4 | **Docker / pods** | container images (amd64 + arm64): headless **dev spaces** (devcontainers) **and** Xfce **remote-desktop** pods — see ADR-0005 | CIT + customers |
 
@@ -33,14 +33,14 @@ defined once.
 **Xfce** is used on the **server/pods** target.
 
 **Mobile control (ADR-0004, accepted):** a **Flutter (Android)** app to control the
-CIT-OS desktop/pods from a phone, using the **KDE Connect protocol (v8)** as the
-transport (Dart `citos_connect` library; `citos-control` D-Bus service on the
+Cybroid OS desktop/pods from a phone, using the **KDE Connect protocol (v8)** as the
+transport (Dart `cybroidos_connect` library; `cybroidos-control` D-Bus service on the
 desktop; headless `kcd` on pods); **LAN + internet**; **actions + full screen**;
 parity target = **Microsoft Phone Link**. Fork/rebrand KDE Connect is **planned,
 later**. Scoped in `docs/research/desktop-mobile-control.md`.
 
 **Brand placeholders** (see ADR §7 Q3):
-`Name = CIT-OS`, `id = citos`, `hostname = citos`, `support = https://cybroid.com`.
+`Name = Cybroid OS`, `id = cybroidos`, `hostname = cybroid`, `support = https://cybroid.com`.
 Still needed: **logo (SVG+PNG)** and **hex colours**. Placeholders live in
 `common/branding/` until supplied.
 
@@ -66,7 +66,7 @@ running **inside a Debian 13 container** (matches the shipping base OS);
 scaffold** (`targets/rpi/`, pi-gen) with a manual GitHub Actions workflow.
 
 **Milestone A (fast path):** the engineer is ready to flash an SD card now, and
-will flash the stock Raspberry Pi OS image **today**, then switch to CIT-OS when
+will flash the stock Raspberry Pi OS image **today**, then switch to Cybroid OS when
 it exists. So Phase 3's first output is a **minimal, bootable, branded Pi image**
 as early as possible, even before the shared package/APT repo work.
 
@@ -109,7 +109,7 @@ as early as possible, even before the shared package/APT repo work.
 
     phone (Flutter app, ADR-0004) ── LAN + internet ──▶ desktop/pods:
         KDE Connect protocol (kdeconnect-kde / headless `kcd`)
-        + KRDP (full screen) + `citos-control` D-Bus service
+        + KRDP (full screen) + `cybroidos-control` D-Bus service
 ```
 
 Images **only install packages and apply thin per-target overlays**. The
@@ -175,13 +175,13 @@ hacks; `docs/` and `adr/` keep decisions discoverable.
       `docs/adr/ADR-0006-pi-image-builder.md`
 - [x] Kiosk runtime → **Flutter via `flutter-pi`** (primary), `cage` + Chromium
       (swappable web fallback). See `docs/adr/ADR-0002-kiosk-runtime.md`
-- [x] Scaffold `targets/rpi/` (`config`, `build.sh`, `stage-citos`) + branding
+- [x] Scaffold `targets/rpi/` (`config`, `build.sh`, `stage-cybroidos`) + branding
       rendered from `brand.toml` (`tools/render-brand.py`) + GitHub Actions
       workflow (`.github/workflows/pi-image.yml`, manual/tag)
 - [x] Build the arm64 **Lite + branding** image (os-release, motd, issue,
       hostname) and verify — **first image built in CI** (run `38150371735`);
-      rootfs verified via `debugfs`: `ID=citos`, banner motd/issue, hostname
-      `citos`, branding assets present
+      rootfs verified via `debugfs`: `ID=cybroidos`, banner motd/issue, hostname
+      `cybroid`, branding assets present
 - [ ] Quiet boot + **Plymouth** splash + CIT wallpaper
 - [ ] **kiosk**: systemd service launching one fullscreen app, auto-restart on
       crash; **runtime swappable** — (a) Flutter via **flutter-pi** (default) or
@@ -198,15 +198,15 @@ hacks; `docs/` and `adr/` keep decisions discoverable.
         **injected into a COPY of the image** (never the release image),
         `WLR_RENDERER=pixman` (cage) + Chromium `--disable-gpu`, GTK/VNC display;
         verify Plymouth + kiosk launch + logo
-**Exit criteria:** `cit-os-<ver>-rpi-arm64.img` boots in QEMU (raspi3b) and shows
+**Exit criteria:** `cybroid-os-<ver>-rpi-arm64.img` boots in QEMU (raspi3b) and shows
 the branded kiosk; flashable image available for the engineer. *Real-hardware
 validation deferred to the Phase 7 checklist.*
 
 ### Phase 4 — Shared package + APT repo + Docker/pods
 - [x] Package/APT design → `docs/adr/ADR-0007-shared-packages-and-apt-repo.md`
-      (`citos-base` + per-target meta-packages; `os-release` via `dpkg-divert`;
+      (`cybroidos-base` + per-target meta-packages; `os-release` via `dpkg-divert`;
       **reprepro** repo)
-- [x] `citos-base` package skeleton (`common/packages/citos-base/`) + build tool
+- [x] `cybroidos-base` package skeleton (`common/packages/cybroidos-base/`) + build tool
       (`tools/build-package.sh`) + CI job that builds, installs on a clean Trixie
       root and asserts branding — **verified in CI** (base-files conffiles
       `/etc/issue`, `/etc/motd` and `/usr/lib/os-release` handled via `dpkg-divert`)
@@ -214,10 +214,10 @@ validation deferred to the Phase 7 checklist.*
 - [ ] Signed APT repo (**reprepro**) + CI signing key (secrets only)
 - [ ] Refactor the Pi image to consume the repo / install `<brand>-base`
 - [ ] **Pod images (ADR-0005)** from `debian:trixie-slim`, amd64 + arm64:
-  - [ ] `citos-pod-base` (branding + `kcd` + SSH + tooling, no desktop)
-  - [ ] `citos-pod-dev-<stack>` headless **devcontainers** (`.devcontainer/devcontainer.json`
+  - [ ] `cybroidos-pod-base` (branding + `kcd` + SSH + tooling, no desktop)
+  - [ ] `cybroidos-pod-dev-<stack>` headless **devcontainers** (`.devcontainer/devcontainer.json`
         + `devcontainer.metadata` label) — generic/Python/Node first
-  - [ ] `citos-pod-desktop` (Xfce 4.20 + **xrdp** primary, **noVNC** fallback + `kcd`)
+  - [ ] `cybroidos-pod-desktop` (Xfce 4.20 + **xrdp** primary, **noVNC** fallback + `kcd`)
 - [ ] Container smoke tests (docker/podman, buildx + QEMU binfmt)
 **Exit criteria:** `<brand>-base` installs on a clean Trixie container and applies
 branding; pod images (headless + desktop) pass smoke tests on both architectures.
@@ -227,7 +227,7 @@ branding; pod images (headless + desktop) pass smoke tests on both architectures
       (pods run on servers and need a GUI — ADR-0003)
 - [ ] `qcow2` VM image
 - [ ] Network remote-access path for the Xfce session: **RDP (xrdp) primary** with
-      **VNC/noVNC fallback** — same config as `citos-pod-desktop` (ADR-0005) + branding
+      **VNC/noVNC fallback** — same config as `cybroidos-pod-desktop` (ADR-0005) + branding
 - [ ] Ship headless **`kcd`** for phone control on servers/pods (ADR-0004)
 - [ ] x86_64 QEMU/KVM boot + smoke tests (session up, branding, os-release)
 **Exit criteria:** qcow2 + ISO boot in KVM, show a branded Xfce session, and pass
@@ -240,7 +240,7 @@ the server smoke test.
       (ADR-0003)
 - [ ] Branded boot (GRUB/isolinux), installer, Plasma **global theme**, **SDDM**
       greeter, wallpaper; **KDE Kiosk** profiles for school machines
-- [ ] Ship **KDE Connect + `krdp`** and the `citos-control` service for phone control
+- [ ] Ship **KDE Connect + `krdp`** and the `cybroidos-control` service for phone control
 - [ ] QEMU/KVM boot + smoke tests
 **Exit criteria:** ISO installs and boots to a branded desktop; smoke test passes.
 
@@ -257,12 +257,12 @@ the server smoke test.
 - [x] **ADR-0004 accepted**: Flutter (Android) client + **KDE Connect protocol v8**
       as transport; LAN + internet; actions + full screen; Phone Link parity;
       fork/rebrand KDE Connect later — see `docs/research/desktop-mobile-control.md`
-- [ ] Desktop: ship `citos-control` D-Bus service + KDE Connect plugins; enable `krdp`
-- [ ] Dart **`citos_connect`** package (discovery + TLS + pairing + packet/plugin layer)
+- [ ] Desktop: ship `cybroidos-control` D-Bus service + KDE Connect plugins; enable `krdp`
+- [ ] Dart **`cybroidos_connect`** package (discovery + TLS + pairing + packet/plugin layer)
 - [ ] Phone app: branded CIT Flutter client; pairing/security over LAN; signed release
 - [ ] Internet path: self-hosted relay/tunnel (WireGuard first) — ADR-0004 open item 1
 - [ ] Pods: expose `kcd` (headless KDE Connect) so pods are controllable too (ADR-0005)
-**Exit criteria:** a phone can control a CIT-OS desktop and a pod (actions +
+**Exit criteria:** a phone can control a Cybroid OS desktop and a pod (actions +
 optional full screen), on LAN and (with the relay) over the internet.
 
 ---
@@ -346,12 +346,12 @@ QEMU-only workarounds are confined to a **test profile**. Emulation success is
 | 2026-10-11 | Imported CIT logo assets from `novaoneltd/cit` into `common/branding/`; added `brand.toml` (derived palette); started GitHub Actions (`ci.yml`, `nightly.yml`); CI platform confirmed = GitHub Actions. |
 | 2026-10-11 | Fixed CI/base-OS mismatch: jobs now run inside a **`debian:13-slim` container** (was the Ubuntu runner host). Added `docs/research/kiosk-runtime.md` (flutter-pi feasibility: Pi 2/3/4 + Zero 2 supported, Pi 5 not; plugin caveats) and opened the kiosk-runtime decision (→ ADR-0002). |
 | 2026-10-11 | Added `docs/research/desktop-environment.md`: recommends **KDE Plasma 6.3** for the desktop target (best branding hooks + KDE Kiosk lockdown), with an **Xfce 4.20 "Lite"** variant; Calamares installer. Opened the desktop-environment decision (→ ADR-0003); updated Phase 6. |
-| 2026-10-11 | Owner decisions recorded in **ADR-0003 (accepted)**: KDE Plasma = default desktop; **Xfce for the server/pods target**; Calamares installer. Server/pods now ships a GUI (Phase 5). Added **`docs/research/desktop-mobile-control.md`** for a **customized KDE phone app** to control the desktop (KDE Connect + `krdp` + `citos-control`) and a new **Phase 8** (→ ADR-0004). Recorded `krdp 6.3.5` in Debian 13. |
-| 2026-10-11 | **ADR-0004 accepted**: mobile client is a **Flutter (Android)** app with the **KDE Connect protocol (v8)** as transport (Dart `citos_connect`; `citos-control` on desktop; headless `kcd` on pods); **LAN + internet** (self-hosted relay); **actions + full screen**; parity target = **Phone Link**; fork/rebrand KDE Connect **later**. **ADR-0005 accepted**: pods ship as **headless dev spaces** (devcontainers) **and** **Xfce remote-desktop pods** (xrdp primary, noVNC fallback); remote-access choice resolved to RDP+VNC. Updated Phases 4/5/8, architecture, layout, and open items (added #14 relay, #15 dev stacks). |
+| 2026-10-11 | Owner decisions recorded in **ADR-0003 (accepted)**: KDE Plasma = default desktop; **Xfce for the server/pods target**; Calamares installer. Server/pods now ships a GUI (Phase 5). Added **`docs/research/desktop-mobile-control.md`** for a **customized KDE phone app** to control the desktop (KDE Connect + `krdp` + `cybroidos-control`) and a new **Phase 8** (→ ADR-0004). Recorded `krdp 6.3.5` in Debian 13. |
+| 2026-10-11 | **ADR-0004 accepted**: mobile client is a **Flutter (Android)** app with the **KDE Connect protocol (v8)** as transport (Dart `cybroidos_connect`; `cybroidos-control` on desktop; headless `kcd` on pods); **LAN + internet** (self-hosted relay); **actions + full screen**; parity target = **Phone Link**; fork/rebrand KDE Connect **later**. **ADR-0005 accepted**: pods ship as **headless dev spaces** (devcontainers) **and** **Xfce remote-desktop pods** (xrdp primary, noVNC fallback); remote-access choice resolved to RDP+VNC. Updated Phases 4/5/8, architecture, layout, and open items (added #14 relay, #15 dev stacks). |
 | 2026-10-11 | **Phase 2 done**: added the canonical **`.devcontainer`** (Debian 13 Trixie build image + Docker socket mount), `docs/dev-environments.md` (devcontainer/WSL2/GCP x86+GCP arm64/Deepin-QEMU), and `tools/preflight.sh` (toolchain check, shellchecked in CI). CI now validates `devcontainer.json` and requires the new files. |
-| 2026-10-11 | **ADR-0002 accepted** (kiosk runtime = **Flutter via `flutter-pi`**, `cage`+Chromium fallback) and **ADR-0006 accepted** (**pi-gen**, `arm64` branch, buildable in GitHub Actions). **Phase 3 started**: scaffolded `targets/rpi/` (`config`, `build.sh`, `stage-citos`), branding rendered from `brand.toml` via `tools/render-brand.py`, and `.github/workflows/pi-image.yml` (manual/`pi-*` tag). Resolved open items #3 and #8. |
+| 2026-10-11 | **ADR-0002 accepted** (kiosk runtime = **Flutter via `flutter-pi`**, `cage`+Chromium fallback) and **ADR-0006 accepted** (**pi-gen**, `arm64` branch, buildable in GitHub Actions). **Phase 3 started**: scaffolded `targets/rpi/` (`config`, `build.sh`, `stage-cybroidos`), branding rendered from `brand.toml` via `tools/render-brand.py`, and `.github/workflows/pi-image.yml` (manual/`pi-*` tag). Resolved open items #3 and #8. |
 | 2026-10-11 | Dispatched the first **Pi image build in GitHub Actions**. Added the QEMU harness `tests/qemu/rpi-boot-test.sh` (feature-detected machine, power-of-two padded copy, serial boot + branding assertions) and `tools/fetch-image.sh` (download the CI artifact). |
-| 2026-10-11 | **First Pi image built successfully** (CI run `38150371735`, `cit-os.img.xz`). Downloaded and verified: rootfs has `ID=citos`, banner `/etc/motd`+`/etc/issue`, hostname `citos`, branding assets. **Finding:** QEMU's `raspi*` machines cannot run the VideoCore firmware bootloader, so a raw SD image never boots — reworked the harness to reliable offline structure+branding checks (`debugfs`, direct MBR parse, no mount/root) with an optional non-fatal best-effort kernel boot. |
-| 2026-10-11 | **Graphical QEMU boot working.** Added `tools/fatread.py` (read-only FAT32, no root/mtools) and `tests/qemu/rpi-gui-test.sh`: boots the image's own kernel + Pi 3 DTB on `raspi3b` with `earlycon=pl011,0x3f201000`, lets systemd run (`Hostname set to <citos>`), and captures framebuffer screenshots via the QEMU monitor `screendump` (saved to `docs/branding/rpi-gui-*.png`). **Finding:** `raspi3b` exposes an fbdev framebuffer but **no vc4 KMS/GPU**, and the Pi kernel builds **no `virtio` drivers**, so the `-M virt` + virtio-gpu kiosk test needs a generic Debian arm64 kernel injected into a copy of the image. |
-| 2026-10-11 | **Phase 4 started (ADR-0007)**: shared layer = Debian packages (`citos-base` + per-target meta-packages), `os-release` via `dpkg-divert`, APT repo = **reprepro** (open item #4 resolved). Added `common/packages/citos-base/`, `tools/build-package.sh`, and a CI job that builds, installs on a clean Trixie root and asserts branding. |
-| 2026-10-11 | **Phase 3 kiosk + quiet boot**: `tools/render-brand.py` now also renders the kiosk web app (`usr/share/citos/kiosk/index.html`) and the **Plymouth** boot theme; `stage-citos` installs **`cage`+`chromium`+`plymouth`**, disables the firmware/console boot text (`quiet splash logo.nologo disable_splash=1`), autologins the kiosk user on tty1, and starts the runtime-agnostic `/usr/bin/citos-kiosk` (ADR-0002). The device now boots to a **boot logo only**, then a **branded web kiosk**. |
+| 2026-10-11 | **First Pi image built successfully** (CI run `38150371735`, `cybroid-os.img.xz`). Downloaded and verified: rootfs has `ID=cybroidos`, banner `/etc/motd`+`/etc/issue`, hostname `cybroid`, branding assets. **Finding:** QEMU's `raspi*` machines cannot run the VideoCore firmware bootloader, so a raw SD image never boots — reworked the harness to reliable offline structure+branding checks (`debugfs`, direct MBR parse, no mount/root) with an optional non-fatal best-effort kernel boot. |
+| 2026-10-11 | **Graphical QEMU boot working.** Added `tools/fatread.py` (read-only FAT32, no root/mtools) and `tests/qemu/rpi-gui-test.sh`: boots the image's own kernel + Pi 3 DTB on `raspi3b` with `earlycon=pl011,0x3f201000`, lets systemd run (`Hostname set to <cybroid>`), and captures framebuffer screenshots via the QEMU monitor `screendump` (saved to `docs/branding/rpi-gui-*.png`). **Finding:** `raspi3b` exposes an fbdev framebuffer but **no vc4 KMS/GPU**, and the Pi kernel builds **no `virtio` drivers**, so the `-M virt` + virtio-gpu kiosk test needs a generic Debian arm64 kernel injected into a copy of the image. |
+| 2026-10-11 | **Phase 4 started (ADR-0007)**: shared layer = Debian packages (`cybroidos-base` + per-target meta-packages), `os-release` via `dpkg-divert`, APT repo = **reprepro** (open item #4 resolved). Added `common/packages/cybroidos-base/`, `tools/build-package.sh`, and a CI job that builds, installs on a clean Trixie root and asserts branding. |
+| 2026-10-11 | **Phase 3 kiosk + quiet boot**: `tools/render-brand.py` now also renders the kiosk web app (`usr/share/cybroidos/kiosk/index.html`) and the **Plymouth** boot theme; `stage-cybroidos` installs **`cage`+`chromium`+`plymouth`**, disables the firmware/console boot text (`quiet splash logo.nologo disable_splash=1`), autologins the kiosk user on tty1, and starts the runtime-agnostic `/usr/bin/cybroidos-kiosk` (ADR-0002). The device now boots to a **boot logo only**, then a **branded web kiosk**. |

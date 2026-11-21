@@ -1,4 +1,4 @@
-# Licensing policy for the public CIT-OS release
+# Licensing policy for the public Cybroid OS release
 
 This document records the research and the decision behind the licence split.
 It was prepared after reviewing how Red Hat and Zorin handle open code,
@@ -41,7 +41,7 @@ normal, accepted distribution model.
 Sources: <https://zorin.com/os/>,
 <https://en.wikipedia.org/wiki/Zorin_OS>
 
-## Decision for CIT-OS
+## Decision for Cybroid OS
 
 The goal was "open source, but a bit restrictive to fight exploitation", while
 accepting that some bundled software (for example Hangar) is not open source.
@@ -50,7 +50,7 @@ The clean way to do that is to restrict **brand and trademarks**, not code:
 1. **GPL-3.0-or-later** for the build system, scripts, Debian packaging and
    configuration. Contributors keep all standard free-software freedoms.
 2. **CC BY-NC 4.0** for logos, icons, wallpapers and the palette. Anyone can
-   build and modify CIT-OS; nobody can sell the CIT branding itself.
+   build and modify Cybroid OS; nobody can sell the CIT branding itself.
 3. **Trademark policy** in [`NOTICE.md`](../NOTICE.md): derivatives must rename
    and de-brand; unmodified branded images need written permission.
 4. **Proprietary components register** in

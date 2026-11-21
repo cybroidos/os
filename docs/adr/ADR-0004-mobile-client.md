@@ -1,14 +1,14 @@
-# ADR-0004: Mobile client to control CIT-OS desktops and pods
+# ADR-0004: Mobile client to control Cybroid OS desktops and pods
 
 - **Status:** Accepted (2026-10-11)
 - **Date:** 2026-10-11
-- **Deciders:** CIT-OS maintainers (Cybroid Institute of Technology / CIT)
+- **Deciders:** Cybroid OS maintainers (Cybroid Institute of Technology / CIT)
 - **Related:** ADR-0003 (desktop environment), `docs/research/desktop-mobile-control.md`,
   ADR-0005 (pod image variants).
 
 ## 1. Context
 
-CIT wants a **customized app that controls the CIT-OS desktop from a mobile
+CIT wants a **customized app that controls the Cybroid OS desktop from a mobile
 phone**. Owner's direction (2026-10-11):
 
 - **Phone OS: Android.**
@@ -75,7 +75,7 @@ must be written (the JSON schemas + Go/Rust ports are the reference).
 
 1. **Client:** a **Flutter (Android-first)** app — the CIT control client.
 2. **Transport:** the **KDE Connect protocol v8**, wrapped behind a Dart library
-   **`citos_connect`** (packages: discovery, TLS, pairing, packet/plugin layer).
+   **`cybroidos_connect`** (packages: discovery, TLS, pairing, packet/plugin layer).
    This keeps the wire protocol KDE-Connect-compatible (so stock KDE Connect and
    `kcd` interoperate).
    - **Fallback** if a Dart reimplementation proves too costly: **Option B** —
@@ -83,13 +83,13 @@ must be written (the JSON schemas + Go/Rust ports are the reference).
      keep the Flutter UI.
 3. **Desktop/pod side:** ship **`kdeconnect-kde`** (+ `krdp` for full screen) on
    the desktop, and **`kcd`** (headless) on server/pod images; add a
-   **`citos-control`** D-Bus/CLI service exposing CIT-specific actions (lock,
+   **`cybroidos-control`** D-Bus/CLI service exposing CIT-specific actions (lock,
    shutdown, launch, push content, open lab/kiosk session).
 4. **Network:** **LAN first** (KDE Connect UDP/mDNS + TLS). **Over-the-internet**
    via a **self-hosted relay/tunnel** (e.g. WireGuard or a small rendezvous+relay
    service) — KDE Connect has no NAT traversal of its own. Security scope defined
    in a follow-up.
-5. **Control:** **both** — actions via KDE Connect plugins + `citos-control`, and
+5. **Control:** **both** — actions via KDE Connect plugins + `cybroidos-control`, and
    **full screen** via **KRDP/RDP** (desktop) / VNC (pods).
 6. **Parity target:** match the **Phone Link** feature list in §3 as the roadmap
    (messages, calls, notifications, photos, clipboard, media, DND, screen

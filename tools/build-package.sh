@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build a CIT-OS .deb from common/packages/<name>.
+# Build a Cybroid OS .deb from common/packages/<name>.
 #
 # Renders branding from common/branding/brand.toml into the package source tree,
 # keeps the changelog version in sync, and runs dpkg-buildpackage. Output lands
@@ -8,7 +8,7 @@
 # Requirements: dpkg-dev, debhelper, fakeroot, python3.
 set -euo pipefail
 
-name="${1:-citos-base}"
+name="${1:-cybroidos-base}"
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd "${here}/.." && pwd)"
 src="${repo_root}/common/packages/${name}"
@@ -30,13 +30,13 @@ cp -a "${src}/debian" "${srcdir}/debian"
 # Render identity + assets (paths must match debian/install).
 python3 "${repo_root}/tools/render-brand.py" \
 	--brand "${brand}" --release "${release}" --out "${srcdir}"
-install -d "${srcdir}/usr/share/citos/branding"
+install -d "${srcdir}/usr/share/cybroidos/branding"
 # /etc/issue and /etc/motd are base-files conffiles; ship them aside and place
 # them in postinst.
-install -d "${srcdir}/usr/share/citos"
-cp "${srcdir}/etc/issue" "${srcdir}/usr/share/citos/issue"
-cp "${srcdir}/etc/motd" "${srcdir}/usr/share/citos/motd"
-cp -a "${repo_root}/common/branding/logo/." "${srcdir}/usr/share/citos/branding/"
+install -d "${srcdir}/usr/share/cybroidos"
+cp "${srcdir}/etc/issue" "${srcdir}/usr/share/cybroidos/issue"
+cp "${srcdir}/etc/motd" "${srcdir}/usr/share/cybroidos/motd"
+cp -a "${repo_root}/common/branding/logo/." "${srcdir}/usr/share/cybroidos/branding/"
 
 # Ship the licence texts with the binary package (paths in debian/install).
 install -d "${srcdir}/usr/share/doc/${name}"
@@ -49,7 +49,7 @@ ${name} (${version}) ${release}; urgency=medium
 
   * Built from common/branding/brand.toml.
 
- -- CIT-OS maintainers <citos@cybroid.com>  $(date -R)
+ -- Cybroid OS maintainers <cybroidos@cybroid.com>  $(date -R)
 EOF
 
 mkdir -p "${out}"

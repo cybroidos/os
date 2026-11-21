@@ -2,7 +2,7 @@
 
 - **Status:** Accepted (2026-10-11)
 - **Date:** 2026-10-11
-- **Deciders:** CIT-OS maintainers (Cybroid Institute of Technology / CIT)
+- **Deciders:** Cybroid OS maintainers (Cybroid Institute of Technology / CIT)
 - **Related:** ADR-0001 (base distribution), ADR-0003 (desktop environment),
   ADR-0004 (mobile client), `docs/PLAN.md` (Phases 4–5).
 
@@ -65,23 +65,23 @@ covers the **server VM/ISO + `qcow2`**; Phase 4 covers **Docker** images.
 
 Pods come in **two families**, built on a shared base:
 
-1. **`citos-pod-base`** — `debian:trixie-slim` + `<brand>-base` + `kcd` + SSH +
+1. **`cybroidos-pod-base`** — `debian:trixie-slim` + `<brand>-base` + `kcd` + SSH +
    common tooling. No desktop.
-2. **`citos-pod-dev-<stack>`** — **headless dev spaces** (one per stack; e.g.
+2. **`cybroidos-pod-dev-<stack>`** — **headless dev spaces** (one per stack; e.g.
    generic, Python, Node, .NET, Go, Rust). Each is a **devcontainer**:
    ships `.devcontainer/devcontainer.json` + the `devcontainer.metadata` label.
-3. **`citos-pod-desktop`** — **Xfce 4.20** + **xrdp (RDP, primary)** +
+3. **`cybroidos-pod-desktop`** — **Xfce 4.20** + **xrdp (RDP, primary)** +
    **noVNC (browser fallback)**, same Xfce branding as the server/pod VM, plus
    `kcd`. This is the **remote-desktop dev space** for GUI development.
 
 Conventions:
 
 - **Multi-arch:** all pod images build for **amd64 and arm64**.
-- **Naming:** `citos-pod-*` (a pod is the container form of the server/pod target).
+- **Naming:** `cybroidos-pod-*` (a pod is the container form of the server/pod target).
 - Two ways to use a pod = **the same base + the desktop layer, or not** — selected
   by tag/image, not by a runtime flag.
 - The **server VM/ISO + `qcow2`** (Phase 5) reuse the **same Xfce + remote-access
-  configuration** as `citos-pod-desktop`.
+  configuration** as `cybroidos-pod-desktop`.
 - Remote access path for the Xfce session is **RDP (xrdp)** primary with
   **VNC/noVNC** fallback — resolving PLAN open item #13 for pods; the server VM
   uses the same choice.

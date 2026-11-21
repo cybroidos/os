@@ -1,4 +1,4 @@
-# CIT-OS build environment (Debian 13 "Trixie")
+# Cybroid OS build environment (Debian 13 "Trixie")
 # Matches the shipping base OS (ADR-0001). See docs/dev-environments.md.
 FROM debian:13-slim
 
@@ -29,5 +29,5 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       locales sudo shellcheck \
     && rm -rf /var/lib/apt/lists/*
 
-# Canonical workspace for the devcontainer; the repo is mounted at /workspaces/cit-os.
-WORKDIR /workspaces/cit-os
+# Canonical workspace for the devcontainer; the repo is mounted at /workspaces/cybroid-os.
+WORKDIR /workspaces/cybroid-os

@@ -2,7 +2,7 @@
 
 - **Status:** Accepted (2026-10-11)
 - **Date:** 2026-10-11
-- **Deciders:** CIT-OS maintainers (Cybroid Institute of Technology / CIT)
+- **Deciders:** Cybroid OS maintainers (Cybroid Institute of Technology / CIT)
 - **Related:** ADR-0001 (base distribution), ADR-0002 (kiosk runtime),
   `docs/PLAN.md` (Phase 3), `docs/research/kiosk-runtime.md`.
 
@@ -24,7 +24,7 @@ the build to run in **GitHub Actions if feasible**.
   `STAGE_LIST`, `DEPLOY_DIR`, `ENABLE_SSH`, `PUBKEY_ONLY_SSH`,
   `ENABLE_CLOUD_INIT`, `PI_GEN_RELEASE`) plus stage directories.
 - **`STAGE_LIST`** may reference a stage **outside the pi-gen tree** (relative or
-  absolute path), so our `stage-citos` can live in this repo.
+  absolute path), so our `stage-cybroidos` can live in this repo.
 - Stage conventions: numbered step subdirectories, each with optional
   `00-packages` and `NN-run.sh` (plus `files/`); `SKIP` skips a stage;
   `EXPORT_IMAGE` marks a stage as producing an image.
@@ -42,13 +42,13 @@ the build to run in **GitHub Actions if feasible**.
 
 - **Builder:** **`pi-gen`** (official), **`arm64` branch**, targeting Debian
   Trixie / arm64 (one image that also runs on Pi 4; see PLAN).
-- **Customisation:** a **custom stage `stage-citos`** lives in this repo
-  (`targets/rpi/stage-citos/`) and is appended via `STAGE_LIST`; it applies CIT
+- **Customisation:** a **custom stage `stage-cybroidos`** lives in this repo
+  (`targets/rpi/stage-cybroidos/`) and is appended via `STAGE_LIST`; it applies CIT
   branding and installs the kiosk (ADR-0002), then **exports the image**
   (`EXPORT_IMAGE`). Eventually the stage installs the signed **`<brand>-base`**
   package instead of copying files directly (Phase 4).
 - **Build harness:** `targets/rpi/build.sh` clones pi-gen (`arm64`), wires in
-  `stage-citos`, and runs `build-docker.sh`; the produced image lands in
+  `stage-cybroidos`, and runs `build-docker.sh`; the produced image lands in
   `targets/rpi/deploy/`.
 - **CI:** a **manual/tag-triggered GitHub Actions workflow**
   (`.github/workflows/pi-image.yml`) frees disk space, runs the build, and uploads

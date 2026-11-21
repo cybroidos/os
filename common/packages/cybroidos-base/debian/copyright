@@ -1,23 +1,23 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: CIT-OS
+Upstream-Name: Cybroid OS
 Source: https://github.com/cybroidtech/os
 
 Files: *
 Copyright: 2026 Cybroid Institute of Technology
 License: GPL-3+
- CIT-OS build configuration and tooling are free software under the GNU
- General Public License version 3 or later. See /usr/share/doc/citos-base/LICENSE.
+ Cybroid OS build configuration and tooling are free software under the GNU
+ General Public License version 3 or later. See /usr/share/doc/cybroidos-base/LICENSE.
 
-Files: usr/share/citos/branding/* usr/share/icons/* usr/share/wallpapers/*
+Files: usr/share/cybroidos/branding/* usr/share/icons/* usr/share/wallpapers/*
 Copyright: 2026 Cybroid Institute of Technology
 License: CC-BY-NC-4.0
  Brand artwork is licensed under Creative Commons Attribution-NonCommercial
- 4.0 International. See /usr/share/doc/citos-base/LICENSE-ASSETS.
+ 4.0 International. See /usr/share/doc/cybroidos-base/LICENSE-ASSETS.
 
 Files: debian/*
 Copyright: 2026 Cybroid Institute of Technology
 License: GPL-3+
- Debian packaging for CIT-OS is free software under GPL-3+.
+ Debian packaging for Cybroid OS is free software under GPL-3+.
 
 License: CC-BY-NC-4.0
  Attribution-NonCommercial 4.0 International

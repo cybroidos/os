@@ -7,7 +7,7 @@ set -e
 # avoids dpkg conffile prompts.
 if [ "$1" = "install" ]; then
 	for f in /usr/lib/os-release /etc/issue /etc/motd; do
-		dpkg-divert --package citos-base --add --rename \
+		dpkg-divert --package cybroidos-base --add --rename \
 			--divert "${f}.base-files" "$f"
 	done
 fi

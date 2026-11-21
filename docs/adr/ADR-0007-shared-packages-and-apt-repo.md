@@ -2,7 +2,7 @@
 
 - **Status:** Accepted (2026-10-11)
 - **Date:** 2026-10-11
-- **Deciders:** CIT-OS maintainers (Cybroid Institute of Technology / CIT)
+- **Deciders:** Cybroid OS maintainers (Cybroid Institute of Technology / CIT)
 - **Related:** ADR-0001 (base distribution), ADR-0003/0005 (targets),
   `docs/PLAN.md` (Phase 4).
 
@@ -20,18 +20,18 @@ APT repository**, then refactors the targets to consume them. PLAN open item #4
 
 | Package | Role |
 |---|---|
-| `citos-base` | identity (`os-release`), MOTD/issue, brand assets, shared config |
-| `citos-rpi` | Raspberry Pi meta-package (kiosk deps, Pi config) |
-| `citos-desktop` | desktop meta-package (KDE Plasma, SDDM, KDE Connect, `krdp`) |
-| `citos-server` | server/pods meta-package (Xfce, `kcd`, remote access) |
-| `citos-kiosk` | kiosk systemd unit + launcher (runtime-agnostic, ADR-0002) |
+| `cybroidos-base` | identity (`os-release`), MOTD/issue, brand assets, shared config |
+| `cybroidos-rpi` | Raspberry Pi meta-package (kiosk deps, Pi config) |
+| `cybroidos-desktop` | desktop meta-package (KDE Plasma, SDDM, KDE Connect, `krdp`) |
+| `cybroidos-server` | server/pods meta-package (Xfce, `kcd`, remote access) |
+| `cybroidos-kiosk` | kiosk systemd unit + launcher (runtime-agnostic, ADR-0002) |
 
 - **Version** is taken from `common/branding/brand.toml` (`identity.version`) so
   branding and package versions stay in lockstep.
-- **`os-release` branding:** `citos-base` ships `/usr/lib/os-release` and, in
+- **`os-release` branding:** `cybroidos-base` ships `/usr/lib/os-release` and, in
   `preinst`, `dpkg-divert`s base-files' file
   (`--divert /usr/lib/os-release.base-files`), so the standard `/etc/os-release`
-  symlink resolves to CIT-OS content. `postrm` removes the diversion. This avoids
+  symlink resolves to Cybroid OS content. `postrm` removes the diversion. This avoids
   a file conflict with the Essential `base-files` package.
 - **APT repo:** **`reprepro`** — file-based, no long-running DB/daemon, easy to
   drive from CI and to sign (`Release.gpg`/`InRelease`). Published to GitHub
@@ -61,5 +61,5 @@ APT repository**, then refactors the targets to consume them. PLAN open item #4
 Debian packaging conventions (debhelper-compat 13, `Rules-Requires-Root: no`,
 `3.0 (native)` source), `dpkg-divert` semantics for `/usr/lib/os-release`, and
 `reprepro` signing behaviour are standard, documented Debian mechanisms. The
-`citos-base` package is verified in CI (build, `dpkg-deb -I/-c`, install on a
-clean Trixie root, assert `/etc/os-release` `ID=citos`, lintian).
+`cybroidos-base` package is verified in CI (build, `dpkg-deb -I/-c`, install on a
+clean Trixie root, assert `/etc/os-release` `ID=cybroidos`, lintian).

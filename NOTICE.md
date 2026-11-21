@@ -1,4 +1,4 @@
-# CIT-OS notices
+# Cybroid OS notices
 
 This project is published as open source with deliberate, narrow restrictions
 that protect the brand without locking down the code. See
@@ -16,7 +16,7 @@ that protect the brand without locking down the code. See
 
 ## Trademark policy
 
-CIT, CIT-OS, Cybroid, the CIT mark, and associated logos are trademarks of the
+CIT, Cybroid OS, Cybroid, the CIT mark, and associated logos are trademarks of the
 Cybroid Institute of Technology. You may use the build system under the GPL to
 create your own images, but:
 
@@ -33,7 +33,7 @@ release; the code remains fully free software.
 
 ## Third-party notices
 
-CIT-OS is built on Debian 13 "Trixie" and, for the Pi target, Raspberry Pi OS.
+Cybroid OS is built on Debian 13 "Trixie" and, for the Pi target, Raspberry Pi OS.
 Those projects and every packaged dependency retain their own copyright and
 licence terms. "Raspberry Pi" is a trademark of Raspberry Pi Ltd and is used
 only for compatibility attribution; no Raspberry Pi logo is redistributed by

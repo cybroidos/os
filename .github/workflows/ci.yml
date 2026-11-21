@@ -41,7 +41,7 @@ jobs:
         run: |
           python3 - <<'PY'
           import pathlib, xml.dom.minidom
-          f = pathlib.Path("common/branding/logo/cit-logo.svg")
+          f = pathlib.Path("common/branding/logo/cybroid-logo.svg")
           xml.dom.minidom.parse(str(f))
           print(f"SVG OK: {f}")
           PY
@@ -62,8 +62,8 @@ jobs:
           echo "render-brand.py compiles"
           bash -n targets/rpi/config
           bash -n targets/rpi/build.sh
-          bash -n targets/rpi/stage-citos/prerun.sh
-          bash -n targets/rpi/stage-citos/00-citos/01-run.sh
+          bash -n targets/rpi/stage-cybroidos/prerun.sh
+          bash -n targets/rpi/stage-cybroidos/00-cybroidos/01-run.sh
           echo "targets/rpi scripts parse"
 
       - name: Check required files exist
@@ -97,20 +97,20 @@ jobs:
             tests/qemu/rpi-gui-test.sh \
             targets/rpi/config \
             targets/rpi/build.sh \
-            targets/rpi/stage-citos/EXPORT_IMAGE \
-            targets/rpi/stage-citos/00-citos/02-kiosk.sh \
-            targets/rpi/stage-citos/00-citos/files/usr/bin/citos-kiosk \
-            targets/rpi/stage-citos/00-citos/files/etc/citos/kiosk.conf \
-            common/packages/citos-base/debian/control \
-            common/packages/citos-base/debian/rules \
+            targets/rpi/stage-cybroidos/EXPORT_IMAGE \
+            targets/rpi/stage-cybroidos/00-cybroidos/02-kiosk.sh \
+            targets/rpi/stage-cybroidos/00-cybroidos/files/usr/bin/cybroidos-kiosk \
+            targets/rpi/stage-cybroidos/00-cybroidos/files/etc/cybroidos/kiosk.conf \
+            common/packages/cybroidos-base/debian/control \
+            common/packages/cybroidos-base/debian/rules \
             common/branding/brand.toml \
-            common/branding/logo/cit-logo.svg ; do
+            common/branding/logo/cybroid-logo.svg ; do
             test -f "$f" || { echo "missing: $f"; exit 1; }
           done
           echo "all required files present"
 
   build-base-package:
-    name: Build & verify citos-base (Debian 13 / Trixie)
+    name: Build & verify cybroidos-base (Debian 13 / Trixie)
     runs-on: ubuntu-24.04
     container: debian:13-slim
     steps:
@@ -124,7 +124,7 @@ jobs:
             debhelper fakeroot lintian
 
       - name: Build .deb
-        run: tools/build-package.sh citos-base
+        run: tools/build-package.sh cybroidos-base
 
       - name: Inspect .deb
         run: |
@@ -134,10 +134,10 @@ jobs:
       - name: Install and verify branding
         run: |
           dpkg -i dist/*.deb
-          grep -q '^ID=citos' /etc/os-release
-          grep -q 'CIT-OS' /etc/motd
+          grep -q '^ID=cybroidos' /etc/os-release
+          grep -q 'Cybroid OS' /etc/motd
           test -f /etc/issue
-          echo "citos-base installs and applies branding"
+          echo "cybroidos-base installs and applies branding"
 
       - name: Lintian (non-fatal)
         run: lintian dist/*.deb || true

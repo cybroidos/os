@@ -4,7 +4,7 @@
   **Xfce** is used on the **server/pods** target; **Calamares** is the installer.
   A few items in §7 remain open.
 - **Date:** 2026-10-11
-- **Deciders:** Cybroid OS maintainers (Cybroid Institute of Technology / CIT)
+- **Deciders:** Cybroid OS maintainers (Cybroid Technologies (U) Ltd)
 - **Supersedes:** the "desktop environment" and "installer" parts of ADR-0001 §5
   and PLAN open items 5 and 9.
 - **Related:** `docs/research/desktop-environment.md`,
@@ -12,14 +12,14 @@
 
 ## 1. Context
 
-The desktop target (CIT school computers + a few customers who choose Cybroid OS
+The desktop target (Cybroid school computers + a few customers who choose Cybroid OS
 over Windows) needs a branded, manageable desktop. Separately, the **server/pods**
 target is now expected to **also feature a desktop environment** (the pods run on
 servers and need a GUI reachable over the network). The owner's direction:
 
 - **KDE Plasma** = the default desktop environment.
 - **Xfce** = the desktop for the **server/pods** target (lightweight, server-side).
-- Additionally, CIT wants a **customized KDE application to control the desktop
+- Additionally, Cybroid wants a **customized KDE application to control the desktop
   from a mobile phone** (scoped in `docs/research/desktop-mobile-control.md`).
 
 ADR-0001 fixed the base (Debian 13 "Trixie") but deliberately left the desktop

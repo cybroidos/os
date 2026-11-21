@@ -12,8 +12,8 @@
 
 - **Desktop side:** ship **KDE Connect** (`kdeconnect-kde`) as the transport and
   the **`krdp`** RDP server (both are in Debian 13) for optional full-screen
-  *view + control*. Add a small CIT daemon (`cybroidos-control`) exposing
-  CIT-specific actions over D-Bus / KDE Connect commands.
+  *view + control*. Add a small Cybroid daemon (`cybroidos-control`) exposing
+  Cybroid-specific actions over D-Bus / KDE Connect commands.
 - **Phone side:** build a **branded Kirigami (Qt/KDE) Android app** — the
   KDE-native answer to "customized KDE app". Reuse the KDE Connect protocol and
   plugins where possible instead of starting from scratch.
@@ -32,7 +32,7 @@
 | Push/mirror content, app launcher, workspace control | custom `cybroidos-control` D-Bus service | to build |
 
 Most "control" asks are already covered by **KDE Connect**; full remote-screen
-control is **KRDP**. A custom app mainly adds **branding** and **CIT-specific
+control is **KRDP**. A custom app mainly adds **branding** and **Cybroid-specific
 commands / UX**.
 
 ## Building blocks (verified 2026-10-11)
@@ -59,17 +59,17 @@ commands / UX**.
 
 | Option | What it is | Pros | Cons |
 |---|---|---|---|
-| **A. Branded KDE Connect** | Fork/rebrand the Android KDE Connect app + add CIT plugins | fastest; battle-tested transport + plugins; matches "KDE app" | Android-focused; iOS port limited; forking upstream app = maintenance |
-| **B. `krdp` + RDP client** | Enable KRDP on desktop; use a phone RDP client | full screen view+control; no custom app needed | client-compat caveats; heavier; not a bespoke "CIT app" |
+| **A. Branded KDE Connect** | Fork/rebrand the Android KDE Connect app + add Cybroid plugins | fastest; battle-tested transport + plugins; matches "KDE app" | Android-focused; iOS port limited; forking upstream app = maintenance |
+| **B. `krdp` + RDP client** | Enable KRDP on desktop; use a phone RDP client | full screen view+control; no custom app needed | client-compat caveats; heavier; not a bespoke "Cybroid app" |
 | **C. Custom Kirigami client** | New KDE-native Android app (reusing KDE Connect protocol / D-Bus bridge) | fully branded; KDE-native | real product effort; Android toolchain; signing/release |
-| **D. Flutter client** | Cross-platform phone app (Android+iOS) talking to a CIT desktop service | one codebase; owner likes Flutter; iOS coverage | not "KDE-native"; needs a desktop service/API |
+| **D. Flutter client** | Cross-platform phone app (Android+iOS) talking to a Cybroid desktop service | one codebase; owner likes Flutter; iOS coverage | not "KDE-native"; needs a desktop service/API |
 
 ## Recommendation in context
 
 - **Phase 1 (low effort):** ship **KDE Connect + `krdp`** on the desktop and treat
   the stock KDE Connect phone app as the interim control tool. Ship a small
   **`cybroidos-control`** package (D-Bus service + KDE Connect "Run Commands" entries)
-  for CIT actions.
+  for Cybroid actions.
 - **Phase 2 (the "customized KDE app"):** build a **branded Kirigami Android app**
   on the KDE Connect protocol (Option A/C), OR a **Flutter** client (Option D) if
   cross-platform + one codebase is preferred. Decide in ADR-0004.

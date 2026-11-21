@@ -16,13 +16,13 @@ that protect the brand without locking down the code. See
 
 ## Trademark policy
 
-CIT, Cybroid OS, Cybroid, the CIT mark, and associated logos are trademarks of the
-Cybroid Institute of Technology. You may use the build system under the GPL to
+Cybroid OS, Cybroid, the Cybroid mark, and associated logos are trademarks of the
+Cybroid Technologies (U) Ltd. You may use the build system under the GPL to
 create your own images, but:
 
-- you may not use the CIT/Cybroid names or logos to imply endorsement of your
+- you may not use the Cybroid names or logos to imply endorsement of your
   derivative;
-- redistributing an unmodified branded image under the CIT name requires
+- redistributing an unmodified branded image under the Cybroid name requires
   written permission;
 - modified or derived images must be renamed and must not reuse the brand
   assets unless separately licensed.

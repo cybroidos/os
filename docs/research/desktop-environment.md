@@ -16,7 +16,7 @@
   (global theme, SDDM greeter theme, splash, wallpaper, colour schemes) **and a
   built-in Kiosk/lockdown framework** for managing shared school machines.
 - **Also offer a "Lite" variant on Xfce 4.20** for older lab hardware (2 GB RAM),
-  and keep **Cinnamon 6.4** as the "familiar/Windows-like" alternative if CIT
+  and keep **Cinnamon 6.4** as the "familiar/Windows-like" alternative if Cybroid
   prefers it.
 - **Not recommended for the general desktop:** GNOME 48 (harder to brand and
   lock down without extensions) and the very light LXQt/LXDE (less polished).
@@ -67,7 +67,7 @@ security/point fixes — this is the normal, expected "stable distro" trade-off.
   experimental). Pick this for lab machines with ≤ 2 GB RAM.
 - **Cinnamon 6.4 — the "Windows-like" option.** Familiar, themable, good for
   non-technical users. Less configurable and no Kiosk framework, but a solid
-  middle ground if CIT's staff prefer its feel over Plasma.
+  middle ground if Cybroid's staff prefer its feel over Plasma.
 - **GNOME 48 — not recommended here.** Most polished "vanilla" experience, but
   branding needs extensions/dconf, the lockdown story is weaker, and it is the
   heaviest. Good general desktop, poor fit for *this* branding/management goal.
@@ -92,7 +92,7 @@ security/point fixes — this is the normal, expected "stable distro" trade-off.
 ## Open risks / to confirm
 
 1. **RAM/disk budget** — Plasma needs ~4 GB RAM for the live environment; the
-   "Lite" Xfce variant covers 2 GB machines. Confirm the actual CIT lab hardware
+   "Lite" Xfce variant covers 2 GB machines. Confirm the actual Cybroid lab hardware
    specs.
 2. **Lockdown requirements** — get the concrete rules (what students may change,
    which apps are allowed) before building the Kiosk profiles.

@@ -2,13 +2,13 @@
 
 - **Status:** Accepted (2026-10-11)
 - **Date:** 2026-10-11
-- **Deciders:** Cybroid OS maintainers (Cybroid Institute of Technology / CIT)
+- **Deciders:** Cybroid OS maintainers (Cybroid Technologies (U) Ltd)
 - **Related:** ADR-0001 (base distribution), ADR-0003 (desktop environment),
   ADR-0004 (mobile client), `docs/PLAN.md` (Phases 4–5).
 
 ## 1. Context
 
-"Pods" are CIT's container-based work environments. Owner's direction
+"Pods" are Cybroid's container-based work environments. Owner's direction
 (2026-10-11):
 
 - Pods are offered **two ways**:

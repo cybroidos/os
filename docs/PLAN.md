@@ -4,7 +4,7 @@
 > add an entry to §12 Change log every time you edit it.** This file is the single
 > source of truth for "what are we doing and where are we".
 
-- **Owner:** Cybroid OS maintainers (Cybroid Institute of Technology)
+- **Owner:** Cybroid OS maintainers (Cybroid Technologies (U) Ltd)
 - **Base OS decision:** [ADR-0001](adr/ADR-0001-base-distribution.md) — **Debian 13
   "Trixie"** for all targets; Raspberry Pi OS (Debian Trixie) lineage for the Pi.
 - **Repository:** https://github.com/cybroidtech/os
@@ -19,10 +19,10 @@ images** for four targets, sharing as much configuration as possible.
 
 | # | Target | Artefact | Who uses it |
 |---|---|---|---|
-| 1 | **Raspberry Pi** | flashable `.img` → branded kiosk | CIT labs / customers |
-| 2 | **Desktop** | bootable, installable ISO (x86_64; arm64 optional) | **CIT school computers** (+ a few customers who choose Cybroid OS over Windows) |
-| 3 | **Server / pods** | image/ISO (cloud-init capable) + `qcow2` VM image; **now includes an Xfce desktop** (pods run on servers and need a GUI) | CIT + **customers (shipped)** |
-| 4 | **Docker / pods** | container images (amd64 + arm64): headless **dev spaces** (devcontainers) **and** Xfce **remote-desktop** pods — see ADR-0005 | CIT + customers |
+| 1 | **Raspberry Pi** | flashable `.img` → branded kiosk | Cybroid labs / customers |
+| 2 | **Desktop** | bootable, installable ISO (x86_64; arm64 optional) | **Cybroid school computers** (+ a few customers who choose Cybroid OS over Windows) |
+| 3 | **Server / pods** | image/ISO (cloud-init capable) + `qcow2` VM image; **now includes an Xfce desktop** (pods run on servers and need a GUI) | Cybroid + **customers (shipped)** |
+| 4 | **Docker / pods** | container images (amd64 + arm64): headless **dev spaces** (devcontainers) **and** Xfce **remote-desktop** pods — see ADR-0005 | Cybroid + customers |
 
 **Goal:** every visible surface is branded — bootloader/firmware where possible,
 quiet boot, Plymouth splash, greeter/login, wallpaper, installer, MOTD/issue,
@@ -103,7 +103,7 @@ as early as possible, even before the shared package/APT repo work.
         │              │               │               │
         └──────────────┴───────┬───────┴───────────────┘
                                ▼
-                    signed CIT APT repo (aptly/reprepro)
+                    signed Cybroid APT repo (aptly/reprepro)
                     <brand>-base, <brand>-rpi, <brand>-desktop, <brand>-server,
                     <brand>-kiosk, cit tooling
 
@@ -182,7 +182,7 @@ hacks; `docs/` and `adr/` keep decisions discoverable.
       hostname) and verify — **first image built in CI** (run `38150371735`);
       rootfs verified via `debugfs`: `ID=cybroidos`, banner motd/issue, hostname
       `cybroid`, branding assets present
-- [ ] Quiet boot + **Plymouth** splash + CIT wallpaper
+- [ ] Quiet boot + **Plymouth** splash + Cybroid wallpaper
 - [ ] **kiosk**: systemd service launching one fullscreen app, auto-restart on
       crash; **runtime swappable** — (a) Flutter via **flutter-pi** (default) or
       (b) `cage` + Chromium (native `.deb`) web app (ADR-0002)
@@ -259,7 +259,7 @@ the server smoke test.
       fork/rebrand KDE Connect later — see `docs/research/desktop-mobile-control.md`
 - [ ] Desktop: ship `cybroidos-control` D-Bus service + KDE Connect plugins; enable `krdp`
 - [ ] Dart **`cybroidos_connect`** package (discovery + TLS + pairing + packet/plugin layer)
-- [ ] Phone app: branded CIT Flutter client; pairing/security over LAN; signed release
+- [ ] Phone app: branded Cybroid Flutter client; pairing/security over LAN; signed release
 - [ ] Internet path: self-hosted relay/tunnel (WireGuard first) — ADR-0004 open item 1
 - [ ] Pods: expose `kcd` (headless KDE Connect) so pods are controllable too (ADR-0005)
 **Exit criteria:** a phone can control a Cybroid OS desktop and a pod (actions +
@@ -343,7 +343,7 @@ QEMU-only workarounds are confined to a **test profile**. Emulation success is
 | Date | Change |
 |---|---|
 | 2026-10-11 | Initial plan; ADR-0001 accepted (Debian 13 Trixie; Pi dev/test on Pi 3, target Pi 4). |
-| 2026-10-11 | Imported CIT logo assets from `novaoneltd/cit` into `common/branding/`; added `brand.toml` (derived palette); started GitHub Actions (`ci.yml`, `nightly.yml`); CI platform confirmed = GitHub Actions. |
+| 2026-10-11 | Imported Cybroid logo assets from `novaoneltd/cit` into `common/branding/`; added `brand.toml` (derived palette); started GitHub Actions (`ci.yml`, `nightly.yml`); CI platform confirmed = GitHub Actions. |
 | 2026-10-11 | Fixed CI/base-OS mismatch: jobs now run inside a **`debian:13-slim` container** (was the Ubuntu runner host). Added `docs/research/kiosk-runtime.md` (flutter-pi feasibility: Pi 2/3/4 + Zero 2 supported, Pi 5 not; plugin caveats) and opened the kiosk-runtime decision (→ ADR-0002). |
 | 2026-10-11 | Added `docs/research/desktop-environment.md`: recommends **KDE Plasma 6.3** for the desktop target (best branding hooks + KDE Kiosk lockdown), with an **Xfce 4.20 "Lite"** variant; Calamares installer. Opened the desktop-environment decision (→ ADR-0003); updated Phase 6. |
 | 2026-10-11 | Owner decisions recorded in **ADR-0003 (accepted)**: KDE Plasma = default desktop; **Xfce for the server/pods target**; Calamares installer. Server/pods now ships a GUI (Phase 5). Added **`docs/research/desktop-mobile-control.md`** for a **customized KDE phone app** to control the desktop (KDE Connect + `krdp` + `cybroidos-control`) and a new **Phase 8** (→ ADR-0004). Recorded `krdp 6.3.5` in Debian 13. |

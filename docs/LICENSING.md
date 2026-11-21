@@ -50,7 +50,7 @@ The clean way to do that is to restrict **brand and trademarks**, not code:
 1. **GPL-3.0-or-later** for the build system, scripts, Debian packaging and
    configuration. Contributors keep all standard free-software freedoms.
 2. **CC BY-NC 4.0** for logos, icons, wallpapers and the palette. Anyone can
-   build and modify Cybroid OS; nobody can sell the CIT branding itself.
+   build and modify Cybroid OS; nobody can sell the Cybroid branding itself.
 3. **Trademark policy** in [`NOTICE.md`](../NOTICE.md): derivatives must rename
    and de-brand; unmodified branded images need written permission.
 4. **Proprietary components register** in

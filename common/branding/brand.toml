@@ -3,7 +3,7 @@
 # Single source of truth for branding values. Builders and packages read this
 # file (or values rendered from it) so branding is defined exactly once.
 #
-# Palette is DERIVED from the official CIT logo gradient found in
+# Palette is DERIVED from the official Cybroid logo gradient found in
 # novaoneltd/cit -> extension/media/cybroid-logo.svg (stop-colors #557fc0 -> #69cce1
 # over navy #112649 / #0e2044). Confirm/adjust with the brand owner before a
 # release; treat these as v0 defaults.
@@ -11,8 +11,8 @@
 [identity]
 name            = "Cybroid OS"
 id              = "cybroidos"                 # os-release ID, hostname, package prefix
-vendor          = "Cybroid Institute of Technology"
-vendor_short    = "CIT"
+vendor          = "Cybroid Technologies (U) Ltd"
+vendor_short    = "Cybroid"
 pretty_name     = "Cybroid OS"
 version         = "0.1.0"
 default_hostname = "cybroid"
@@ -22,7 +22,7 @@ documentation   = "https://github.com/cybroidtech/os"
 bug_report_url  = "https://github.com/cybroidtech/os/issues"
 
 [colors]
-# Roles. Derived from the CIT logo SVG; see header note.
+# Roles. Derived from the Cybroid logo SVG; see header note.
 primary        = "#112649"   # deep navy — primary brand / dark surfaces
 primary_deep   = "#0e2044"   # darker navy — deepest background
 accent         = "#69cce1"   # cyan — primary accent / highlights

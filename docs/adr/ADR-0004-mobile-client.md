@@ -2,13 +2,13 @@
 
 - **Status:** Accepted (2026-10-11)
 - **Date:** 2026-10-11
-- **Deciders:** Cybroid OS maintainers (Cybroid Institute of Technology / CIT)
+- **Deciders:** Cybroid OS maintainers (Cybroid Technologies (U) Ltd)
 - **Related:** ADR-0003 (desktop environment), `docs/research/desktop-mobile-control.md`,
   ADR-0005 (pod image variants).
 
 ## 1. Context
 
-CIT wants a **customized app that controls the Cybroid OS desktop from a mobile
+Cybroid wants a **customized app that controls the Cybroid OS desktop from a mobile
 phone**. Owner's direction (2026-10-11):
 
 - **Phone OS: Android.**
@@ -73,7 +73,7 @@ must be written (the JSON schemas + Go/Rust ports are the reference).
 
 ## 5. Decision
 
-1. **Client:** a **Flutter (Android-first)** app — the CIT control client.
+1. **Client:** a **Flutter (Android-first)** app — the Cybroid control client.
 2. **Transport:** the **KDE Connect protocol v8**, wrapped behind a Dart library
    **`cybroidos_connect`** (packages: discovery, TLS, pairing, packet/plugin layer).
    This keeps the wire protocol KDE-Connect-compatible (so stock KDE Connect and
@@ -83,7 +83,7 @@ must be written (the JSON schemas + Go/Rust ports are the reference).
      keep the Flutter UI.
 3. **Desktop/pod side:** ship **`kdeconnect-kde`** (+ `krdp` for full screen) on
    the desktop, and **`kcd`** (headless) on server/pod images; add a
-   **`cybroidos-control`** D-Bus/CLI service exposing CIT-specific actions (lock,
+   **`cybroidos-control`** D-Bus/CLI service exposing Cybroid-specific actions (lock,
    shutdown, launch, push content, open lab/kiosk session).
 4. **Network:** **LAN first** (KDE Connect UDP/mDNS + TLS). **Over-the-internet**
    via a **self-hosted relay/tunnel** (e.g. WireGuard or a small rendezvous+relay
@@ -126,7 +126,7 @@ the kiosk runtime (ADR-0002).
 | 1 | Self-hosted relay design for internet (WireGuard mesh vs rendezvous+relay) | WireGuard-based first |
 | 2 | Do we need SMS/calls (Telecom integration) in v1, or notifications/messages later? | Notifications + messages first; calls later |
 | 3 | Screen mirroring: use KRDP/RDP, or an Android `MediaProjection`-based phone→PC path? | KRDP for desktop; scrcpy-style later |
-| 4 | Reuse the KDE Connect device UI/branding or fully custom CIT UX? | Custom CIT UX over the shared transport |
+| 4 | Reuse the KDE Connect device UI/branding or fully custom Cybroid UX? | Custom Cybroid UX over the shared transport |
 
 ## 8. Verification log
 

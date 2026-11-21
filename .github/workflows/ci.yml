@@ -75,6 +75,9 @@ jobs:
             NOTICE.md \
             docs/LICENSING.md \
             docs/PROPRIETARY-COMPONENTS.md \
+            docs/END-USER-READINESS.md \
+            docs/SECURITY-POSTURE.md \
+            docs/EDITION-STRATEGY.md \
             tools/release-manifest.sh \
             docs/PLAN.md \
             docs/dev-environments.md \

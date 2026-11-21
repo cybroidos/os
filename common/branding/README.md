@@ -17,7 +17,7 @@ from here, so branding is defined **once** and flows to all four targets.
 
 ## Provenance
 
-Assets were taken from the existing CIT web repo **`novaoneltd/cit`**:
+Assets were taken from the existing Cybroid web repo **`novaoneltd/cit`**:
 
 - `extension/media/cybroid-logo.svg` → `logo/cybroid-logo.svg`
 - `public/logo_transparent.png` → `logo/cybroid-logo.png`
@@ -33,6 +33,6 @@ Palette values in `brand.toml` are **derived** from the logo SVG gradients
 - [ ] Is the derived palette correct, and which colour is the true "primary"?
 - [ ] Is `cybroid-logo.svg` the current, official lockup (not an older export)?
 - [ ] Provide a **monochrome** logo variant and a **light/dark** pair if they exist.
-- [ ] Provide wallpaper / boot-splash art (or approve a generated CIT-themed one).
+- [ ] Provide wallpaper / boot-splash art (or approve a generated Cybroid-themed one).
 - [ ] Licence/ownership confirmation that these assets may be redistributed in
       Cybroid OS images shipped to customers.

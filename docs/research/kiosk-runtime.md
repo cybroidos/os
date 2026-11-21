@@ -56,7 +56,7 @@ Source: `ardera/flutter-pi` README + releases.
   - `audioplayers` ^5.0.0 (ALSA; **remove `pulseaudio`**, install `gstreamer1.0-alsa`)
   - raw keyboard, text input, mouse/touch
   - **`flutter_gpiod`** (GPIO via kernel interface), **`linux_serial`**,
-    **`linux_spidev`** — directly useful for CIT lab hardware
+    **`linux_spidev`** — directly useful for Cybroid lab hardware
   - partial `sentry_flutter`
   Any other plugin (e.g. **camera**, bluetooth, secure storage) must have a bridge
   written or be provided another way — see open risks.

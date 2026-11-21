@@ -2,7 +2,7 @@
 
 - **Status:** Accepted (2026-10-11)
 - **Date:** 2026-10-11
-- **Deciders:** Cybroid OS maintainers (Cybroid Institute of Technology / CIT)
+- **Deciders:** Cybroid OS maintainers (Cybroid Technologies (U) Ltd)
 - **Related:** ADR-0001 (base distribution), ADR-0006 (Pi image builder),
   `docs/research/kiosk-runtime.md`, `docs/PLAN.md` (Phase 3).
 
@@ -36,7 +36,7 @@ boards, DRM/KMS, plugins, build tooling, performance, risks).
   --arch=arm64 --cpu=pi4` bundle vs `flutter build linux`).
 - No compositor on the Pi → lighter, faster boot to a fullscreen UI.
 - First-class Pi peripheral plugins (`flutter_gpiod` GPIO, `linux_serial`,
-  `linux_spidev`, ALSA audio, GStreamer video) suit CIT lab hardware.
+  `linux_spidev`, ALSA audio, GStreamer video) suit Cybroid lab hardware.
 - Chromium fallback keeps the kiosk app replaceable with a web app.
 
 **Negative / risks**

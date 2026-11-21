@@ -2,7 +2,7 @@
 
 - **Status:** Accepted (2026-10-11)
 - **Date:** 2026-10-11
-- **Deciders:** Cybroid OS maintainers (Cybroid Institute of Technology / CIT)
+- **Deciders:** Cybroid OS maintainers (Cybroid Technologies (U) Ltd)
 - **Related:** ADR-0001 (base distribution), ADR-0002 (kiosk runtime),
   `docs/PLAN.md` (Phase 3), `docs/research/kiosk-runtime.md`.
 
@@ -43,7 +43,7 @@ the build to run in **GitHub Actions if feasible**.
 - **Builder:** **`pi-gen`** (official), **`arm64` branch**, targeting Debian
   Trixie / arm64 (one image that also runs on Pi 4; see PLAN).
 - **Customisation:** a **custom stage `stage-cybroidos`** lives in this repo
-  (`targets/rpi/stage-cybroidos/`) and is appended via `STAGE_LIST`; it applies CIT
+  (`targets/rpi/stage-cybroidos/`) and is appended via `STAGE_LIST`; it applies Cybroid
   branding and installs the kiosk (ADR-0002), then **exports the image**
   (`EXPORT_IMAGE`). Eventually the stage installs the signed **`<brand>-base`**
   package instead of copying files directly (Phase 4).
@@ -60,7 +60,7 @@ the build to run in **GitHub Actions if feasible**.
 
 **Positive**
 - Official, well-understood, reproducible builder; arm64 via the `arm64` branch.
-- Custom stage keeps CIT changes in our repo (thin overlay).
+- Custom stage keeps Cybroid changes in our repo (thin overlay).
 - Buildable on x86 CI and on x86 dev hosts (E2E).
 
 **Negative / risks**

@@ -3,7 +3,7 @@
 - **Status:** Accepted (2026-10-11) — base = Debian 13 "Trixie" for all targets;
   Pi dev/test on Pi 3, images must also run on Pi 4. A few items in §7 remain open.
 - **Date:** 2026-10-11
-- **Deciders:** Cybroid OS maintainers (Cybroid Institute of Technology / CIT)
+- **Deciders:** Cybroid OS maintainers (Cybroid Technologies (U) Ltd)
 - **Supersedes:** none
 
 ## 1. Context
@@ -145,7 +145,7 @@ Debian's model (security + LTS) is well understood and matches the Pi lineage.
 
 ### 4.8 Workflow compatibility — **conditional, decisive**
 
-The brief makes "do not disrupt the engineers" binding. If CIT engineers live in
+The brief makes "do not disrupt the engineers" binding. If Cybroid engineers live in
 Ubuntu toolchains, Option A can still be made low-friction because Debian and
 Ubuntu share `.deb`/APT/`/usr` conventions, but we must confirm the actual stack
 before committing (see §7 Q1). This is the single question that could flip the
@@ -212,9 +212,9 @@ Cybroid OS image once it is ready. Decisions taken:
   - Re-confirm the engineers' exact languages/runtimes and any hard package-name
     or absolute-path dependencies before the desktop ISO phase.
 
-**Q2 — Redistribution scope. — ANSWERED.** Cybroid OS is for **CIT and its customers**:
+**Q2 — Redistribution scope. — ANSWERED.** Cybroid OS is for **Cybroid and its customers**:
   - **Server images** → shipped to customers.
-  - **Desktop** → **CIT school computers** (primary use), with a few customers who
+  - **Desktop** → **Cybroid school computers** (primary use), with a few customers who
     may choose Cybroid OS over Windows.
   - Therefore the base is **redistributable**, so we **strip all upstream brand
     marks** (Ubuntu / Raspberry Pi OS / Raspberry Pi logos) and rely on package
@@ -244,13 +244,13 @@ Pi OS images are model-agnostic: the firmware selects the correct kernel/DTB at
 boot, so a single image boots Pi 3, Pi 4 and (with current Trixie) Pi 5. Pi 5
 validation comes later; QEMU has no `raspi5` model.
 
-**Q6 — Default kiosk content.** *Default kept:* a CIT **web** hello-world page in
+**Q6 — Default kiosk content.** *Default kept:* a Cybroid **web** hello-world page in
 Chromium; a native (Qt/GTK) hello-world shipped as a swappable second example.
 
 **Q7 — Publication.** *Default kept for now:* GitHub Releases (private repo) for
 images + GitHub Container Registry for Docker; revisit if customers need a CDN.
 
-**Q8 — Signing.** *Default kept:* generate a CIT APT signing key and store it
+**Q8 — Signing.** *Default kept:* generate a Cybroid APT signing key and store it
 **only** in CI secrets (never in the repo).
 
 ### Own APT repository — confirmed

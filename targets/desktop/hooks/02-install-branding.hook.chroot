@@ -126,7 +126,14 @@ if [ "${desktop}" = "xfce" ]; then
 		"${xfce}/xfce-media.conf" \
 		"${xfce}/cybroidos-xfce.desktop" \
 		"${xfce}/xfce4-desktop.xml" \
-		"${xfce}/gtk.css"; do
+		"${xfce}/xfce4-panel.xml" \
+		"${xfce}/xfwm4.xml" \
+		"${xfce}/gtk.css" \
+		"${xfce}/xfwm4-theme/theme.rc" \
+		"${xfce}/cybroidos-browser.desktop" \
+		"${xfce}/cybroidos-files.desktop" \
+		"${xfce}/cybroidos-terminal.desktop" \
+		"${xfce}/cybroidos-control.desktop"; do
 		[ -f "${required}" ] || die "missing Xfce branding file: ${required}"
 	done
 	sh "${xfce}/install.sh" / "${xfce}"

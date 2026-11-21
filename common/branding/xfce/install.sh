@@ -56,6 +56,24 @@ if [ -d "${dest}/home/cybroid" ]; then
 	cp "${src}/xfce4-desktop.xml" "${home_xfconf}/xfce4-desktop.xml"
 fi
 
+# Custom panel layout, window-manager theme and window decorations.
+for config in xfce4-panel.xml xfwm4.xml; do
+	cp "${src}/${config}" "${xfconf_dir}/${config}"
+	cp "${src}/${config}" "${skel_xfconf}/${config}"
+	if [ -d "${dest}/home/cybroid" ]; then
+		cp "${src}/${config}" "${home_xfconf}/${config}"
+	fi
+done
+install -d "${dest}/usr/share/themes/CybroidOS/xfwm4"
+cp -a "${src}/xfwm4-theme/." "${dest}/usr/share/themes/CybroidOS/xfwm4/"
+
+# Custom Cybroid applications referenced by the panel launcher.
+install -d "${dest}/usr/share/applications"
+for app in cybroidos-browser.desktop cybroidos-files.desktop \
+	cybroidos-terminal.desktop cybroidos-control.desktop; do
+	install -m 0644 "${src}/${app}" "${dest}/usr/share/applications/${app}"
+done
+
 # Session entry, tuned launcher and media profile.
 install -m 0644 "${src}/cybroidos-xfce.desktop" \
 	"${dest}/usr/share/xsessions/cybroidos-xfce.desktop"

@@ -5,4 +5,5 @@ xfce4-goodies
 xfce4-screensaver
 xfconf
 gtk3
+xdg-utils
 xorg

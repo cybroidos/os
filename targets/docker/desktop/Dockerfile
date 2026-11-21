@@ -43,7 +43,7 @@ RUN chmod 0755 /usr/local/sbin/cybroid-* /usr/local/bin/cybroid-entrypoint \
 # session to noVNC; xrdp starts its own Xorg session via /etc/xrdp/startwm.sh.
 RUN apt-get update && apt-get install -y --no-install-recommends \
       xfce4 xfce4-session xfce4-terminal xfce4-screensaver xfconf gtk3 \
-      xrdp xorgxrdp ssl-cert \
+      xdg-utils xrdp xorgxrdp ssl-cert \
       xvfb x11vnc xauth dbus-x11 x11-xserver-utils \
       novnc websockify \
     && rm -rf /var/lib/apt/lists/*

@@ -127,11 +127,21 @@ runtime (ADR-0002), and the APT repo tool.
 
 The owner confirmed that Xfce should receive the **same deliberate branded look
 as Plasma**, not a stock/second-class variant. `tools/render-xfce-brand.py`
-renders the Xfce wallpaper, GTK accent, backdrop config, Xsession entry and
-session wrapper from `common/branding/brand.toml` for all three Xfce surfaces:
-the desktop "Lite" ISO, the server qcow2 and the `cybroidos-pod-desktop`
-container. This keeps the version and palette single-sourced (§1) while avoiding
-three separate customisation paths.
+renders the following from `common/branding/brand.toml` for all three Xfce
+surfaces: the desktop "Lite" ISO, the server qcow2 and the
+`cybroidos-pod-desktop` container:
+
+- **Custom panel layout** (`xfce4-panel.xml`): a single locked top panel with
+  the applications menu, a Cybroid launcher group, task list, system tray,
+  clock and show-desktop button.
+- **Custom applications** (`cybroidos-*.desktop`): Browser, Files, Terminal and
+  Control launchers, branded with the Cybroid icon and palette.
+- **Custom window decorations** (`xfwm4.xml` + generated `xfwm4-theme/`): a
+  `CybroidOS` xfwm4 theme whose title bars, borders and buttons are generated
+  from the brand palette, plus branded GTK accents, wallpaper and backdrop.
+
+This keeps the version and palette single-sourced (§1) while avoiding three
+separate customisation paths; there is no stock/unbranded Xfce surface.
 
 RDP/noVNC sessions are explicitly tuned for **video/YouTube playback** performance:
 Xfwm compositing is disabled by default, screen savers are suppressed, and

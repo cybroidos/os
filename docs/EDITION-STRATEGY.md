@@ -20,45 +20,42 @@ Windows edition ladder while keeping the open core free and putting value in
 management, support and security — the Red Hat / Zorin model already recorded
 in `docs/LICENSING.md`.
 
-## How to implement with the current repo
+## Implementation (scaffolding done 2026-11-21)
 
-The hooks already exist:
-
-- `common/packages/cybroidos-base/` — one shared identity package.
-- ADR-0007 names meta-packages (`cybroidos-base`, `cybroidos-rpi`,
-  `cybroidos-desktop`, `cybroidos-server`, `cybroidos-kiosk`); add one per
-  edition: `cybroidos-core`, `cybroidos-education`, `cybroidos-developer`,
-  `cybroidos-professional`, `cybroidos-enterprise`.
-- `brand.toml` is the single identity source; add an `[editions]` table for
-  edition names and IDs.
-- `tools/build-package.sh` and `tools/release-manifest.sh` are reusable;
-  extend the manifest with an `edition:` field.
-
-Recommended layout:
+The edition tree and build-time selection are implemented:
 
 ```
 editions/
-  core/config              # build-time flags common to all targets
-  core/files/              # optional overlay
+  README.md        # flag reference
+  core/config      # free open base
   education/config
   developer/config
   professional/config
   enterprise/config
 ```
 
-**Select at build time, not runtime:** `targets/<target>/build.sh --edition
-education`. Immutable images can then be signed individually, each with its own
-SBOM.
+`EDITION=<name> targets/rpi/build.sh` sources `editions/<name>/config`, appends
+the trusted flags to the generated pi-gen config, and prefixes the exported
+image name with the edition ID. The Pi image workflow now runs a **Core ×
+Education** matrix and generates one manifest per edition.
 
 Feature flags, with defaults per edition in `editions/<name>/config`:
 
 - `ENABLE_KIOSK_MODE`, `ENABLE_CLASSROOM_TOOLS`, `ENABLE_DEVCONTAINERS`
 - `ENABLE_REMOTE_DESKTOP`, `INCLUDE_PROPRIETARY`, `ENABLE_FDE`, `ENABLE_MDM`
-- Security-sensitive flags default to OFF.
+- Security-sensitive flags default to OFF. `tools/check-proprietary.sh` is
+  called by both build tools and refuses non-free components unless
+  `INCLUDE_PROPRIETARY=1` and the component is registered.
 
-CI: matrix of target × edition; artifacts named
-`cybroid-os-<edition>-<target>-<version>.<ext>`, each with signed checksums and
-a release manifest.
+`tools/release-manifest.sh --edition <name>` records the edition field; it can
+also accept a packages file for the SBOM and detach-sign the manifest with
+`GPG_KEY`. Artifacts are named
+`cybroid-os-<edition>-<target>-<version>.<ext>` once the signer is configured.
+
+Still to implement: per-edition meta-packages (ADR-0007 lists the shared
+`cybroidos-*` packages), an `[editions]` table in `brand.toml`, and overlays for
+`editions/<name>/files/`. The flags are currently consumed by the Pi build;
+other targets must opt in as they are implemented.
 
 Licensing: GPL code and CC BY-NC artwork apply to every edition; proprietary
 add-ons only in Professional/Enterprise via `INCLUDE_PROPRIETARY=1`, registered

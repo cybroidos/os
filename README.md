@@ -17,6 +17,8 @@ roadmap.
 - **Base OS:** Debian 13 "Trixie" — see [`docs/adr/ADR-0001-base-distribution.md`](docs/adr/ADR-0001-base-distribution.md)
 - **Plan of record:** [`docs/PLAN.md`](docs/PLAN.md) (living document)
 - **Project reports:** [end-user readiness](docs/END-USER-READINESS.md), [security posture](docs/SECURITY-POSTURE.md), [editions strategy](docs/EDITION-STRATEGY.md)
+- **Guides:** [release checklist](docs/RELEASE-CHECKLIST.md), [security policy](docs/SECURITY.md), [APT repo](docs/APT-REPO.md), [user docs](docs/user/INSTALL.md)
+- **Editions:** Core, Education, Developer, Professional, Enterprise — see [`editions/`](editions/README.md)
 
 ## Status
 
@@ -29,7 +31,8 @@ yet implemented. See the status dashboard in `docs/PLAN.md`.
 ```
 common/     shared branding, config, systemd units, <brand>-base packaging
 targets/    per-target builders/overlays — implemented: rpi (desktop/server/docker planned)
-apt-repo/   signed Cybroid APT repository tooling (planned)
+apt-repo/   signed Cybroid APT repository tooling
+editions/   build-time feature flags per product edition
 tests/      QEMU, container and real-hardware validation
 ci/         CI helper scripts (workflows in .github/workflows; planned)
 tools/      helper scripts (brand rendering, packaging, release manifests)
@@ -38,8 +41,22 @@ docs/       guides + ADRs
 
 ## Building
 
-Build environment is the devcontainer (or any Debian 13 host). Instructions land
-with Phase 2 — see `docs/PLAN.md`.
+Build environment is the devcontainer (or any Debian 13 host).
+
+```sh
+# Shared branding package
+tools/build-package.sh cybroidos-base
+
+# Raspberry Pi kiosk image with a chosen edition
+EDITION=core targets/rpi/build.sh
+EDITION=education targets/rpi/build.sh
+
+# Release manifest (optionally signed with GPG_KEY)
+tools/release-manifest.sh --edition core targets/rpi/deploy out/manifest-core.md
+```
+
+See `docs/PLAN.md` for the full roadmap and `docs/RELEASE-CHECKLIST.md` for the
+release gate.
 
 ## Licensing
 

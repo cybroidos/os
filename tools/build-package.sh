@@ -18,6 +18,7 @@ out="${repo_root}/dist"
 
 [ -d "${src}/debian" ] || { echo "error: no package '${name}' in common/packages/" >&2; exit 1; }
 [ -f "${brand}" ] || { echo "error: missing ${brand}" >&2; exit 1; }
+"${here}/check-proprietary.sh" hangar
 
 version="$(python3 -c 'import tomllib,sys; print(tomllib.load(open(sys.argv[1],"rb"))["identity"]["version"])' "${brand}")"
 echo "building ${name} ${version}"

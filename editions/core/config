@@ -1,0 +1,14 @@
+# Cybroid OS Core — free, open base edition.
+# Sourced by targets/rpi/build.sh; unknown flags are ignored by pi-gen.
+
+EDITION_ID='core'
+EDITION_NAME='Cybroid OS Core'
+
+ENABLE_KIOSK_MODE='1'
+ENABLE_CLASSROOM_TOOLS='0'
+ENABLE_DEVCONTAINERS='0'
+ENABLE_REMOTE_DESKTOP='0'
+
+INCLUDE_PROPRIETARY='0'
+ENABLE_FDE='0'
+ENABLE_MDM='0'

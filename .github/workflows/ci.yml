@@ -64,6 +64,8 @@ jobs:
           bash -n targets/rpi/build.sh
           bash -n targets/rpi/stage-cybroidos/prerun.sh
           bash -n targets/rpi/stage-cybroidos/00-cybroidos/01-run.sh
+          for f in editions/*/config; do bash -n "$f"; done
+          echo "edition configs parse"
           echo "targets/rpi scripts parse"
 
       - name: Check required files exist
@@ -77,8 +79,26 @@ jobs:
             docs/PROPRIETARY-COMPONENTS.md \
             docs/END-USER-READINESS.md \
             docs/SECURITY-POSTURE.md \
+            docs/SECURITY.md \
+            docs/APT-REPO.md \
+            docs/RELEASE-CHECKLIST.md \
+            docs/release/HARDWARE-CHECKLIST.md \
+            docs/user/INSTALL.md \
+            docs/user/FIRST-BOOT.md \
+            docs/user/UPDATES.md \
+            docs/user/RECOVERY.md \
+            docs/user/SUPPORT.md \
+            editions/README.md \
+            editions/core/config \
+            editions/education/config \
+            editions/developer/config \
+            editions/professional/config \
+            editions/enterprise/config \
             docs/EDITION-STRATEGY.md \
             tools/release-manifest.sh \
+            tools/check-proprietary.sh \
+            tools/pin-actions.sh \
+            apt-repo/publish.sh \
             docs/PLAN.md \
             docs/dev-environments.md \
             docs/adr/ADR-0001-base-distribution.md \
@@ -103,6 +123,8 @@ jobs:
             targets/rpi/stage-cybroidos/EXPORT_IMAGE \
             targets/rpi/stage-cybroidos/00-cybroidos/02-kiosk.sh \
             targets/rpi/stage-cybroidos/00-cybroidos/files/usr/bin/cybroidos-kiosk \
+            targets/rpi/stage-cybroidos/00-cybroidos/files/usr/bin/cybroidos-first-boot \
+            targets/rpi/stage-cybroidos/00-cybroidos/files/etc/systemd/system/cybroidos-first-boot.service \
             targets/rpi/stage-cybroidos/00-cybroidos/files/etc/cybroidos/kiosk.conf \
             common/packages/cybroidos-base/debian/control \
             common/packages/cybroidos-base/debian/rules \

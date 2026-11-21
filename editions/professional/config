@@ -1,0 +1,14 @@
+# Cybroid OS Professional — offices and individual professionals.
+# Proprietary add-ons are opt-in only; set INCLUDE_PROPRIETARY=1 explicitly.
+
+EDITION_ID='professional'
+EDITION_NAME='Cybroid OS Professional'
+
+ENABLE_KIOSK_MODE='0'
+ENABLE_CLASSROOM_TOOLS='0'
+ENABLE_DEVCONTAINERS='0'
+ENABLE_REMOTE_DESKTOP='1'
+
+INCLUDE_PROPRIETARY='0'
+ENABLE_FDE='1'
+ENABLE_MDM='0'

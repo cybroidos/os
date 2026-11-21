@@ -1,0 +1,15 @@
+# Cybroid OS Education — schools and labs.
+# Builds on Core; no SSH and no admin rights for pupils by default.
+
+EDITION_ID='education'
+EDITION_NAME='Cybroid OS Education'
+
+ENABLE_KIOSK_MODE='1'
+ENABLE_CLASSROOM_TOOLS='1'
+ENABLE_DEVCONTAINERS='0'
+ENABLE_REMOTE_DESKTOP='0'
+
+INCLUDE_PROPRIETARY='0'
+ENABLE_FDE='0'
+ENABLE_MDM='1'
+ENABLE_UPDATE_WINDOW='1'

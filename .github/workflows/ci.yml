@@ -68,8 +68,8 @@ jobs:
 
       - name: Syntax-check tooling
         run: |
-          python3 -m py_compile tools/render-brand.py
-          echo "render-brand.py compiles"
+          python3 -m py_compile tools/render-brand.py tools/render-xfce-brand.py
+          echo "brand renderers compile"
           bash -n targets/rpi/config
           bash -n targets/rpi/build.sh
           bash -n targets/rpi/stage-cybroidos/prerun.sh
@@ -82,6 +82,8 @@ jobs:
           bash -n targets/docker/build.sh
           bash -n tests/container/smoke-test.sh
           for f in targets/docker/config/*.sh; do bash -n "$f"; done
+          sh -n common/branding/xfce/install.sh
+          sh -n common/branding/xfce/xfce-session-wrapper
           bash -n targets/server/build.sh
           for f in targets/server/hooks/*.sh \
                    targets/server/config/xfce-session \
@@ -145,6 +147,9 @@ jobs:
             .devcontainer/devcontainer.json \
             tools/preflight.sh \
             tools/render-brand.py \
+            tools/render-xfce-brand.py \
+            common/branding/xfce/install.sh \
+            common/branding/xfce/xfce-session-wrapper \
             tools/build-package.sh \
             tools/fatread.py \
             tests/qemu/rpi-gui-test.sh \
@@ -263,7 +268,8 @@ jobs:
       - name: Shellcheck all shell scripts
         shell: bash
         run: |
-          mapfile -t files < <(find tools ci tests targets -name '*.sh' 2>/dev/null || true)
+          mapfile -t files < <(find tools ci tests targets common -name '*.sh' 2>/dev/null || true)
+          files+=(common/branding/xfce/xfce-session-wrapper)
           if [ "${#files[@]}" -eq 0 ]; then
             echo "no shell scripts yet"
             exit 0

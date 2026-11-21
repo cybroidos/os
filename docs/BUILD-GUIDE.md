@@ -28,6 +28,12 @@ tools/build-package.sh cybroidos-control   # D-Bus control service (v0 skeleton)
 Output: `dist/cybroidos-<name>_<version>_all.deb`. A package directory with a
 `debian/no-branding` marker is a metapackage: it ships dependency metadata only.
 
+`tools/render-xfce-brand.py --brand common/branding/brand.toml --out DIR` renders
+the shared Xfce look (wallpaper, GTK accent, backdrop, session wrapper and media
+profile) used by the desktop Lite ISO, server qcow2 and pod-desktop. Target
+builders call it automatically; the version and palette come only from
+`brand.toml`.
+
 ## 2. Raspberry Pi kiosk image
 
 ```sh

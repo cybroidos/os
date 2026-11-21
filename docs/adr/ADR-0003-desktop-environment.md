@@ -123,7 +123,25 @@ runtime (ADR-0002), and the APT repo tool.
 | 3 | Is an arm64 desktop ISO needed, or x86_64 only? | x86_64 first |
 | 4 | Does any lab software require X11, forcing the desktop to default to X11 over Wayland? | Wayland default, X11 session available |
 
-## 8. Verification log
+## 8. Implementation note (2026-11-21)
+
+The owner confirmed that Xfce should receive the **same deliberate branded look
+as Plasma**, not a stock/second-class variant. `tools/render-xfce-brand.py`
+renders the Xfce wallpaper, GTK accent, backdrop config, Xsession entry and
+session wrapper from `common/branding/brand.toml` for all three Xfce surfaces:
+the desktop "Lite" ISO, the server qcow2 and the `cybroidos-pod-desktop`
+container. This keeps the version and palette single-sourced (§1) while avoiding
+three separate customisation paths.
+
+RDP/noVNC sessions are explicitly tuned for **video/YouTube playback** performance:
+Xfwm compositing is disabled by default, screen savers are suppressed, and
+x11vnc uses a small cache profile. These defaults are rendered into
+`/etc/cybroidos/xfce-media.conf` and applied by the shared session wrapper.
+
+The Raspberry Pi image remains **internal and kiosk-only** (ADR-0002); it does
+not use Xfce.
+
+## 9. Verification log
 
 Versions checked against official Debian sources on 2026-10-11 (Debian 13
 "trixie" release announcement and release notes: GNOME 48, KDE Plasma 6.3,

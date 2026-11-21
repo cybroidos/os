@@ -13,6 +13,10 @@ if [ -r /etc/cybroidos/novnc.conf ]; then
 	# shellcheck disable=SC1091  # installed into the image
 	. /etc/cybroidos/novnc.conf
 fi
+if [ -r /etc/cybroidos/xfce-media.conf ]; then
+	# shellcheck disable=SC1091  # rendered from brand.toml at build time
+	. /etc/cybroidos/xfce-media.conf
+fi
 
 : "${ADMIN_USER:=cybroid}"
 : "${RDP_ENABLE:=1}"
@@ -25,6 +29,7 @@ fi
 : "${NOVNC_WEB_ROOT:=/usr/share/novnc}"
 : "${NOVNC_BIND:=0.0.0.0}"
 : "${VNC_HOST:=127.0.0.1}"
+: "${X11VNC_EXTRA_ARGS:=}"
 
 pids=""
 cleanup() {
@@ -70,14 +75,15 @@ sleep 1
 runuser -u "${ADMIN_USER}" -- env \
 	DISPLAY="${SESSION_DISPLAY}" XDG_RUNTIME_DIR="${runtime_dir}" \
 	XDG_CONFIG_HOME="/home/${ADMIN_USER}/.config" \
-	XDG_CURRENT_DESKTOP=XFCE "${XFCE_SESSION}" &
+	"${XFCE_SESSION}" &
 xfce_pid=$!
 pids="${pids} ${xfce_pid}"
 
 echo "cybroidos-xfce-session: noVNC fallback on port ${NOVNC_PORT}"
+# shellcheck disable=SC2086  # X11VNC_EXTRA_ARGS is a build-time option string
 runuser -u "${ADMIN_USER}" -- env DISPLAY="${SESSION_DISPLAY}" \
 	/usr/bin/x11vnc -display "${SESSION_DISPLAY}" -localhost -nopw \
-	-forever -shared -rfbport "${VNC_PORT}" &
+	-forever -shared -rfbport "${VNC_PORT}" ${X11VNC_EXTRA_ARGS} &
 vnc_pid=$!
 pids="${pids} ${vnc_pid}"
 

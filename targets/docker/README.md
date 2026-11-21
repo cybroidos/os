@@ -6,7 +6,7 @@ Container images implementing [ADR-0005](../../docs/adr/ADR-0005-pod-image-varia
 |---|---|
 | `cybroidos-pod-base` | `debian:trixie-slim` + `cybroidos-base` branding + `kcd` + pubkey-only SSH. No desktop. |
 | `cybroidos-pod-dev-generic`, `cybroidos-pod-dev-python`, `cybroidos-pod-dev-node` | Headless devcontainers. Each ships a `devcontainer.metadata` label (a JSON array) and a `devcontainer.json` template. |
-| `cybroidos-pod-desktop` | Xfce 4.20 + xrdp (primary) + noVNC (fallback) + `kcd`, with the shared Xfce branding. |
+| `cybroidos-pod-desktop` | Xfce 4.20 + xrdp (primary) + noVNC (fallback) + `kcd`, with the shared branded Xfce look and video-tuned session wrapper from `tools/render-xfce-brand.py`. |
 
 All images are built for **linux/amd64** and **linux/arm64**. There are no
 proprietary components and no secrets in the repository.

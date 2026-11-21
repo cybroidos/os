@@ -56,12 +56,21 @@ if [ -x "${rootfs}/usr/sbin/plymouth-set-default-theme" ]; then
 		|| die "failed to set the Cybroid OS Plymouth theme"
 fi
 
+# --- Shared Xfce look --------------------------------------------------------
+# The desktop ISO and pod-desktop consume the same rendered theme. Version and
+# colours come from brand.toml only (no hardcoded version in this hook).
+xfce_render="$(mktemp -d)"
+trap 'rm -rf "${xfce_render}"' EXIT
+python3 "${repo_root}/tools/render-xfce-brand.py" \
+	--brand "${repo_root}/common/branding/brand.toml" \
+	--out "${xfce_render}" >/dev/null
+sh "${xfce_render}/install.sh" "${rootfs}" "${xfce_render}"
+
 # --- Greeter configuration ---------------------------------------------------
 for pair in \
 	"${config_dir}/lightdm/lightdm-gtk-greeter.conf:/etc/lightdm/lightdm-gtk-greeter.conf" \
 	"${config_dir}/lightdm/90-cybroidos.conf:/etc/lightdm/lightdm.conf.d/90-cybroidos.conf" \
-	"${config_dir}/sddm/90-cybroidos.conf:/etc/sddm.conf.d/90-cybroidos.conf" \
-	"${config_dir}/xfce/xfce4-desktop.xml:/etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xfce4-desktop.xml"; do
+	"${config_dir}/sddm/90-cybroidos.conf:/etc/sddm.conf.d/90-cybroidos.conf"; do
 	src="${pair%%:*}"; dest="${pair##*:}"
 	[ -f "${src}" ] || die "missing branding config: ${src}"
 	mkdir -p "$(dirname "${rootfs}${dest}")"

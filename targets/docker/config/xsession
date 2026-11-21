@@ -1,3 +1,4 @@
 #!/bin/sh
-# Xsession used by Xfce when starting from xrdp or a display manager.
-exec startxfce4
+# Xsession used by the Cybroid OS desktop pod.
+# The shared wrapper applies the branded Xfce look and media tuning.
+exec /usr/bin/cybroidos-xfce-session

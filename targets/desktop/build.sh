@@ -167,6 +167,18 @@ install -d "${stage}/assets"
 cp -a "${repo_root}/common/branding/logo/." "${stage}/assets/"
 [ -f "${stage}/assets/cybroid-logo.png" ] || die "missing brand logo: cybroid-logo.png"
 
+# Render the shared Xfce look (same source as server/pods). Versions/colours
+# come from brand.toml only — nothing is hardcoded in the target builders.
+python3 "${repo_root}/tools/render-xfce-brand.py" \
+	--brand "${brand}" --release "${release}" --out "${stage}/xfce" >/dev/null
+for required in \
+	"${stage}/xfce/install.sh" \
+	"${stage}/xfce/xfce-session-wrapper" \
+	"${stage}/xfce/xfce-media.conf" \
+	"${stage}/xfce/cybroidos-xfce.desktop"; do
+	[ -f "${required}" ] || die "Xfce branding render did not produce ${required}"
+done
+
 # Substitute build-time values in the static overlays and asset templates.
 render_template() {
 	local src="$1" dst="$2"

@@ -42,7 +42,7 @@ RUN chmod 0755 /usr/local/sbin/cybroid-* /usr/local/bin/cybroid-entrypoint \
 # Desktop session and remote access. x11vnc mirrors the single Xvfb/Xfce
 # session to noVNC; xrdp starts its own Xorg session via /etc/xrdp/startwm.sh.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-      xfce4 xfce4-session xfce4-terminal \
+      xfce4 xfce4-session xfce4-terminal xfce4-screensaver xfconf gtk3 \
       xrdp xorgxrdp ssl-cert \
       xvfb x11vnc xauth dbus-x11 x11-xserver-utils \
       novnc websockify \
@@ -51,21 +51,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY config/xrdp.ini /etc/xrdp/xrdp.ini
 COPY config/startwm.sh /etc/xrdp/startwm.sh
 COPY config/novnc.env /usr/local/lib/cybroidos/novnc.env
-COPY config/xfce4-desktop.xml /usr/local/lib/cybroidos/xfce4-desktop.xml
+COPY config/xfce/ /usr/local/lib/cybroidos/xfce/
 COPY config/desktop-entrypoint.sh /usr/local/bin/cybroid-desktop-entrypoint
 
+# Install the shared branded Xfce look (wallpaper, backdrop, GTK accent,
+# tuned session wrapper and Xsession entry). All values come from brand.toml.
 RUN chmod 0755 /etc/xrdp/startwm.sh /usr/local/bin/cybroid-desktop-entrypoint \
- && install -d -m 0755 /usr/share/backgrounds \
- && cp /usr/share/cybroidos/branding/cybroid-logo.png \
-      /usr/share/backgrounds/cybroidos.png \
- && install -d -m 0755 /etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml \
- && install -d -o cybroid -g cybroid \
-      /home/cybroid/.config/xfce4/xfconf/xfce-perchannel-xml \
- && cp /usr/local/lib/cybroidos/xfce4-desktop.xml \
-      /etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-desktop.xml \
- && install -m 0644 -o cybroid -g cybroid \
-      /usr/local/lib/cybroidos/xfce4-desktop.xml \
-      /home/cybroid/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-desktop.xml \
+ && sh /usr/local/lib/cybroidos/xfce/install.sh / /usr/local/lib/cybroidos/xfce \
  && install -m 0644 /usr/local/lib/cybroidos/xsession /etc/skel/.xsession \
  && install -m 0755 -o cybroid -g cybroid \
       /usr/local/lib/cybroidos/xsession /home/cybroid/.xsession

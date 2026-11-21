@@ -1,0 +1,41 @@
+#!/bin/sh
+# Cybroid OS Xfce session wrapper.
+#
+# Applies the shared branded Xfce look and the media-performance profile before
+# handing off to Xfce. Used by the desktop ISO, server qcow2 and pod-desktop so
+# all three targets start the same tuned session.
+set -eu
+
+if [ -r /etc/cybroidos/xfce-media.conf ]; then
+	# shellcheck disable=SC1091  # installed, versioned configuration
+	. /etc/cybroidos/xfce-media.conf
+fi
+
+: "${USE_COMPOSITING:=false}"
+: "${DISABLE_SCREENSAVER:=true}"
+: "${XFCE_SESSION_BIN:=/usr/bin/startxfce4}"
+
+export XDG_CURRENT_DESKTOP=XFCE
+export DESKTOP_SESSION="${DESKTOP_SESSION:-xfce}"
+
+# Xfwm compositing adds a full-screen copy per frame and noticeably hurts video
+# playback over RDP/noVNC. Disable it by default in the media profile.
+if command -v xfconf-query >/dev/null 2>&1 && [ -n "${DISPLAY:-}" ]; then
+	xfconf-query -c xfwm4 -p /general/use_compositing -t bool \
+		-s "${USE_COMPOSITING}" >/dev/null 2>&1 || true
+	if [ "${DISABLE_SCREENSAVER}" = "true" ]; then
+		xfconf-query -c xfce4-screensaver -p /saver/enabled -t bool \
+			-s false >/dev/null 2>&1 || true
+	fi
+	xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor0/workspace0/image-style \
+		-t int -s 5 >/dev/null 2>&1 || true
+fi
+
+# Keep software video decode predictable in virtual/container sessions.
+: "${CYBROID_MEDIA_PROFILE:=1}"
+if [ "${CYBROID_MEDIA_PROFILE}" = "1" ]; then
+	export LIBGL_ALWAYS_INDIRECT=1
+	export SAL_USE_VCLPLUGIN=gen
+fi
+
+exec "${XFCE_SESSION_BIN}"

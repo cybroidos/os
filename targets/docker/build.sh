@@ -206,6 +206,11 @@ PY
 			;;
 		desktop)
 			cp "${here}/desktop/Dockerfile" "${context}/Dockerfile"
+			# Same branded Xfce theme as the ISO/server. Rendered from
+			# brand.toml so the image tag/version stays single-sourced.
+			python3 "${repo_root}/tools/render-xfce-brand.py" \
+				--brand "${brand}" --release "${RELEASE}" \
+				--out "${context}/config/xfce" >/dev/null
 			;;
 	esac
 }

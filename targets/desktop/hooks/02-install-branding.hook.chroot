@@ -115,5 +115,23 @@ if [ "${desktop}" = "plasma" ]; then
 		/usr/share/plasma/look-and-feel/org.cybroidos.desktop/contents/defaults/plasma-org.kde.plasma.desktop-appletsrc
 fi
 
-rm -rf "${brand}" "${assets}" "${templates}"
+# --- Xfce branded look (Xfce Lite variant) ----------------------------------
+# Uses the same rendered theme as the server/pods targets, so the custom look
+# is defined once in common/branding/xfce and not reimplemented per target.
+if [ "${desktop}" = "xfce" ]; then
+	xfce="${stage}/xfce"
+	for required in \
+		"${xfce}/install.sh" \
+		"${xfce}/xfce-session-wrapper" \
+		"${xfce}/xfce-media.conf" \
+		"${xfce}/cybroidos-xfce.desktop" \
+		"${xfce}/xfce4-desktop.xml" \
+		"${xfce}/gtk.css"; do
+		[ -f "${required}" ] || die "missing Xfce branding file: ${required}"
+	done
+	sh "${xfce}/install.sh" / "${xfce}"
+	grep -q 'ID=cybroidos' /usr/lib/os-release || die "branding lost during Xfce install"
+fi
+
+rm -rf "${brand}" "${assets}" "${templates}" "${stage}/xfce"
 echo "cybroidos hook 02: branding installed"

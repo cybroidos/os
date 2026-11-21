@@ -84,7 +84,11 @@ contains no branding files of its own.
 - `calamares` + `calamares-settings-debian`, re-branded to product name/vendor.
 - KDE Plasma: `kde-plasma-desktop`, `plasma-desktop`, branded global theme and
   SDDM greeter; KDE Kiosk profile at `/etc/xdg/cybroidos-kiosk.conf`.
-- Xfce Lite: `xfce4`, `xfce4-goodies`, `xorg` with the same greeter/wallpaper.
+- Xfce Lite: `xfce4`, `xfce4-session`, `xfce4-goodies`, `xfconf`, `gtk3`, `xorg`,
+  **plus the same deliberate branded look as Plasma** — shared wallpaper, GTK
+  accent, backdrop, Xsession entry and `cybroidos-xfce-session` wrapper rendered
+  by `tools/render-xfce-brand.py` from `brand.toml`. The wrapper applies the
+  media profile (compositing off, screen saver off) for smoother video playback.
 - `kdeconnect`, `krdp`, `cybroidos-control` for phone control (ADR-0004).
 - Plymouth boot splash, branded GRUB theme and `/etc/issue`/`/etc/motd`.
 - `/etc/cybroidos/desktop.conf` records the edition/desktop chosen at build.

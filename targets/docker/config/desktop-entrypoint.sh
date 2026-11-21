@@ -10,6 +10,11 @@ set -euo pipefail
 config_dir="/usr/local/lib/cybroidos"
 # shellcheck source=/dev/null
 . "${config_dir}/novnc.env"
+if [ -r /etc/cybroidos/xfce-media.conf ]; then
+	# shellcheck source=/dev/null
+	. /etc/cybroidos/xfce-media.conf
+fi
+: "${X11VNC_EXTRA_ARGS:=}"
 
 main() {
 	/usr/local/sbin/cybroid-first-boot
@@ -29,11 +34,13 @@ main() {
 
 	runuser -u cybroid -- env DISPLAY="${VNC_DISPLAY}" \
 		XDG_RUNTIME_DIR="${runtime_dir}" \
-		dbus-launch --exit-with-session startxfce4 &
+		dbus-launch --exit-with-session /usr/bin/cybroidos-xfce-session &
 	pids+=("$!")
 
+	# shellcheck disable=SC2086  # X11VNC_EXTRA_ARGS is a build-time option string
 	runuser -u cybroid -- x11vnc -display "${VNC_DISPLAY}" \
-		-rfbport "${VNC_PORT}" -localhost -forever -shared -nopw &
+		-rfbport "${VNC_PORT}" -localhost -forever -shared -nopw \
+		${X11VNC_EXTRA_ARGS} &
 	pids+=("$!")
 
 	websockify --web="${NOVNC_WEB}" \

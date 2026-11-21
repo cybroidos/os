@@ -194,7 +194,8 @@ echo "Installing server/pods packages"
 chroot_run "${rootfs}" apt-get update
 chroot_run "${rootfs}" apt-get install -y --no-install-recommends \
 	ca-certificates curl sudo python3 coreutils \
-	xfce4 xfce4-goodies xrdp xorgxrdp x11vnc xvfb x11-xserver-utils \
+	xfce4 xfce4-session xfce4-goodies xfce4-screensaver xfconf gtk3 \
+	xrdp xorgxrdp x11vnc xvfb x11-xserver-utils dbus-x11 \
 	novnc websockify cloud-init openssh-server ufw plymouth \
 	lightdm lightdm-gtk-greeter \
 	grub-pc grub-efi-amd64-bin dosfstools

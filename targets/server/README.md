@@ -5,6 +5,12 @@ Builds a **Debian 13 "Trixie" x86_64** cloud-init-capable qcow2 VM image with
 headless **`kcd`** for phone control (ADR-0004/0005), OpenSSH and the shared
 Cybroid branding from `common/branding/brand.toml` via `cybroidos-base`.
 
+The Xfce desktop uses the **same branded look as the Plasma ISO**, rendered once
+by `tools/render-xfce-brand.py` (wallpaper, GTK accent, backdrop and Xsession).
+Remote sessions start through `cybroidos-xfce-session`, which applies a media
+profile — Xfwm compositing and the screen saver off, x11vnc caching tuned — for
+smoother video/YouTube playback over RDP/noVNC.
+
 This target owns only `targets/server/**`; the shared `.deb` packages are built
 from `common/packages/` by `tools/build-package.sh`.
 
@@ -98,7 +104,7 @@ login and forbids root login.
 | `config/cloud-init/90-cybroidos.cfg` | `/etc/cloud/cloud.cfg.d/90-cybroidos.cfg` |
 | `config/xrdp/{xrdp.ini,startwm.sh}` | `/etc/xrdp/` |
 | `config/novnc/novnc.conf` | `/etc/cybroidos/novnc.conf` |
-| `config/xfce/xfce4-desktop.xml` | Xfce default wallpaper |
+| `config/xfce/xfce4-desktop.xml` | reference copy only; the installed theme comes from `tools/render-xfce-brand.py` |
 | `config/lightdm/*`, `config/sddm/*` | greeter branding |
 | `config/sshd/90-cybroidos.conf` | `/etc/ssh/sshd_config.d/` |
 | `config/systemd/*` | Cybroid first-boot, Xfce session and kcd units |

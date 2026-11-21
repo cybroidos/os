@@ -8,6 +8,9 @@ unset DBUS_SESSION_BUS_LISTEN
 export XDG_CURRENT_DESKTOP=XFCE
 export DESKTOP_SESSION=xfce
 
+if [ -x /usr/bin/cybroidos-xfce-session ]; then
+	exec /usr/bin/cybroidos-xfce-session
+fi
 if [ -x /usr/bin/startxfce4 ]; then
 	exec /usr/bin/startxfce4
 fi

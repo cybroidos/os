@@ -42,5 +42,15 @@ done
 ln -sf "${sddm_unit}" /etc/systemd/system/display-manager.service
 systemctl enable sddm.service >/dev/null 2>&1 || true
 
+# Make the branded Xfce session the default for the Lite ISO.
+if [ "${desktop}" = "xfce" ]; then
+	cat > /etc/sddm.conf.d/20-cybroidos-session.conf <<'EOF'
+[General]
+Session=cybroidos-xfce.desktop
+EOF
+	[ -f /usr/share/xsessions/cybroidos-xfce.desktop ] \
+		|| die "branded Xfce session entry was not installed"
+fi
+
 rm -rf "${stage}"
 echo "cybroidos hook 03: desktop services configured"

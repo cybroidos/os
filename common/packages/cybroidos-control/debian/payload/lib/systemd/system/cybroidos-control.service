@@ -1,0 +1,19 @@
+[Unit]
+Description=Cybroid OS desktop control D-Bus service
+Documentation=file:/usr/share/doc/cybroidos-control/README.md
+After=dbus.socket network.target
+
+[Service]
+Type=simple
+User=cybroid
+# Supply DISPLAY, XDG_RUNTIME_DIR and DBUS_SESSION_BUS_ADDRESS in a drop-in or
+# in this optional environment file; the graphical session needs them.
+EnvironmentFile=-/etc/cybroidos/control/env
+ExecStart=/usr/bin/cybroidos-control --service
+Restart=on-failure
+RestartSec=2
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

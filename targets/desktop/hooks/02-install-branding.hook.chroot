@@ -1,0 +1,119 @@
+#!/bin/sh
+# live-build chroot hook: install branding rendered from common/branding/brand.toml.
+# Every required input is checked up front; a missing asset fails the build.
+set -eu
+
+die() { echo "cybroidos hook 02: $*" >&2; exit 1; }
+
+stage=/root/cybroidos-build
+identity="${stage}/identity.env"
+[ -f "${identity}" ] || die "missing staged identity: ${identity}"
+# shellcheck disable=SC1090  # generated, shlex-quoted by build.sh
+. "${identity}"
+
+brand="${stage}/brand"
+assets="${stage}/assets"
+templates="${stage}/templates"
+
+for required in \
+	"${brand}/etc/issue" \
+	"${brand}/etc/motd" \
+	"${brand}/usr/lib/os-release" \
+	"${brand}/usr/share/plymouth/themes/cybroidos/cybroidos.plymouth" \
+	"${brand}/usr/share/plymouth/themes/cybroidos/cybroidos.script" \
+	"${assets}/cybroid-logo.png" \
+	"${assets}/cybroid-mark.png" \
+	"${assets}/cybroid-icon-64.png" \
+	"${templates}/wallpaper.svg" \
+	"${templates}/sddm-theme.conf" \
+	"${templates}/grub-theme.txt" \
+	"${templates}/calamares-branding.desc" \
+	"${templates}/plymouthd.conf" \
+	"${templates}/grub-cybroidos.cfg"; do
+	[ -f "${required}" ] || die "missing branding file: ${required}"
+done
+
+# --- Identity and login banners ---------------------------------------------
+# /etc/os-release is a symlink to /usr/lib/os-release maintained by base-files
+# and diverted by cybroidos-base; do not replace it (PLAN: handled by package).
+[ "$(readlink -f /etc/os-release)" = "/usr/lib/os-release" ] \
+	|| die "/etc/os-release is not a symlink to /usr/lib/os-release"
+grep -q '^ID=cybroidos$' /usr/lib/os-release || die "/usr/lib/os-release has no ID=cybroidos"
+cp "${brand}/etc/issue" /etc/issue
+cp "${brand}/etc/motd" /etc/motd
+
+# --- Shared brand assets, wallpaper and boot splash -------------------------
+install -d /usr/share/cybroidos/branding
+cp -a "${assets}/." /usr/share/cybroidos/branding/
+install -d /usr/share/wallpapers/cybroidos
+cp "${templates}/wallpaper.svg" /usr/share/wallpapers/cybroidos/wallpaper.svg
+cp "${assets}/cybroid-logo.png" /usr/share/wallpapers/cybroidos/wallpaper.png
+
+install -d /usr/share/plymouth/themes/cybroidos
+cp -a "${brand}/usr/share/plymouth/themes/cybroidos/." \
+	/usr/share/plymouth/themes/cybroidos/
+cp "${assets}/cybroid-mark.png" /usr/share/plymouth/themes/cybroidos/logo.png
+install -d /etc/plymouth
+cp "${templates}/plymouthd.conf" /etc/plymouth/plymouthd.conf
+
+# --- GRUB theme (installed system; the live ISO bootloader is live-build's) --
+install -d /usr/share/grub/themes/cybroidos
+cp "${templates}/grub-theme.txt" /usr/share/grub/themes/cybroidos/theme.txt
+cp "${assets}/cybroid-logo.png" /usr/share/grub/themes/cybroidos/logo.png
+install -d /etc/default/grub.d
+cp "${templates}/grub-cybroidos.cfg" /etc/default/grub.d/10-cybroidos.cfg
+
+# --- SDDM greeter ------------------------------------------------------------
+# Reuse Debian's maintained QML theme and re-skin it with our metadata/image.
+sddm_base=""
+for candidate in /usr/share/sddm/themes/debian-breeze /usr/share/sddm/themes/breeze; do
+	if [ -d "${candidate}" ]; then sddm_base="${candidate}"; break; fi
+done
+[ -n "${sddm_base}" ] || die "no base SDDM theme (install sddm-theme-debian-breeze)"
+rm -rf /usr/share/sddm/themes/cybroidos
+cp -a "${sddm_base}" /usr/share/sddm/themes/cybroidos
+cp "${templates}/sddm-theme.conf" /usr/share/sddm/themes/cybroidos/theme.conf
+cp "${templates}/wallpaper.svg" /usr/share/sddm/themes/cybroidos/background.svg
+cp "${assets}/cybroid-logo.png" /usr/share/sddm/themes/cybroidos/background.png
+
+# --- Calamares installer branding -------------------------------------------
+[ -f /etc/calamares/settings.conf ] || die "Calamares settings.conf missing (install calamares-settings-debian)"
+install -d /etc/calamares/branding/cybroidos
+cp "${templates}/calamares-branding.desc" \
+	/etc/calamares/branding/cybroidos/branding.desc
+cp "${templates}/wallpaper.svg" /etc/calamares/branding/cybroidos/background.svg
+cp "${assets}/cybroid-logo.png" /etc/calamares/branding/cybroidos/product-logo.png
+cp "${assets}/cybroid-icon-64.png" /etc/calamares/branding/cybroidos/product-icon.png
+if grep -q '^[[:space:]]*branding:' /etc/calamares/settings.conf; then
+	sed -i 's/^[[:space:]]*branding:.*/branding: cybroidos/' /etc/calamares/settings.conf
+else
+	sed -i '/^\[General\]/a branding: cybroidos' /etc/calamares/settings.conf
+fi
+grep -q '^branding: cybroidos$' /etc/calamares/settings.conf \
+	|| die "could not set Calamares branding to cybroidos"
+
+# --- Plasma global theme (Plasma variant only) -------------------------------
+if [ "${desktop}" = "plasma" ]; then
+	base_theme=""
+	for candidate in /usr/share/plasma/look-and-feel/org.kde.breeze.desktop \
+		/usr/share/plasma/look-and-feel/org.kde.breeze-dark.desktop; do
+		if [ -d "${candidate}" ]; then base_theme="${candidate}"; break; fi
+	done
+	[ -n "${base_theme}" ] || die "no base Plasma global theme found"
+	for required in "${templates}/plasma-metadata.desktop" \
+		"${templates}/plasma-kdeglobals" "${templates}/plasma-appletsrc"; do
+		[ -f "${required}" ] || die "missing branding file: ${required}"
+	done
+	rm -rf /usr/share/plasma/look-and-feel/org.cybroidos.desktop
+	cp -a "${base_theme}" /usr/share/plasma/look-and-feel/org.cybroidos.desktop
+	cp "${templates}/plasma-metadata.desktop" \
+		/usr/share/plasma/look-and-feel/org.cybroidos.desktop/metadata.desktop
+	install -d /usr/share/plasma/look-and-feel/org.cybroidos.desktop/contents/defaults
+	cp "${templates}/plasma-kdeglobals" \
+		/usr/share/plasma/look-and-feel/org.cybroidos.desktop/contents/defaults/kdeglobals
+	cp "${templates}/plasma-appletsrc" \
+		/usr/share/plasma/look-and-feel/org.cybroidos.desktop/contents/defaults/plasma-org.kde.plasma.desktop-appletsrc
+fi
+
+rm -rf "${brand}" "${assets}" "${templates}"
+echo "cybroidos hook 02: branding installed"

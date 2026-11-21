@@ -56,6 +56,16 @@ jobs:
           print(f"devcontainer.json OK: {cfg.get('name', '?')}")
           PY
 
+      - name: Validate control action catalogue
+        run: |
+          python3 - <<'PY'
+          import json, pathlib
+          f = pathlib.Path("common/packages/cybroidos-control/debian/payload/usr/share/cybroidos/control/actions.json")
+          data = json.loads(f.read_text())
+          assert isinstance(data, (list, dict)), "actions.json must be a list or object"
+          print(f"actions.json OK: {f}")
+          PY
+
       - name: Syntax-check tooling
         run: |
           python3 -m py_compile tools/render-brand.py
@@ -64,6 +74,19 @@ jobs:
           bash -n targets/rpi/build.sh
           bash -n targets/rpi/stage-cybroidos/prerun.sh
           bash -n targets/rpi/stage-cybroidos/00-cybroidos/01-run.sh
+          bash -n targets/rpi/stage-cybroidos/00-cybroidos/02-kiosk.sh
+          bash -n targets/rpi/stage-cybroidos/00-cybroidos/03-packages.sh
+          bash -n targets/desktop/build.sh
+          bash -n targets/desktop/build-meta.sh
+          bash -n apps/mobile/relay/setup-relay.sh
+          bash -n targets/docker/build.sh
+          bash -n tests/container/smoke-test.sh
+          for f in targets/docker/config/*.sh; do bash -n "$f"; done
+          bash -n targets/server/build.sh
+          for f in targets/server/hooks/*.sh \
+                   targets/server/config/xfce-session \
+                   targets/server/config/xrdp/startwm.sh \
+                   tests/server/smoke-test.sh; do bash -n "$f"; done
           for f in editions/*/config; do bash -n "$f"; done
           echo "edition configs parse"
           echo "targets/rpi scripts parse"
@@ -94,6 +117,13 @@ jobs:
             editions/developer/config \
             editions/professional/config \
             editions/enterprise/config \
+            docs/BUILD-GUIDE.md \
+            docs/ADD-PACKAGE.md \
+            docs/SWAP-KIOSK-APP.md \
+            docs/ADD-HARDWARE-TARGET.md \
+            apps/kiosk/flutter/pubspec.yaml \
+            apps/kiosk/flutter/lib/main.dart \
+            tools/build-kiosk-flutter.sh \
             docs/EDITION-STRATEGY.md \
             tools/release-manifest.sh \
             tools/check-proprietary.sh \
@@ -122,12 +152,63 @@ jobs:
             targets/rpi/build.sh \
             targets/rpi/stage-cybroidos/EXPORT_IMAGE \
             targets/rpi/stage-cybroidos/00-cybroidos/02-kiosk.sh \
+            targets/rpi/stage-cybroidos/00-cybroidos/03-packages.sh \
+            targets/rpi/stage-cybroidos/00-cybroidos/files/etc/systemd/system/cybroidos-kiosk.service \
             targets/rpi/stage-cybroidos/00-cybroidos/files/usr/bin/cybroidos-kiosk \
             targets/rpi/stage-cybroidos/00-cybroidos/files/usr/bin/cybroidos-first-boot \
             targets/rpi/stage-cybroidos/00-cybroidos/files/etc/systemd/system/cybroidos-first-boot.service \
             targets/rpi/stage-cybroidos/00-cybroidos/files/etc/cybroidos/kiosk.conf \
             common/packages/cybroidos-base/debian/control \
             common/packages/cybroidos-base/debian/rules \
+            common/packages/cybroidos-kiosk/debian/control \
+            common/packages/cybroidos-kiosk/debian/rules \
+            common/packages/cybroidos-rpi/debian/control \
+            common/packages/cybroidos-rpi/debian/rules \
+            common/packages/cybroidos-desktop/debian/control \
+            common/packages/cybroidos-desktop/debian/rules \
+            common/packages/cybroidos-desktop-lite/debian/control \
+            common/packages/cybroidos-desktop-lite/debian/rules \
+            common/packages/cybroidos-server/debian/control \
+            common/packages/cybroidos-server/debian/rules \
+            common/packages/cybroidos-control/debian/control \
+            common/packages/cybroidos-control/debian/rules \
+            common/packages/cybroidos-control/debian/payload/usr/bin/cybroidos-control \
+            common/packages/cybroidos-control/debian/payload/usr/share/cybroidos/control/actions.json \
+            apps/mobile/cybroidos_connect/pubspec.yaml \
+            apps/mobile/cybroidos_connect/lib/cybroidos_connect.dart \
+            apps/mobile/cybroidos_control_app/pubspec.yaml \
+            apps/mobile/cybroidos_control_app/lib/main.dart \
+            apps/mobile/relay/setup-relay.sh \
+            docs/mobile/README.md \
+            targets/desktop/build.sh \
+            targets/desktop/README.md \
+            tests/desktop/iso-smoke-test.sh \
+            .github/workflows/desktop-iso.yml \
+            targets/docker/build.sh \
+            targets/docker/README.md \
+            targets/docker/base/Dockerfile \
+            targets/docker/dev/Dockerfile \
+            targets/docker/desktop/Dockerfile \
+            targets/docker/dev/devcontainer.json \
+            targets/docker/dev/stacks.json \
+            targets/docker/config/install-kcd.sh \
+            targets/docker/config/first-boot.sh \
+            tests/container/smoke-test.sh \
+            .github/workflows/containers.yml \
+            targets/server/build.sh \
+            targets/server/README.md \
+            targets/server/hooks/install-local-debs.sh \
+            targets/server/hooks/install-kcd.sh \
+            targets/server/hooks/apply-branding.sh \
+            targets/server/hooks/configure-cloud-init.sh \
+            targets/server/hooks/first-boot.sh \
+            targets/server/config/cloud-init/user-data.tmpl \
+            targets/server/config/cloud-init/meta-data.tmpl \
+            targets/server/config/cloud-init/90-cybroidos.cfg \
+            targets/server/config/xrdp/startwm.sh \
+            targets/server/config/xfce-session \
+            tests/server/smoke-test.sh \
+            .github/workflows/server-image.yml \
             common/branding/brand.toml \
             common/branding/logo/cybroid-logo.svg ; do
             test -f "$f" || { echo "missing: $f"; exit 1; }
@@ -189,5 +270,34 @@ jobs:
           fi
           shellcheck -x "${files[@]}"
 
-  # Build jobs (Pi, desktop, server, docker) are added in later phases.
-  # See docs/PLAN.md — Phase 3 onwards.
+  build-metapackages:
+    name: Build Cybroid OS packages (Debian 13 / Trixie)
+    runs-on: ubuntu-24.04
+    container: debian:13-slim
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install build deps
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            ca-certificates git python3 build-essential dpkg-dev \
+            debhelper fakeroot lintian
+
+      - name: Build every metapackage
+        run: |
+          for pkg in cybroidos-kiosk cybroidos-rpi \
+                     cybroidos-desktop cybroidos-desktop-lite cybroidos-server \
+                     cybroidos-control; do
+            tools/build-package.sh "$pkg"
+          done
+
+      - name: Inspect metapackages
+        run: |
+          for deb in dist/cybroidos-*.deb; do
+            dpkg-deb -I "$deb"
+            dpkg-deb -c "$deb"
+          done
+
+  # Full image builds are triggered by target-specific workflows:
+  # pi-image.yml, desktop-iso.yml, server-image.yml and containers.yml.

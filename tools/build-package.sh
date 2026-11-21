@@ -28,16 +28,21 @@ srcdir="${work}/${name}-${version}"
 mkdir -p "${srcdir}"
 cp -a "${src}/debian" "${srcdir}/debian"
 
-# Render identity + assets (paths must match debian/install).
-python3 "${repo_root}/tools/render-brand.py" \
-	--brand "${brand}" --release "${release}" --out "${srcdir}"
-install -d "${srcdir}/usr/share/cybroidos/branding"
-# /etc/issue and /etc/motd are base-files conffiles; ship them aside and place
-# them in postinst.
-install -d "${srcdir}/usr/share/cybroidos"
-cp "${srcdir}/etc/issue" "${srcdir}/usr/share/cybroidos/issue"
-cp "${srcdir}/etc/motd" "${srcdir}/usr/share/cybroidos/motd"
-cp -a "${repo_root}/common/branding/logo/." "${srcdir}/usr/share/cybroidos/branding/"
+# Render identity + assets (paths must match debian/install). Meta-packages
+# carry a debian/no-branding marker and only ship their dependency metadata.
+if [ -f "${src}/debian/no-branding" ]; then
+	echo "meta-package: skipping branding render"
+else
+	python3 "${repo_root}/tools/render-brand.py" \
+		--brand "${brand}" --release "${release}" --out "${srcdir}"
+	install -d "${srcdir}/usr/share/cybroidos/branding"
+	# /etc/issue and /etc/motd are base-files conffiles; ship them aside and
+	# place them in postinst.
+	install -d "${srcdir}/usr/share/cybroidos"
+	cp "${srcdir}/etc/issue" "${srcdir}/usr/share/cybroidos/issue"
+	cp "${srcdir}/etc/motd" "${srcdir}/usr/share/cybroidos/motd"
+	cp -a "${repo_root}/common/branding/logo/." "${srcdir}/usr/share/cybroidos/branding/"
+fi
 
 # Ship the licence texts with the binary package (paths in debian/install).
 install -d "${srcdir}/usr/share/doc/${name}"

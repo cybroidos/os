@@ -1,0 +1,6 @@
+# KDE Plasma 6.3 desktop (ADR-0003). Needs >= 4 GB RAM in the live environment.
+kde-plasma-desktop
+plasma-desktop
+systemsettings
+konsole
+dolphin

@@ -1,0 +1,117 @@
+name: Server image
+
+# Manual or tag-triggered only: rootfs assembly plus a QEMU/KVM smoke test is
+# disk-heavy. Builds run on the Ubuntu host (loop devices + /dev/kvm), but the
+# image itself is Debian 13 "Trixie" (ADR-0001).
+on:
+  workflow_dispatch:
+    inputs:
+      edition:
+        description: Edition to build
+        required: true
+        type: choice
+        default: core
+        options:
+          - core
+          - developer
+          - education
+          - professional
+          - enterprise
+  workflow_call:
+    inputs:
+      edition:
+        description: Edition to build
+        required: false
+        type: string
+        default: core
+  push:
+    tags: [ 'server-*' ]
+
+permissions:
+  contents: read
+
+jobs:
+  build-server-image:
+    name: Build Cybroid OS server image (${{ inputs.edition || 'core' }}, x86_64)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    env:
+      EDITION: ${{ inputs.edition || 'core' }}
+      ARCH: x86_64
+      OUT_DIR: ${{ github.workspace }}/out/server
+      WORK_DIR: ${{ github.workspace }}/work/server
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install build and test tooling
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            mmdebstrap qemu-utils genisoimage e2fsprogs dosfstools \
+            fdisk util-linux dpkg-dev debhelper fakeroot python3 \
+            ca-certificates curl openssh-client
+
+      - name: Validate build scripts and cloud-init templates
+        run: |
+          bash -n targets/server/build.sh
+          for f in targets/server/hooks/*.sh \
+                   targets/server/config/xfce-session \
+                   targets/server/config/xrdp/startwm.sh \
+                   tests/server/smoke-test.sh; do bash -n "${f}"; done
+          python3 - <<'PY'
+          from pathlib import Path
+          base = Path("targets/server/config/cloud-init")
+          user = (base / "user-data.tmpl").read_text()
+          assert user.startswith("#cloud-config")
+          for token in ("__CYBROIDOS_SSH_PUBLIC_KEY__", "__CYBROIDOS_HOSTNAME__",
+                        "runcmd", "cybroidos-first-boot"):
+              assert token in user, token
+          assert "datasource_list: [ NoCloud, Local, None ]" in (base / "90-cybroidos.cfg").read_text()
+          print("server scripts and cloud-init templates OK")
+          PY
+
+      - name: Generate ephemeral provisioning SSH key
+        # Public key goes into the image; the private key is never uploaded
+        # and is only used to run the smoke test on this runner.
+        run: |
+          install -d -m 0700 "${RUNNER_TEMP}/cybroid-provision"
+          ssh-keygen -q -t ed25519 -N '' -f "${RUNNER_TEMP}/cybroid-provision/id_ed25519"
+
+      - name: Build qcow2 and cloud-init seed ISO
+        run: |
+          sudo env EDITION="${EDITION}" ARCH="${ARCH}" \
+            OUT_DIR="${OUT_DIR}" WORK_DIR="${WORK_DIR}" \
+            PUBKEY_FILE="${RUNNER_TEMP}/cybroid-provision/id_ed25519.pub" \
+            targets/server/build.sh
+
+      - name: Restore output ownership
+        # The build runs as root; the manifest/upload steps run as the runner user.
+        run: sudo chown -R "$(id -u):$(id -g)" "${OUT_DIR}"
+
+      - name: Run server smoke test
+        # SKIP_BOOT is used when the host has no KVM: offline qcow2 inspection
+        # is still useful, but it is explicitly not a boot/HW validation.
+        run: |
+          qcow2="$(find "${OUT_DIR}" -maxdepth 1 -name '*.qcow2' -print -quit)"
+          iso="$(find "${OUT_DIR}" -maxdepth 1 -name '*-cloud-init.iso' -print -quit)"
+          test -n "${qcow2}" && test -n "${iso}"
+          if [ -r /dev/kvm ]; then skip_boot=0; else skip_boot=1; fi
+          sudo env SKIP_BOOT="${skip_boot}" \
+            SSH_PRIVATE_KEY="${RUNNER_TEMP}/cybroid-provision/id_ed25519" \
+            tests/server/smoke-test.sh "${qcow2}" "${iso}"
+
+      - name: Generate release manifest
+        run: |
+          tools/release-manifest.sh --edition "${EDITION}" \
+            "${OUT_DIR}" "${OUT_DIR}/manifest-${EDITION}.md"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: cybroid-os-${{ inputs.edition || 'core' }}-server-image
+          path: |
+            out/server/*.qcow2
+            out/server/*.iso
+            out/server/SHA256SUMS-*
+            out/server/manifest-*.md
+          if-no-files-found: error

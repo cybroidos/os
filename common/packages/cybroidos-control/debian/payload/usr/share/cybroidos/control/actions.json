@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "product": "Cybroid OS",
+  "component": "cybroidos-control",
+  "version": "0.1.0",
+  "kdeconnectProtocolVersion": 8,
+  "bus": {
+    "name": "com.cybroidos.Control",
+    "objectPath": "/com/cybroidos/Control",
+    "interface": "com.cybroidos.Control"
+  },
+  "openAppAllowlist": [
+    "firefox.desktop",
+    "firefox-esr.desktop",
+    "org.mozilla.firefox.desktop",
+    "chromium.desktop",
+    "org.chromium.Chromium.desktop",
+    "google-chrome.desktop"
+  ],
+  "actions": [
+    {
+      "id": "lock",
+      "method": "Lock",
+      "label": "Lock screen",
+      "description": "Lock the active desktop session via loginctl or dm-tool.",
+      "enabled": true,
+      "requiresRoot": false,
+      "params": []
+    },
+    {
+      "id": "open_url",
+      "method": "OpenUrl",
+      "label": "Open URL",
+      "description": "Open an absolute http or https URL with xdg-open.",
+      "enabled": true,
+      "requiresRoot": false,
+      "params": [
+        { "name": "url", "type": "string", "scheme": ["http", "https"] }
+      ]
+    },
+    {
+      "id": "open_app",
+      "method": "OpenApp",
+      "label": "Open app",
+      "description": "Launch a desktop file id from openAppAllowlist with gtk-launch.",
+      "enabled": true,
+      "requiresRoot": false,
+      "params": [
+        { "name": "app_id", "type": "string", "allowedBy": "openAppAllowlist" }
+      ]
+    },
+    {
+      "id": "notify",
+      "method": "Notify",
+      "label": "Show notification",
+      "description": "Post a desktop notification with notify-send.",
+      "enabled": true,
+      "requiresRoot": false,
+      "params": [
+        { "name": "summary", "type": "string", "maxLength": 200 },
+        { "name": "body", "type": "string", "maxLength": 2000 }
+      ]
+    },
+    {
+      "id": "device_info",
+      "method": "GetDeviceInfo",
+      "label": "Device info",
+      "description": "Return hostname, OS identity, supported actions and remote view state as JSON.",
+      "enabled": true,
+      "requiresRoot": false,
+      "params": []
+    },
+    {
+      "id": "fullscreen_start",
+      "method": "StartRemoteView",
+      "label": "Start full-screen view",
+      "description": "Start the KRDP user systemd unit named in remoteViewUnit.",
+      "enabled": true,
+      "requiresRoot": false,
+      "params": []
+    },
+    {
+      "id": "fullscreen_stop",
+      "method": "StopRemoteView",
+      "label": "Stop full-screen view",
+      "description": "Stop the KRDP user systemd unit named in remoteViewUnit.",
+      "enabled": true,
+      "requiresRoot": false,
+      "params": []
+    }
+  ],
+  "remoteViewUnit": "krdp-server.service"
+}

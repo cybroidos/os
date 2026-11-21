@@ -1,0 +1,18 @@
+Source: cybroidos-kiosk
+Section: utils
+Priority: optional
+Maintainer: Cybroid OS maintainers <cybroidos@cybroid.com>
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.6.2
+Rules-Requires-Root: no
+Homepage: https://github.com/cybroidtech/os
+
+Package: cybroidos-kiosk
+Architecture: all
+Depends: cybroidos-base,
+         cage,
+         chromium,
+         dbus-user-session,
+         ${misc:Depends}
+Description: Cybroid OS kiosk runtime metapackage
+ Installs the common kiosk runtime dependencies for the Raspberry Pi and other kiosk targets. The launcher and configuration are shipped by the target image overlay (ADR-0002).

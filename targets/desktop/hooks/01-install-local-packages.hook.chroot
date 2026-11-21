@@ -1,0 +1,35 @@
+#!/bin/sh
+# live-build chroot hook: install the locally built Cybroid OS .deb packages.
+# Runs after the Debian package lists have been installed.
+set -eu
+
+die() { echo "cybroidos hook 01: $*" >&2; exit 1; }
+
+stage=/root/cybroidos-build
+debs="${stage}/debs"
+[ -d "${debs}" ] || die "missing staged package directory ${debs}"
+
+base_deb="$(find "${debs}" -maxdepth 1 -name 'cybroidos-base_*.deb' -print | sort | tail -n 1)"
+meta_deb="$(find "${debs}" -maxdepth 1 -name 'cybroidos-desktop_*.deb' -print | sort | tail -n 1)"
+[ -n "${base_deb}" ] && [ -f "${base_deb}" ] || die "no staged cybroidos-base .deb"
+[ -n "${meta_deb}" ] && [ -f "${meta_deb}" ] || die "no staged cybroidos-desktop .deb"
+
+export DEBIAN_FRONTEND=noninteractive
+apt-get update
+
+# The control service is built by a separate worker; stage it when available,
+# otherwise the meta-package's dependency requests it from the APT repo.
+for extra in "${debs}"/cybroidos-control_*.deb; do
+	[ -e "${extra}" ] || continue
+	apt-get install -y --no-install-recommends "${extra}"
+done
+
+apt-get install -y --no-install-recommends "${base_deb}" "${meta_deb}"
+
+for package in cybroidos-base cybroidos-desktop; do
+	dpkg-query -W -f='${Status}' "${package}" 2>/dev/null | grep -q '^install ok installed$' \
+		|| die "${package} was not installed"
+done
+
+rm -rf "${debs}"
+echo "cybroidos hook 01: local packages installed"

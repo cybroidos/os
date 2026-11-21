@@ -13,5 +13,58 @@ jobs:
     name: Nightly validation
     uses: ./.github/workflows/ci.yml
 
-  # Nightly image builds + APT repo refresh are added in Phase 3/4.
-  # See docs/PLAN.md.
+  pi-images:
+    name: Pi image matrix
+    uses: ./.github/workflows/pi-image.yml
+
+  desktop-isos:
+    name: Desktop ISO matrix
+    uses: ./.github/workflows/desktop-iso.yml
+
+  containers:
+    name: Container pod matrix
+    uses: ./.github/workflows/containers.yml
+
+  server-images:
+    name: Server qcow2 image
+    uses: ./.github/workflows/server-image.yml
+
+  nightly-manifest:
+    name: Nightly package manifest
+    runs-on: ubuntu-24.04
+    container: debian:13-slim
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install build deps
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            ca-certificates git python3 build-essential dpkg-dev debhelper fakeroot
+
+      - name: Build packages
+        run: |
+          for pkg in cybroidos-base cybroidos-kiosk cybroidos-rpi \
+                     cybroidos-desktop cybroidos-desktop-lite cybroidos-server \
+                     cybroidos-control; do
+            tools/build-package.sh "$pkg"
+          done
+
+      - name: Generate manifest
+        run: |
+          mkdir -p out
+          cp dist/*.deb out/
+          tools/release-manifest.sh --edition core out out/nightly-manifest.md
+          cat out/nightly-manifest.md
+
+      - name: Upload nightly packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: cybroid-os-nightly-packages
+          path: |
+            out/*.deb
+            out/nightly-manifest.md
+          if-no-files-found: error
+
+  # Every target is built above via its reusable workflow. Signed APT repo
+  # publication is a separate, secret-gated release workflow.

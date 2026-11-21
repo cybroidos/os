@@ -1,0 +1,14 @@
+[Unit]
+Description=Cybroid OS first-boot identity hygiene
+Documentation=https://github.com/cybroidtech/os
+ConditionFirstBoot=yes
+After=network.target
+Wants=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/cybroidos-first-boot
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

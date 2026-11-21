@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated from common/branding/brand.toml by targets/desktop/build.sh. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <defs>
+    <linearGradient id="cybroid-gradient" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="@PRIMARY@"/>
+      <stop offset="0.55" stop-color="@PRIMARY_DEEP@"/>
+      <stop offset="1" stop-color="@BACKGROUND@"/>
+    </linearGradient>
+    <linearGradient id="cybroid-rule" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="@ACCENT_ALT@"/>
+      <stop offset="1" stop-color="@ACCENT@"/>
+    </linearGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#cybroid-gradient)"/>
+  <circle cx="1580" cy="210" r="420" fill="@ACCENT@" opacity="0.10"/>
+  <circle cx="280" cy="920" r="360" fill="@ACCENT_ALT@" opacity="0.10"/>
+  <text x="960" y="500" text-anchor="middle" fill="@FOREGROUND@"
+        font-family="sans-serif" font-size="110" letter-spacing="6">@PRODUCT_NAME@</text>
+  <rect x="660" y="552" width="600" height="8" rx="4" fill="url(#cybroid-rule)"/>
+  <text x="960" y="620" text-anchor="middle" fill="@ACCENT@"
+        font-family="sans-serif" font-size="34">@VENDOR@</text>
+  <text x="960" y="1000" text-anchor="middle" fill="@FOREGROUND@" opacity="0.7"
+        font-family="sans-serif" font-size="22">@SUPPORT_URL@</text>
+</svg>

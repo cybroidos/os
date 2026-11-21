@@ -1,0 +1,6 @@
+cybroidos-control (0.1.0) trixie; urgency=medium
+
+  * Initial v0 skeleton: D-Bus/CLI control service, action catalogue, D-Bus
+    policy and autolaunch wiring for the Cybroid mobile client.
+
+ -- Cybroid OS maintainers <cybroidos@cybroid.com>  Sat, 21 Nov 2026 00:00:00 +0000

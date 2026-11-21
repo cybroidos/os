@@ -1,0 +1,14 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: Cybroid OS
+Source: https://github.com/cybroidtech/os
+
+Files: *
+Copyright: 2026 Cybroid Technologies (U) Ltd
+License: GPL-3+
+ This package is free software under the GNU General Public License
+ version 3 or later. See /usr/share/doc/cybroidos-rpi/LICENSE.
+
+Files: debian/*
+Copyright: 2026 Cybroid Technologies (U) Ltd
+License: GPL-3+
+ Debian packaging for Cybroid OS is free software under GPL-3+.

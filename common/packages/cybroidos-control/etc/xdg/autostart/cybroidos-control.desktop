@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Cybroid OS Control
+Comment=Desktop control service for the Cybroid mobile client
+Exec=/usr/bin/cybroidos-control --service
+Terminal=false
+NoDisplay=true
+X-GNOME-Autostart-enabled=true

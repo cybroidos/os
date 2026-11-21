@@ -1,0 +1,17 @@
+Source: cybroidos-rpi
+Section: metapackages
+Priority: optional
+Maintainer: Cybroid OS maintainers <cybroidos@cybroid.com>
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.6.2
+Rules-Requires-Root: no
+Homepage: https://github.com/cybroidtech/os
+
+Package: cybroidos-rpi
+Architecture: all
+Depends: cybroidos-base,
+         cybroidos-kiosk,
+         plymouth,
+         ${misc:Depends}
+Description: Cybroid OS Raspberry Pi metapackage
+ Complete package set for the Raspberry Pi kiosk image: shared branding, the kiosk runtime and the quiet Plymouth boot splash.

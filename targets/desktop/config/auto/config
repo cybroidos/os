@@ -1,0 +1,41 @@
+#!/bin/bash
+# live-build configuration fragment for the Cybroid OS desktop ISO.
+#
+# Copied to <work>/auto/config by targets/desktop/build.sh and executed by
+# `lb config`. All build-time values come from the environment exported there;
+# nothing here is brand-specific beyond the product name/vendor defaults.
+# `noauto` prevents lb config from re-entering this script.
+set -euo pipefail
+
+arch="${CYBROIDOS_ARCH:-amd64}"
+edition="${CYBROIDOS_EDITION:-core}"
+version="${CYBROIDOS_VERSION:-0.1.0}"
+product="${CYBROIDOS_PRODUCT_NAME:-Cybroid OS}"
+vendor="${CYBROIDOS_VENDOR:-Cybroid Technologies (U) Ltd}"
+release="${CYBROIDOS_RELEASE:-trixie}"
+
+bootloaders="syslinux grub-efi"
+if [ "${arch}" = "arm64" ]; then
+	bootloaders="grub-efi"
+fi
+
+lb config noauto \
+	--mode debian \
+	--system live \
+	--distribution "${release}" \
+	--architecture "${arch}" \
+	--binary-image iso-hybrid \
+	--debian-installer none \
+	--bootloaders "${bootloaders}" \
+	--image-name "cybroidos-${edition}-desktop" \
+	--iso-application "${product}" \
+	--iso-preparer "${vendor}" \
+	--iso-publisher "${vendor}" \
+	--iso-volume "CYBROIDOS-${edition}-${arch}" \
+	--bootappend-live "boot=live components hostname=cybroid username=cybroid quiet splash" \
+	--archive-areas main \
+	--apt-recommends true \
+	--checksums sha256 \
+	--memtest none \
+	--uefi-secure-boot auto \
+	"$@"

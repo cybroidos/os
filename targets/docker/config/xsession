@@ -1,0 +1,3 @@
+#!/bin/sh
+# Xsession used by Xfce when starting from xrdp or a display manager.
+exec startxfce4

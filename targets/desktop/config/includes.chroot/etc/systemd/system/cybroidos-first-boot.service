@@ -1,0 +1,14 @@
+[Unit]
+Description=Cybroid OS desktop first-boot identity and credential hygiene
+ConditionPathExists=!/etc/cybroidos/first-boot-done
+After=local-fs.target
+Before=display-manager.service ssh.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/cybroidos-first-boot
+RemainAfterExit=no
+TimeoutStartSec=120
+
+[Install]
+WantedBy=multi-user.target

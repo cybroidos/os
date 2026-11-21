@@ -1,0 +1,29 @@
+Source: cybroidos-control
+Section: admin
+Priority: optional
+Maintainer: Cybroid OS maintainers <cybroidos@cybroid.com>
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.6.2
+Rules-Requires-Root: no
+Homepage: https://github.com/cybroidtech/os
+
+Package: cybroidos-control
+Architecture: all
+Depends: ${misc:Depends},
+         dbus,
+         python3,
+         python3-dbus,
+         python3-gi,
+         kdeconnect | kcd
+Recommends: krdp
+Suggests: xdg-utils,
+          libnotify-bin
+Description: Cybroid OS desktop control D-Bus service and CLI
+ Small D-Bus service exposing a restricted set of desktop control actions to
+ the KDE Connect plugin layer and to the Cybroid mobile client: lock screen,
+ open a URL or an allowlisted app, show a notification, report device info and
+ start/stop a full-screen remote view through KRDP. Actions run without root
+ and every external command is invoked with a fixed argv (never a shell).
+ .
+ This is a v0 skeleton: KDE Connect interoperability and KRDP phone-client
+ compatibility still need end-to-end validation.

@@ -1,0 +1,108 @@
+name: Desktop ISO
+
+# Manual or tag-triggered only: live-build is long and disk-heavy.
+# Builds one ISO per desktop variant (KDE Plasma and Xfce Lite).
+on:
+  workflow_dispatch:
+    inputs:
+      edition:
+        description: Base edition config (editions/<edition>/config)
+        required: false
+        default: core
+      arch:
+        description: Target architecture
+        required: false
+        default: amd64
+  workflow_call:
+    inputs:
+      edition:
+        description: Base edition config (editions/<edition>/config)
+        required: false
+        type: string
+        default: core
+      arch:
+        description: Target architecture
+        required: false
+        type: string
+        default: amd64
+  push:
+    tags: [ 'desktop-*' ]
+
+permissions:
+  contents: read
+
+jobs:
+  build-desktop-iso:
+    name: Build Cybroid OS desktop ISO (${{ matrix.desktop }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    container:
+      image: debian:13-slim
+      # live-build needs chroot/mount privileges; the runner host is Ubuntu only
+      # because GitHub does not offer a Debian runner image.
+      options: --privileged
+    strategy:
+      fail-fast: false
+      matrix:
+        desktop: [plasma, xfce]
+    env:
+      BASE_EDITION: ${{ github.event.inputs.edition || 'core' }}
+      DESKTOP: ${{ matrix.desktop }}
+      ARCH: ${{ github.event.inputs.arch || 'amd64' }}
+      OUT_DIR: ${{ github.workspace }}/targets/desktop/out
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install build tooling
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            ca-certificates git python3 build-essential dpkg-dev \
+            debhelper fakeroot live-build debootstrap squashfs-tools \
+            xorriso genisoimage qemu-utils
+
+      - name: Compute edition label
+        id: label
+        run: |
+          label="${BASE_EDITION}"
+          if [ "${DESKTOP}" = "xfce" ]; then
+            label="${label}-lite"
+          fi
+          echo "label=${label}" >> "$GITHUB_OUTPUT"
+          echo "EDITION=${label}" >> "$GITHUB_ENV"
+
+      - name: Build shared branding package
+        run: tools/build-package.sh cybroidos-base
+
+      - name: Build phone-control package (when available)
+        run: |
+          if [ -d common/packages/cybroidos-control ]; then
+            tools/build-package.sh cybroidos-control
+          else
+            echo "cybroidos-control source not present yet; requesting it from APT"
+          fi
+
+      - name: Build desktop ISO
+        run: targets/desktop/build.sh
+
+      - name: List artifacts
+        run: ls -lh "${OUT_DIR}"
+
+      - name: ISO smoke test (filesystem only; no QEMU in CI container)
+        run: SKIP_BOOT=1 tests/desktop/iso-smoke-test.sh "${OUT_DIR}"/*.iso
+
+      - name: Generate release manifest
+        run: |
+          tools/release-manifest.sh --edition "${EDITION}" \
+            "${OUT_DIR}" "${OUT_DIR}/manifest-${EDITION}.md"
+
+      - name: Upload ISO and manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: cybroid-os-${{ env.BASE_EDITION }}-${{ matrix.desktop }}-desktop-${{ env.ARCH }}
+          path: |
+            targets/desktop/out/*.iso
+            targets/desktop/out/*.sha256
+            targets/desktop/out/manifest-*.md
+          if-no-files-found: error

@@ -1,0 +1,34 @@
+{
+  "stacks": {
+    "generic": {
+      "name": "Cybroid OS Dev (generic)",
+      "description": "Headless Cybroid OS devcontainer with general build tooling.",
+      "packages": [
+        "build-essential",
+        "cmake",
+        "pkg-config"
+      ]
+    },
+    "python": {
+      "name": "Cybroid OS Dev (Python)",
+      "description": "Headless Cybroid OS devcontainer with Python 3 development tooling.",
+      "packages": [
+        "python3",
+        "python3-dev",
+        "python3-pip",
+        "python3-venv",
+        "python3-pytest",
+        "build-essential"
+      ]
+    },
+    "node": {
+      "name": "Cybroid OS Dev (Node.js)",
+      "description": "Headless Cybroid OS devcontainer with Node.js and npm.",
+      "packages": [
+        "nodejs",
+        "npm",
+        "build-essential"
+      ]
+    }
+  }
+}

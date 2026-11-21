@@ -18,8 +18,8 @@ Scores are judgement calls based on the repo, not benchmark results. The
 |---|---|---|---|
 | Build / reproducibility | 7/10 | 7/10 | Clean CI, Debian 13 containers, one brand source; no reproducible-build verification |
 | Pi kiosk image | 5/10 | 6/10 | Editions matrix + hardened kiosk/manifest; no Pi 4 hardware signoff |
-| Desktop ISO | 1/10 | 1/10 | Planned only (ADR-0003, Calamares) |
-| Server / pods / Docker | 1/10 | 1/10 | Planned only (ADR-0005) |
+| Desktop ISO | 1/10 | 5/10 | Builders for Plasma + Xfce Lite exist (ADR-0003, Calamares); QEMU validation pending |
+| Server / pods / Docker | 1/10 | 5/10 | qcow2/cloud-init and pod builders exist (ADR-0005); smoke tests pending |
 | First-run experience | 2/10 | 6/10 | No default password, pubkey-only SSH, first-boot hygiene and forced password change; no welcome/setup UI |
 | Branding consistency | 7/10 | 7/10 | os-release, motd, issue, Plymouth and kiosk from `brand.toml`; palette/wallpaper unconfirmed |
 | Updates / lifecycle | 1/10 | 4/10 | `apt-repo/publish.sh` signs `InRelease`; not deployed, no update UI or rollback |
@@ -59,8 +59,8 @@ Scores are judgement calls based on the repo, not benchmark results. The
    `InRelease`, but no host, key or client configuration has been provisioned.
 3. **Release integrity not yet exercised in CI.** The manifest can sign, but
    no signing key is wired into the release workflow yet.
-4. **Desktop / server / Docker are not implemented.** The README labels them
-   planned; expectations must be aligned before promising a date.
+4. **Desktop / server / Docker are implemented but unvalidated.** Builders
+   exist; expectations must be aligned before promising a date.
 5. **Brand assets are not final** — palette is pending brand-owner
    confirmation and there is no wallpaper art.
 6. **No localisation or accessibility work** beyond en_US / US keyboard.

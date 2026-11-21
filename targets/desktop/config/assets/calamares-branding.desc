@@ -1,0 +1,17 @@
+[General]
+name = @PRODUCT_NAME@
+productName = @PRODUCT_NAME@
+shortProductName = @PRODUCT_NAME@
+version = @VERSION@
+versionedName = @PRODUCT_NAME@ @VERSION@
+shortVersionedName = @PRODUCT_NAME@
+vendorName = @VENDOR@
+shortVendorName = @VENDOR_SHORT@
+website = @SUPPORT_URL@
+supportUrl = @SUPPORT_URL@
+releaseNotesUrl = @SUPPORT_URL@
+
+[Images]
+background = background.svg
+productLogo = product-logo.png
+productIcon = product-icon.png

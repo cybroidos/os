@@ -1,0 +1,22 @@
+Source: cybroidos-server
+Section: metapackages
+Priority: optional
+Maintainer: Cybroid OS maintainers <cybroidos@cybroid.com>
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.6.2
+Rules-Requires-Root: no
+Homepage: https://github.com/cybroidtech/os
+
+Package: cybroidos-server
+Architecture: all
+Depends: cybroidos-base,
+         xfce4,
+         xrdp,
+         novnc,
+         websockify,
+         cloud-init,
+         kcd,
+         openssh-server,
+         ${misc:Depends}
+Description: Cybroid OS server/pods metapackage
+ Cloud-init capable server image with an Xfce desktop reachable over RDP (xrdp) with noVNC fallback, headless KDE Connect (kcd) for phone control, and branding (ADR-0003, ADR-0004, ADR-0005).

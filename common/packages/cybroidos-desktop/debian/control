@@ -1,0 +1,21 @@
+Source: cybroidos-desktop
+Section: metapackages
+Priority: optional
+Maintainer: Cybroid OS maintainers <cybroidos@cybroid.com>
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.6.2
+Rules-Requires-Root: no
+Homepage: https://github.com/cybroidtech/os
+
+Package: cybroidos-desktop
+Architecture: all
+Depends: cybroidos-base,
+         plasma-desktop,
+         sddm,
+         calamares,
+         kdeconnect,
+         krdp,
+         cybroidos-control,
+         ${misc:Depends}
+Description: Cybroid OS desktop metapackage (KDE Plasma)
+ Installable KDE Plasma desktop with the Calamares installer, KDE Connect/krdp and the cybroidos-control service for phone control (ADR-0003, ADR-0004).

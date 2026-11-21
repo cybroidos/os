@@ -1,0 +1,35 @@
+#!/usr/bin/make -f
+# Cybroid OS control package build. The payload is staged into debian/tmp and
+# installed from there by dh_install (see debian/install).
+%:
+	dh $@
+
+override_dh_auto_configure:
+override_dh_auto_build:
+override_dh_auto_test:
+
+# tools/build-package.sh copies only the debian/ directory into its temporary
+# source tree (and renders branding into usr/ and etc/), so a mirror of the
+# payload is kept in debian/payload/. Overlay it with package-root payload when
+# present (direct dpkg-buildpackage builds).
+override_dh_auto_install:
+	install -d debian/tmp
+	cp -a debian/payload/. debian/tmp/
+	# tools/build-package.sh places the licence texts here; stage them so
+	# dh_install can ship them with the binary package.
+	@if [ -d usr/share/doc/cybroidos-control ]; then \
+		install -d debian/tmp/usr/share/doc/cybroidos-control; \
+		cp -a usr/share/doc/cybroidos-control/. debian/tmp/usr/share/doc/cybroidos-control/; \
+	fi
+	@for dir in usr etc lib; do \
+		if [ -d "$$dir" ]; then \
+			install -d "debian/tmp/$$dir"; \
+			cp -a "$$dir"/. "debian/tmp/$$dir/"; \
+		fi; \
+	done
+
+override_dh_install:
+	dh_install --sourcedir=debian/tmp
+
+override_dh_installsystemd:
+	# Ship the unit for opt-in enablement; never start/enable it on upgrade.

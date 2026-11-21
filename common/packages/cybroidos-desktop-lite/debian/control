@@ -1,0 +1,19 @@
+Source: cybroidos-desktop-lite
+Section: metapackages
+Priority: optional
+Maintainer: Cybroid OS maintainers <cybroidos@cybroid.com>
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.6.2
+Rules-Requires-Root: no
+Homepage: https://github.com/cybroidtech/os
+
+Package: cybroidos-desktop-lite
+Architecture: all
+Depends: cybroidos-base,
+         xfce4,
+         calamares,
+         kdeconnect,
+         cybroidos-control,
+         ${misc:Depends}
+Description: Cybroid OS desktop metapackage (Xfce Lite)
+ Lightweight Xfce 4.20 variant of the Cybroid OS desktop for low-spec machines (~2 GB RAM), with Calamares and phone-control support (ADR-0003).

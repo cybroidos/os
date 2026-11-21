@@ -1,0 +1,124 @@
+name: Containers
+
+# Pod images are heavy, so this runs only on manual dispatch or pod-* tags.
+# Publishing to a registry is deliberately out of scope here: this workflow has
+# read-only permissions and verifies each image/architecture combination.
+on:
+  workflow_dispatch:
+    inputs:
+      edition:
+        description: Edition metadata (must exist in editions/)
+        required: false
+        default: core
+  workflow_call:
+    inputs:
+      edition:
+        description: Edition metadata (must exist in editions/)
+        required: false
+        type: string
+        default: core
+  push:
+    tags: [ 'pod-*' ]
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: ${{ matrix.image }} / ${{ matrix.arch }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64, arm64]
+        image: [base, dev-generic, dev-python, dev-node, desktop]
+    env:
+      EDITION: ${{ inputs.edition || 'core' }}
+      PUSH: 0
+      REGISTRY: ghcr.io/cybroidtech
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up QEMU (binfmt)
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Install build tooling
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            dpkg-dev debhelper fakeroot python3 shellcheck
+
+      - name: Validate container sources
+        run: |
+          set -euo pipefail
+          bash -n targets/docker/build.sh
+          bash -n tests/container/smoke-test.sh
+          for f in targets/docker/config/*.sh; do bash -n "$f"; done
+          python3 -m json.tool targets/docker/dev/devcontainer.json >/dev/null
+          python3 -m json.tool targets/docker/dev/stacks.json >/dev/null
+          echo "container sources parse OK"
+
+      - name: Build image
+        env:
+          ARCH: ${{ matrix.arch }}
+          IMAGE: ${{ matrix.image }}
+        run: |
+          set -euo pipefail
+          mkdir -p logs artifacts
+          build_image="${IMAGE}"
+          stack=""
+          case "${IMAGE}" in
+            dev-*) stack="${IMAGE#dev-}"; build_image=dev ;;
+          esac
+          args=()
+          if [ -n "${stack}" ]; then args+=(--stack "${stack}"); fi
+          args+=("${build_image}")
+          ./targets/docker/build.sh --arch "${ARCH}" "${args[@]}" \
+            2>&1 | tee "logs/build-${IMAGE}-${ARCH}.log"
+
+      - name: Write build manifest
+        env:
+          ARCH: ${{ matrix.arch }}
+          IMAGE: ${{ matrix.image }}
+        run: |
+          set -euo pipefail
+          version="$(python3 -c 'import tomllib; print(tomllib.load(open("common/branding/brand.toml","rb"))["identity"]["version"])')"
+          name="cybroidos-pod-${IMAGE}"
+          {
+            echo "image=${name}"
+            echo "arch=${ARCH}"
+            echo "tag=${version}"
+            echo "edition=${EDITION}"
+            echo "local_ref=${REGISTRY}/${name}:${version}-${ARCH}"
+          } > "artifacts/manifest-${IMAGE}-${ARCH}.txt"
+          cat "artifacts/manifest-${IMAGE}-${ARCH}.txt"
+
+      - name: Smoke test
+        env:
+          ARCH: ${{ matrix.arch }}
+          IMAGE: ${{ matrix.image }}
+        run: |
+          set -euo pipefail
+          build_image="${IMAGE}"
+          stack=""
+          case "${IMAGE}" in
+            dev-*) stack="${IMAGE#dev-}"; build_image=dev ;;
+          esac
+          args=(--arch "${ARCH}" --image "${build_image}" --skip-build)
+          if [ -n "${stack}" ]; then args+=(--stack "${stack}"); fi
+          ./tests/container/smoke-test.sh "${args[@]}" \
+            2>&1 | tee "logs/smoke-${IMAGE}-${ARCH}.log"
+
+      - name: Upload logs and manifests
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: containers-${{ matrix.image }}-${{ matrix.arch }}
+          path: |
+            logs/
+            artifacts/
+          if-no-files-found: warn

@@ -17,7 +17,13 @@ from `docs/END-USER-READINESS.md` and `docs/SECURITY-POSTURE.md`.
 ## Engineering
 
 - [ ] `docs/release/HARDWARE-CHECKLIST.md` completed on Pi 4
-- [ ] CI green (repo validation, package build, image matrix)
+- [ ] CI green (repo validation, package build, metapackage build, image matrix)
+- [ ] Pi image smoke test passes (`tests/qemu/`)
+- [ ] Desktop ISO smoke test passes (`tests/desktop/`) for Plasma and Lite
+- [ ] Server qcow2 + cloud-init smoke test passes (`tests/server/`)
+- [ ] Container smoke test passes for all pod images on amd64 and arm64
+- [ ] Mobile control components versioned together (`cybroidos-control`,
+      `cybroidos_connect`, Flutter client)
 - [ ] Definition of Done in `docs/PLAN.md` §11 all checked
 - [ ] Release manifest git commit matches the tagged commit
 - [ ] No proprietary components present unless explicitly opted in

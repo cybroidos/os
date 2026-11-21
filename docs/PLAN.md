@@ -52,18 +52,21 @@ Still needed: **logo (SVG+PNG)** and **hex colours**. Placeholders live in
 |---|---|---|
 | **1** | ADR: base distribution + repo/plan | **DONE** |
 | **2** | Repo skeleton + Docker/WSL2/GCP dev environments | **DONE** |
-| **3** | Working Pi image (arm64, Lite + Flutter/flutter-pi kiosk + Plymouth) + QEMU tests | **IN PROGRESS** |
-| **4** | `<brand>-base` package + signed APT repo + Docker/pod images (headless dev spaces + Xfce remote-desktop pods) | **IN PROGRESS** |
-| **5** | Server/pods image (Xfce DE + cloud-init + qcow2 + RDP/VNC) | TODO |
-| **6** | Desktop installable ISO (KDE Plasma default + Xfce "Lite") | TODO |
-| **7** | CI/CD pipeline + documentation + hardware release checklist | IN PROGRESS |
-| **8** | Mobile desktop-control app (Flutter + KDE Connect transport) | TODO |
+| **3** | Working Pi image (arm64, Lite + Flutter/flutter-pi kiosk + Plymouth) + QEMU tests | **IMPLEMENTED** — hardware signoff pending |
+| **4** | `<brand>-base` package + signed APT repo + Docker/pod images (headless dev spaces + Xfce remote-desktop pods) | **IMPLEMENTED** — repo deployment + container smoke tests pending |
+| **5** | Server/pods image (Xfce DE + cloud-init + qcow2 + RDP/VNC) | **IMPLEMENTED** — QEMU validation pending |
+| **6** | Desktop installable ISO (KDE Plasma default + Xfce "Lite") | **IMPLEMENTED** — QEMU validation pending |
+| **7** | CI/CD pipeline + documentation + hardware release checklist | **IMPLEMENTED** — GitHub billing blocked CI at time of writing |
+| **8** | Mobile desktop-control app (Flutter + KDE Connect transport) | **SCAFFOLDED** — real KDE Connect interop + signing pending |
 
 Done so far: repo + ADR + plan; **brand assets imported** from `novaoneltd/cit`
-into `common/branding/`; **GitHub Actions** started (`ci.yml`, `nightly.yml`) and
-running **inside a Debian 13 container** (matches the shipping base OS);
-**devcontainer** build environment (`docs/dev-environments.md`); **Pi build
-scaffold** (`targets/rpi/`, pi-gen) with a manual GitHub Actions workflow.
+into `common/branding/`; **GitHub Actions** (`ci.yml`, `nightly.yml`, plus
+per-target workflows) running **inside Debian 13 containers**; **devcontainer**
+build environment (`docs/dev-environments.md`); builders for **Pi, desktop ISO,
+server qcow2 and Docker pods**; shared `cybroidos-*` packages; signed APT repo
+tooling; edition flag tree; release/security/hardware docs; and the Phase 8
+mobile-control skeleton. Validation still includes real Pi 4 hardware signoff,
+QEMU/KVM smoke runs, signed-repo deployment and GitHub account billing.
 
 **Milestone A (fast path):** the engineer is ready to flash an SD card now, and
 will flash the stock Raspberry Pi OS image **today**, then switch to Cybroid OS when
@@ -133,9 +136,14 @@ config flows to every target through one package.
   docker/          Dockerfiles for pod families (ADR-0005):
                      pod-base, pod-dev-<stack> (headless devcontainers),
                      pod-desktop (Xfce + xrdp/noVNC)
-/apt-repo          aptly/reprepro config + signing + publish tooling
+/apps
+  kiosk/           minimal Flutter kiosk shell (runtime proof, ADR-0002)
+  mobile/          cybroidos_connect Dart package, Android client, WireGuard relay
+/apt-repo          reprepro config + signing + publish tooling
 /tests
   qemu/            headless Pi boot test + graphical virt test
+  desktop/         ISO structure + optional QEMU smoke test
+  server/          qcow2/cloud-init structure + optional QEMU smoke test
   container/       docker/podman smoke tests
   checklists/      real-hardware validation checklist (Pi 4)
 /ci                CI helper scripts; workflows live in .github/workflows/
@@ -182,19 +190,19 @@ hacks; `docs/` and `adr/` keep decisions discoverable.
       hostname) and verify — **first image built in CI** (run `38150371735`);
       rootfs verified via `debugfs`: `ID=cybroidos`, banner motd/issue, hostname
       `cybroid`, branding assets present
-- [ ] Quiet boot + **Plymouth** splash + Cybroid wallpaper
-- [ ] **kiosk**: systemd service launching one fullscreen app, auto-restart on
+- [x] Quiet boot + **Plymouth** splash + Cybroid wallpaper (rendered from `brand.toml`)
+- [x] **kiosk**: fullscreen launcher with auto-restart on crash (optional systemd unit) launching one app,
       crash; **runtime swappable** — (a) Flutter via **flutter-pi** (default) or
       (b) `cage` + Chromium (native `.deb`) web app (ADR-0002)
-- [ ] Minimal "hello world" bundle per kiosk mode (Flutter bundle + web page)
-- [ ] QEMU test scripts:
+- [x] Minimal "hello world" bundle per kiosk mode (`apps/kiosk/flutter/` + rendered web page)
+- [x] QEMU test scripts:
   - [x] verify a built image: parse MBR (FAT32 boot + ext4 root), check rootfs
         branding with `debugfs`, and an **optional best-effort** QEMU boot →
         `tests/qemu/rpi-boot-test.sh` (+ `tools/fetch-image.sh` to pull the CI
         artifact). *Reliable checks pass on the first image.*
         **QEMU cannot run the VideoCore firmware bootloader**, so a raw SD image
         cannot be booted; the boot step extracts `kernel8.img` and is non-fatal.
-  - [ ] graphical: `-M virt` + virtio-gpu + generic arm64 kernel/initramfs
+  - [x] graphical test script: `-M virt` + virtio-gpu + generic arm64 kernel/initramfs
         **injected into a COPY of the image** (never the release image),
         `WLR_RENDERER=pixman` (cage) + Chromium `--disable-gpu`, GTK/VNC display;
         verify Plymouth + kiosk launch + logo
@@ -210,46 +218,46 @@ validation deferred to the Phase 7 checklist.*
       (`tools/build-package.sh`) + CI job that builds, installs on a clean Trixie
       root and asserts branding — **verified in CI** (base-files conffiles
       `/etc/issue`, `/etc/motd` and `/usr/lib/os-release` handled via `dpkg-divert`)
-- [ ] Per-target meta-packages `<brand>-rpi`, `<brand>-desktop`, `<brand>-server`
-- [ ] Signed APT repo (**reprepro**) + CI signing key (secrets only)
-- [ ] Refactor the Pi image to consume the repo / install `<brand>-base`
-- [ ] **Pod images (ADR-0005)** from `debian:trixie-slim`, amd64 + arm64:
-  - [ ] `cybroidos-pod-base` (branding + `kcd` + SSH + tooling, no desktop)
-  - [ ] `cybroidos-pod-dev-<stack>` headless **devcontainers** (`.devcontainer/devcontainer.json`
+- [x] Per-target metapackages `cybroidos-kiosk`, `cybroidos-rpi`, `cybroidos-desktop`, `cybroidos-desktop-lite`, `cybroidos-server`
+- [x] Signed APT repo tooling (**reprepro**) in `apt-repo/publish.sh`; CI signing key is operator-managed
+- [x] Refactor the Pi image to install locally built `cybroidos-*` packages from `03-packages.sh`
+- [x] **Pod images (ADR-0005)** from `debian:trixie-slim`, amd64 + arm64:
+  - [x] `cybroidos-pod-base` (branding + `kcd` + SSH + tooling, no desktop)
+  - [x] `cybroidos-pod-dev-<stack>` headless **devcontainers** (`.devcontainer/devcontainer.json`
         + `devcontainer.metadata` label) — generic/Python/Node first
-  - [ ] `cybroidos-pod-desktop` (Xfce 4.20 + **xrdp** primary, **noVNC** fallback + `kcd`)
-- [ ] Container smoke tests (docker/podman, buildx + QEMU binfmt)
+  - [x] `cybroidos-pod-desktop` (Xfce 4.20 + **xrdp** primary, **noVNC** fallback + `kcd`)
+- [x] Container smoke tests (docker/podman, buildx + QEMU binfmt) — script added
 **Exit criteria:** `<brand>-base` installs on a clean Trixie container and applies
 branding; pod images (headless + desktop) pass smoke tests on both architectures.
 
 ### Phase 5 — Server / pods image
-- [ ] Server image/ISO, **cloud-init capable**, **including an Xfce 4.20 desktop**
+- [x] Server image, **cloud-init capable**, **including an Xfce 4.20 desktop**
       (pods run on servers and need a GUI — ADR-0003)
-- [ ] `qcow2` VM image
-- [ ] Network remote-access path for the Xfce session: **RDP (xrdp) primary** with
+- [x] `qcow2` VM image
+- [x] Network remote-access path for the Xfce session: **RDP (xrdp) primary** with
       **VNC/noVNC fallback** — same config as `cybroidos-pod-desktop` (ADR-0005) + branding
-- [ ] Ship headless **`kcd`** for phone control on servers/pods (ADR-0004)
-- [ ] x86_64 QEMU/KVM boot + smoke tests (session up, branding, os-release)
+- [x] Ship headless **`kcd`** for phone control on servers/pods (ADR-0004)
+- [x] x86_64 QEMU/KVM smoke-test script (session up, branding, os-release)
 **Exit criteria:** qcow2 + ISO boot in KVM, show a branded Xfce session, and pass
 the server smoke test.
 
 ### Phase 6 — Desktop ISO
-- [ ] `live-build` installable hybrid ISO, x86_64 (arm64 optional); **Calamares** installer
-- [ ] Desktop environment: **KDE Plasma 6.3** (default) with a **"Lite" Xfce 4.20**
+- [x] `live-build` installable hybrid ISO, x86_64 (arm64 optional); **Calamares** installer
+- [x] Desktop environment: **KDE Plasma 6.3** (default) with a **"Lite" Xfce 4.20**
       variant for low-spec hardware — see `docs/research/desktop-environment.md`
       (ADR-0003)
-- [ ] Branded boot (GRUB/isolinux), installer, Plasma **global theme**, **SDDM**
+- [x] Branded boot (GRUB/isolinux), installer, Plasma **global theme**, **SDDM**
       greeter, wallpaper; **KDE Kiosk** profiles for school machines
-- [ ] Ship **KDE Connect + `krdp`** and the `cybroidos-control` service for phone control
-- [ ] QEMU/KVM boot + smoke tests
+- [x] Ship **KDE Connect + `krdp`** and the `cybroidos-control` service for phone control
+- [x] QEMU/KVM boot + smoke-test script
 **Exit criteria:** ISO installs and boots to a branded desktop; smoke test passes.
 
 ### Phase 7 — CI/CD, docs, release checklist
-- [ ] CI pipeline (GitHub Actions) building all targets, running smoke tests,
+- [x] CI pipeline (GitHub Actions) building all targets, running smoke tests,
       versioning artefacts, publishing images + packages; caching; **nightly build**
-- [ ] Docs: README, build guide, "how to add a package", "how to swap the kiosk
+- [x] Docs: README, build guide, "how to add a package", "how to swap the kiosk
       app", "how to add a new hardware target"
-- [ ] Real-hardware checklist for the Pi 4 (firmware splash, `config.txt`, real
+- [x] Real-hardware checklist for the Pi 4 (firmware splash, `config.txt`, real
       display, touch, GPIO, boot from SD/SSD) — **release points only**
 **Exit criteria:** green pipeline producing versioned, published artefacts.
 
@@ -257,11 +265,11 @@ the server smoke test.
 - [x] **ADR-0004 accepted**: Flutter (Android) client + **KDE Connect protocol v8**
       as transport; LAN + internet; actions + full screen; Phone Link parity;
       fork/rebrand KDE Connect later — see `docs/research/desktop-mobile-control.md`
-- [ ] Desktop: ship `cybroidos-control` D-Bus service + KDE Connect plugins; enable `krdp`
-- [ ] Dart **`cybroidos_connect`** package (discovery + TLS + pairing + packet/plugin layer)
-- [ ] Phone app: branded Cybroid Flutter client; pairing/security over LAN; signed release
-- [ ] Internet path: self-hosted relay/tunnel (WireGuard first) — ADR-0004 open item 1
-- [ ] Pods: expose `kcd` (headless KDE Connect) so pods are controllable too (ADR-0005)
+- [x] Desktop: ship `cybroidos-control` D-Bus service + KDE Connect plugins; enable `krdp`
+- [x] Dart **`cybroidos_connect`** package skeleton (discovery + TLS + pairing + packet/plugin layer)
+- [x] Phone app: branded Cybroid Flutter client skeleton; pairing UI over LAN; signing documented
+- [x] Internet path: self-hosted WireGuard relay v0 configuration — ADR-0004 open item 1
+- [x] Pods: expose `kcd` (headless KDE Connect) so pods are controllable too (ADR-0005)
 **Exit criteria:** a phone can control a Cybroid OS desktop and a pod (actions +
 optional full screen), on LAN and (with the relay) over the internet.
 
@@ -285,11 +293,16 @@ QEMU-only workarounds are confined to a **test profile**. Emulation success is
 ## 8. CI/CD
 
 - **Platform:** GitHub Actions (default; revisitable).
+- **Workflows:** `ci.yml` (validation + package builds), `pi-image.yml`,
+  `desktop-iso.yml`, `server-image.yml`, `containers.yml` (all reusable via
+  `workflow_call`), and `nightly.yml` (scheduled orchestration).
 - **Stages:** build all targets → run smoke tests → version artefacts → publish
   (GitHub Releases for images, GHCR for containers) → APT repo publish.
 - **Caching:** apt/mmdebstrap caches, Docker layer cache.
-- **Nightly:** scheduled build + repo refresh; security-fix rebuilds.
-- **Secrets:** signing key + registry tokens in CI secrets only.
+- **Nightly:** scheduled build of every target + package manifest; signed APT
+  repo publication is a separate, secret-gated release step.
+- **Secrets:** signing key + registry tokens in CI secrets only. At the time of
+  writing, GitHub Actions jobs were blocked by account billing, not by code.
 
 ---
 
@@ -355,3 +368,4 @@ QEMU-only workarounds are confined to a **test profile**. Emulation success is
 | 2026-10-11 | **Graphical QEMU boot working.** Added `tools/fatread.py` (read-only FAT32, no root/mtools) and `tests/qemu/rpi-gui-test.sh`: boots the image's own kernel + Pi 3 DTB on `raspi3b` with `earlycon=pl011,0x3f201000`, lets systemd run (`Hostname set to <cybroid>`), and captures framebuffer screenshots via the QEMU monitor `screendump` (saved to `docs/branding/rpi-gui-*.png`). **Finding:** `raspi3b` exposes an fbdev framebuffer but **no vc4 KMS/GPU**, and the Pi kernel builds **no `virtio` drivers**, so the `-M virt` + virtio-gpu kiosk test needs a generic Debian arm64 kernel injected into a copy of the image. |
 | 2026-10-11 | **Phase 4 started (ADR-0007)**: shared layer = Debian packages (`cybroidos-base` + per-target meta-packages), `os-release` via `dpkg-divert`, APT repo = **reprepro** (open item #4 resolved). Added `common/packages/cybroidos-base/`, `tools/build-package.sh`, and a CI job that builds, installs on a clean Trixie root and asserts branding. |
 | 2026-10-11 | **Phase 3 kiosk + quiet boot**: `tools/render-brand.py` now also renders the kiosk web app (`usr/share/cybroidos/kiosk/index.html`) and the **Plymouth** boot theme; `stage-cybroidos` installs **`cage`+`chromium`+`plymouth`**, disables the firmware/console boot text (`quiet splash logo.nologo disable_splash=1`), autologins the kiosk user on tty1, and starts the runtime-agnostic `/usr/bin/cybroidos-kiosk` (ADR-0002). The device now boots to a **boot logo only**, then a **branded web kiosk**. |
+| 2026-11-21 | Implemented all remaining phases: per-target metapackages, Pi package consumption + kiosk supervision/Flutter bundle, signed APT repo tooling, Docker pod images, server qcow2/cloud-init, desktop ISO (Plasma + Xfce Lite), CI/nightly/docs, and the Phase 8 mobile-control skeleton. Status values now distinguish implementation from validation pending (hardware, QEMU, repo deployment, interop, GitHub billing). |

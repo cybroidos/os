@@ -1,0 +1,46 @@
+#!/bin/sh
+# live-build chroot hook: enable the desktop services and verify build choices.
+set -eu
+
+die() { echo "cybroidos hook 03: $*" >&2; exit 1; }
+
+stage=/root/cybroidos-build
+identity="${stage}/identity.env"
+[ -f "${identity}" ] || die "missing staged identity: ${identity}"
+# shellcheck disable=SC1090  # generated, shlex-quoted by build.sh
+. "${identity}"
+
+conf=/etc/cybroidos/desktop.conf
+[ -f "${conf}" ] || die "missing ${conf}"
+grep -q '@[A-Z_]*@' "${conf}" && die "unsubstituted placeholder in ${conf}" || true
+grep -q "^EDITION=\"${edition}\"$" "${conf}" || die "EDITION mismatch in ${conf}"
+grep -q "^DESKTOP=\"${desktop}\"$" "${conf}" || die "DESKTOP mismatch in ${conf}"
+grep -q "^VENDOR=\"Cybroid Technologies (U) Ltd\"$" "${conf}" \
+	|| die "vendor mismatch in ${conf}"
+grep -q '^cybroid$' /etc/hostname || die "/etc/hostname is not cybroid"
+
+# KDE Kiosk profile (Plasma school machines).
+kiosk_profile=/etc/xdg/cybroidos-kiosk.conf
+[ -f "${kiosk_profile}" ] || die "missing ${kiosk_profile}"
+if [ "${kiosk_enabled}" = "true" ]; then
+	grep -q '^Enabled=true$' "${kiosk_profile}" || die "KDE Kiosk profile is not enabled for ${edition}"
+fi
+
+# First-boot identity/credential hygiene.
+chmod 0755 /usr/bin/cybroidos-first-boot
+install -d /etc/systemd/system/multi-user.target.wants
+ln -sf ../cybroidos-first-boot.service \
+	/etc/systemd/system/multi-user.target.wants/cybroidos-first-boot.service
+systemctl enable cybroidos-first-boot.service >/dev/null 2>&1 || true
+
+# Branded greeter as the display manager.
+sddm_unit=""
+for candidate in /lib/systemd/system/sddm.service /usr/lib/systemd/system/sddm.service; do
+	if [ -f "${candidate}" ]; then sddm_unit="${candidate}"; break; fi
+done
+[ -n "${sddm_unit}" ] || die "SDDM systemd unit not found"
+ln -sf "${sddm_unit}" /etc/systemd/system/display-manager.service
+systemctl enable sddm.service >/dev/null 2>&1 || true
+
+rm -rf "${stage}"
+echo "cybroidos hook 03: desktop services configured"

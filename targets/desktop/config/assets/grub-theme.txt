@@ -1,0 +1,16 @@
+# Minimal branded GRUB theme for the installed Cybroid OS system.
+insmod vbe
+insmod gfxterm
+terminal_output gfxterm
+background_color = "@BACKGROUND@"
+foreground_color = "@FOREGROUND@"
+title-text: "@PRODUCT_NAME@ @VERSION@"
+title-color: "@ACCENT@"
+message-color: "@FOREGROUND@"
++ boot_menu {
+    item_color = "@FOREGROUND@"
+    selected_item_color = "@ACCENT@"
+    item_height = 24
+    item_padding = 6
+    item_spacing = 6
+}

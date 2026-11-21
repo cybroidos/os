@@ -3,38 +3,47 @@
 Branded operating-system images for **Cybroid** (Cybroid Technologies (U) Ltd) and
 its customers, built from one repository and one build system.
 
-Four targets are planned around one shared base and branding layer. The
-**Raspberry Pi kiosk** is the first implemented target; the others are on the
-roadmap.
+All four targets are implemented around one shared base and branding layer.
+Build scripts and smoke tests exist for every target; hardware, QEMU/KVM and
+signed-repository validation are still pending (see `docs/PLAN.md`).
 
 | Target | Artefact | Status |
 |---|---|---|
-| Raspberry Pi | flashable `.img` → branded kiosk (develop/test on Pi 3; runs on Pi 4) | Implemented (`targets/rpi`) |
-| Desktop | bootable, installable ISO — Cybroid school computers | Planned |
-| Server | minimal cloud-init image + `qcow2` (ship to customers) | Planned |
-| Docker | base container images (amd64 + arm64) | Planned |
+| Raspberry Pi | flashable `.img` → branded kiosk (Pi 3/4) | `targets/rpi` — Pi 4 hardware signoff pending |
+| Desktop | installable hybrid ISO — KDE Plasma + Xfce "Lite" | `targets/desktop` — QEMU validation pending |
+| Server | cloud-init image + `qcow2`, Xfce over RDP/noVNC | `targets/server` — QEMU validation pending |
+| Docker | pod images (amd64 + arm64): base, dev stacks, Xfce desktop | `targets/docker` — smoke tests pending |
+
+Phase 8 adds the mobile-control stack: the `cybroidos-control` D-Bus service,
+the `cybroidos_connect` Dart package, an Android client skeleton and a
+WireGuard relay v0 (`common/packages/cybroidos-control/`, `apps/mobile/`).
 
 - **Base OS:** Debian 13 "Trixie" — see [`docs/adr/ADR-0001-base-distribution.md`](docs/adr/ADR-0001-base-distribution.md)
 - **Plan of record:** [`docs/PLAN.md`](docs/PLAN.md) (living document)
 - **Project reports:** [end-user readiness](docs/END-USER-READINESS.md), [security posture](docs/SECURITY-POSTURE.md), [editions strategy](docs/EDITION-STRATEGY.md)
-- **Guides:** [release checklist](docs/RELEASE-CHECKLIST.md), [security policy](docs/SECURITY.md), [APT repo](docs/APT-REPO.md), [user docs](docs/user/INSTALL.md)
+- **Guides:** [build guide](docs/BUILD-GUIDE.md), [release checklist](docs/RELEASE-CHECKLIST.md), [security policy](docs/SECURITY.md), [APT repo](docs/APT-REPO.md), [user docs](docs/user/INSTALL.md), [add a package](docs/ADD-PACKAGE.md), [swap the kiosk app](docs/SWAP-KIOSK-APP.md), [add a hardware target](docs/ADD-HARDWARE-TARGET.md)
 - **Editions:** Core, Education, Developer, Professional, Enterprise — see [`editions/`](editions/README.md)
 
 ## Status
 
-Early foundation. The base-distro ADR is accepted and the Raspberry Pi kiosk
-target builds a branded image. Desktop, server and Docker are designed but not
-yet implemented. See the status dashboard in `docs/PLAN.md`.
+All phases have buildable scaffolding. The Pi image, desktop ISO, server
+qcow2, Docker pods and shared packages are defined in one repository with a
+single branding source. Real-hardware signoff, QEMU/KVM smoke runs, deployment
+of the signed APT repository and KDE Connect interoperability remain before a
+public release. GitHub Actions was blocked by account billing at the time of
+writing; local syntax/render/manifest checks pass. See the status dashboard in
+`docs/PLAN.md`.
 
 ## Layout
 
 ```
-common/     shared branding, config, systemd units, <brand>-base packaging
-targets/    per-target builders/overlays — implemented: rpi (desktop/server/docker planned)
+common/     shared branding, config, systemd units and cybroidos-* packages
+targets/    per-target builders: rpi, desktop, server, docker
+apps/       kiosk Flutter shell and mobile-control client/protocol package
 apt-repo/   signed Cybroid APT repository tooling
 editions/   build-time feature flags per product edition
-tests/      QEMU, container and real-hardware validation
-ci/         CI helper scripts (workflows in .github/workflows; planned)
+tests/      qemu, desktop, server, container smoke tests + checklists
+ci/         CI helper scripts (workflows in .github/workflows)
 tools/      helper scripts (brand rendering, packaging, release manifests)
 docs/       guides + ADRs
 ```

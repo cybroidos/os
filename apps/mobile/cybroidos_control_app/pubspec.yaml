@@ -1,0 +1,23 @@
+name: cybroidos_control_app
+description: >-
+  Android control app skeleton for Cybroid OS desktops and pods. The UI and
+  stub actions are wired; KDE Connect transport and remote screen are not yet.
+publish_to: none
+version: 0.1.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cybroidos_connect:
+    path: ../cybroidos_connect
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  lints: ^4.0.0
+
+flutter:
+  uses-material-design: true

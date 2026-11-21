@@ -1,0 +1,17 @@
+[Unit]
+Description=Headless KDE Connect (kcd) for Cybroid OS server/pods
+Documentation=https://github.com/cybroidtech/os
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=cybroid
+Group=cybroid
+Environment=XDG_CONFIG_HOME=/home/cybroid/.config
+ExecStart=/usr/bin/kcd daemon
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

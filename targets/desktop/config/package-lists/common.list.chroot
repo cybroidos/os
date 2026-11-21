@@ -1,0 +1,14 @@
+# Common packages for every Cybroid OS desktop ISO.
+# cybroidos-base and cybroidos-desktop are local .deb files installed by the
+# chroot hook; everything here comes from the Debian 13 archive.
+calamares
+calamares-settings-debian
+plymouth
+sddm
+sddm-theme-debian-breeze
+spice-vdagent
+kdeconnect
+krdp
+cybroidos-control
+# Debian 13 has no standalone `kcd` package; kdeconnect ships the desktop
+# KDE Connect daemon. Headless `kcd` remains a server/pods concern (ADR-0004).

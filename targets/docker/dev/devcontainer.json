@@ -1,0 +1,21 @@
+{
+  "name": "Cybroid OS Dev container",
+  "image": "${env:CYBROID_POD_IMAGE}",
+  "remoteUser": "cybroid",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "timonwong.shellcheck",
+        "ms-python.python",
+        "dbaeumer.vscode-eslint"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  },
+  "remoteEnv": {
+    "DEBIAN_FRONTEND": "noninteractive",
+    "LANG": "C.UTF-8"
+  }
+}

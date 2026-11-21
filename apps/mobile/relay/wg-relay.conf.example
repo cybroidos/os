@@ -1,0 +1,14 @@
+# Placeholder-only WireGuard relay configuration.
+# Generated with 0600 permissions by setup-relay.sh; never commit filled keys.
+
+[Interface]
+Address = <RELAY_VPN_ADDRESS>
+ListenPort = <WG_LISTEN_PORT>
+PrivateKey = <RELAY_PRIVATE_KEY>
+# Firewall/NAT and port forwarding are operator-managed; no PostUp/PostDown
+# commands are shipped in this skeleton.
+
+[Peer]
+PublicKey = <PHONE_PUBLIC_KEY>
+AllowedIPs = <PHONE_VPN_ADDRESS>
+PersistentKeepalive = 25

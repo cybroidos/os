@@ -34,8 +34,10 @@ and credentials are not part of any released artifact.
 | No signed release integrity / SBOM | **Tooling implemented** | `tools/release-manifest.sh --edition --packages-file --sign`; signing key/CI wiring pending |
 | No `SECURITY.md` / CVE SLA | **Fixed** | `docs/SECURITY.md` with reporting address, acknowledgement (3 days), triage (10 days) and fix targets (30/90 days) |
 | No edition security flags | **Fixed** | `editions/*/config`; security-sensitive flags default to off |
+| No per-target metapackages | **Fixed** | `cybroidos-kiosk`, `-rpi`, `-desktop`, `-desktop-lite`, `-server` |
 | No `INCLUDE_PROPRIETARY` guard | **Fixed** | `tools/check-proprietary.sh` called from both build tools |
 | No end-user docs | **Fixed** | `docs/user/INSTALL.md`, `FIRST-BOOT.md`, `UPDATES.md`, `RECOVERY.md`, `SUPPORT.md` |
+| No build guide / contributor docs | **Fixed** | `docs/BUILD-GUIDE.md`, `ADD-PACKAGE.md`, `SWAP-KIOSK-APP.md`, `ADD-HARDWARE-TARGET.md` |
 | No hardware signoff process | **Fixed** | `docs/release/HARDWARE-CHECKLIST.md` and `docs/RELEASE-CHECKLIST.md` |
 
 ## Open findings

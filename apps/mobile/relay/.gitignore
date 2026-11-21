@@ -1,0 +1,6 @@
+# Generated keys and configs are never committed.
+generated/
+*.conf
+!wg-relay.conf.example
+*.jks
+*.keystore

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=@PRODUCT_NAME@
+Comment=Branded @PRODUCT_NAME@ global theme
+Type=LookAndFeel
+X-KDE-PluginInfo-Name=org.cybroidos.desktop
+X-KDE-PluginInfo-Version=@VERSION@
+X-KDE-PluginInfo-Author=@VENDOR@
+X-KDE-PluginInfo-Website=@SUPPORT_URL@
+X-KDE-PluginInfo-License=CC-BY-NC-4.0

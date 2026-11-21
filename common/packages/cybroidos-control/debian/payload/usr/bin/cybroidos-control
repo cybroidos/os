@@ -1,0 +1,493 @@
+#!/usr/bin/python3
+"""Cybroid OS desktop control CLI and D-Bus service (v0 skeleton).
+
+The service exposes a small, explicit action surface on the system bus:
+
+    bus name   com.cybroidos.Control
+    object     /com/cybroidos/Control
+    interface  com.cybroidos.Control
+
+All external programs are started with an argv list (never a shell), URLs and
+app ids are validated, and the action catalogue in actions.json can disable
+individual actions. No action requires root.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import re
+import shutil
+import socket
+import subprocess
+import sys
+from pathlib import Path
+from typing import Any, Callable
+from urllib.parse import urlsplit
+
+SERVICE_NAME = "com.cybroidos.Control"
+OBJECT_PATH = "/com/cybroidos/Control"
+INTERFACE = "com.cybroidos.Control"
+VERSION = "0.1.0"
+PROTOCOL_VERSION = 8
+
+SHARE_DIR = Path("/usr/share/cybroidos/control")
+OVERRIDE_DIR = Path("/etc/cybroidos/control")
+ACTIONS_FILE = SHARE_DIR / "actions.json"
+ACTIONS_OVERRIDE = OVERRIDE_DIR / "actions.json"
+
+DEFAULT_ACTIONS = (
+    "lock",
+    "open_url",
+    "open_app",
+    "notify",
+    "device_info",
+    "fullscreen_start",
+    "fullscreen_stop",
+)
+DEFAULT_ALLOWED_APPS = (
+    "firefox.desktop",
+    "firefox-esr.desktop",
+    "org.mozilla.firefox.desktop",
+    "chromium.desktop",
+    "org.chromium.Chromium.desktop",
+    "google-chrome.desktop",
+)
+APP_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._@-]{0,127}$")
+COMMAND_TIMEOUT = 10
+KRDP_UNIT = os.environ.get("CYBROIDOS_KRDP_UNIT", "krdp-server.service")
+
+_last_error = ""
+
+
+def _read_action_catalogue() -> dict[str, Any] | None:
+    """Load the action catalogue, preferring the local admin override."""
+    for path in (ACTIONS_OVERRIDE, ACTIONS_FILE):
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeError, ValueError):
+            continue
+        if isinstance(data, dict) and isinstance(data.get("actions"), list):
+            return data
+    return None
+
+
+def enabled_actions() -> set[str]:
+    """Return action ids that are present and enabled in the catalogue."""
+    catalogue = _read_action_catalogue()
+    if catalogue is None:
+        return set(DEFAULT_ACTIONS)
+    enabled: set[str] = set()
+    for entry in catalogue["actions"]:
+        if isinstance(entry, dict) and entry.get("enabled", True) is not False:
+            action_id = entry.get("id")
+            if isinstance(action_id, str) and action_id:
+                enabled.add(action_id)
+    return enabled
+
+
+def allowed_apps() -> set[str]:
+    catalogue = _read_action_catalogue()
+    if catalogue is None:
+        return set(DEFAULT_ALLOWED_APPS)
+    configured = catalogue.get("openAppAllowlist")
+    if not isinstance(configured, list):
+        return set(DEFAULT_ALLOWED_APPS)
+    return {
+        item
+        for item in configured
+        if isinstance(item, str) and APP_ID_RE.fullmatch(item) is not None
+    }
+
+
+def require_action(action_id: str) -> None:
+    if action_id not in enabled_actions():
+        raise PermissionError(f"action is not enabled: {action_id}")
+
+
+def _clean_text(value: str, *, limit: int, label: str) -> str:
+    if not isinstance(value, str) or not value:
+        raise ValueError(f"{label} must be a non-empty string")
+    if len(value) > limit:
+        raise ValueError(f"{label} is longer than {limit} characters")
+    if any(ord(char) < 32 or ord(char) == 127 for char in value):
+        raise ValueError(f"{label} contains control characters")
+    return value
+
+
+def run_command(argv: list[str]) -> tuple[bool, str]:
+    """Run a fixed argv list without a shell. Returns (ok, detail)."""
+    if not argv:
+        return False, "empty command"
+    if shutil.which(argv[0]) is None:
+        return False, f"executable not found: {argv[0]}"
+    try:
+        result = subprocess.run(
+            argv,
+            check=False,
+            shell=False,
+            capture_output=True,
+            text=True,
+            timeout=COMMAND_TIMEOUT,
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        return False, str(exc)
+    if result.returncode != 0:
+        detail = (result.stderr or result.stdout or f"exit {result.returncode}").strip()
+        return False, detail[:500]
+    return True, ""
+
+
+def lock_screen() -> tuple[bool, str]:
+    require_action("lock")
+    session = os.environ.get("XDG_SESSION_ID", "")
+    if session and shutil.which("loginctl"):
+        return run_command(["loginctl", "lock-session", session])
+    if shutil.which("loginctl"):
+        return run_command(["loginctl", "lock-sessions"])
+    if shutil.which("dm-tool"):
+        return run_command(["dm-tool", "lock"])
+    return False, "no supported screen locker found (loginctl or dm-tool)"
+
+
+def open_url(url: str) -> tuple[bool, str]:
+    require_action("open_url")
+    value = _clean_text(url, limit=2048, label="url")
+    parsed = urlsplit(value)
+    if parsed.scheme not in ("http", "https") or not parsed.netloc:
+        raise ValueError("only absolute http/https URLs are allowed")
+    if parsed.username or parsed.password:
+        raise ValueError("URLs with embedded credentials are not allowed")
+    return run_command(["xdg-open", value])
+
+
+def open_app(app_id: str) -> tuple[bool, str]:
+    require_action("open_app")
+    value = _clean_text(app_id, limit=128, label="app_id")
+    if APP_ID_RE.fullmatch(value) is None:
+        raise ValueError("app_id must be a desktop file id")
+    if value not in allowed_apps():
+        raise PermissionError(f"app is not allowlisted: {value}")
+    return run_command(["gtk-launch", value])
+
+
+def show_notification(summary: str, body: str) -> tuple[bool, str]:
+    require_action("notify")
+    title = _clean_text(summary, limit=200, label="summary")
+    message = _clean_text(body, limit=2000, label="body")
+    return run_command(
+        ["notify-send", "--appname", "Cybroid OS Control", title, message]
+    )
+
+
+def _remote_view_active() -> bool:
+    if shutil.which("systemctl") is None:
+        return False
+    if not os.environ.get("XDG_RUNTIME_DIR"):
+        return False
+    ok, _ = run_command(["systemctl", "--user", "is-active", KRDP_UNIT])
+    return ok
+
+
+def remote_view_start() -> tuple[bool, str]:
+    require_action("fullscreen_start")
+    if shutil.which("systemctl") is None:
+        return False, "systemctl is not available"
+    if not os.environ.get("XDG_RUNTIME_DIR"):
+        return False, "no user runtime directory: cannot reach the graphical session"
+    ok, detail = run_command(["systemctl", "--user", "start", KRDP_UNIT])
+    return ok, detail
+
+
+def remote_view_stop() -> tuple[bool, str]:
+    require_action("fullscreen_stop")
+    if shutil.which("systemctl") is None:
+        return False, "systemctl is not available"
+    if not os.environ.get("XDG_RUNTIME_DIR"):
+        return False, "no user runtime directory: cannot reach the graphical session"
+    ok, detail = run_command(["systemctl", "--user", "stop", KRDP_UNIT])
+    return ok, detail
+
+
+def _os_release_value(key: str) -> str:
+    try:
+        lines = Path("/etc/os-release").read_text(encoding="utf-8").splitlines()
+    except (OSError, UnicodeError):
+        return ""
+    for line in lines:
+        if line.startswith(key + "="):
+            return line.split("=", 1)[1].strip().strip('"')
+    return ""
+
+
+def device_info() -> dict[str, Any]:
+    require_action("device_info")
+    return {
+        "product": "Cybroid OS",
+        "osId": _os_release_value("ID"),
+        "osPrettyName": _os_release_value("PRETTY_NAME"),
+        "hostname": socket.gethostname(),
+        "user": os.environ.get("USER", ""),
+        "controlVersion": VERSION,
+        "kdeconnectProtocolVersion": PROTOCOL_VERSION,
+        "remoteViewActive": _remote_view_active(),
+        "remoteViewUnit": KRDP_UNIT,
+        "supportedActions": sorted(enabled_actions()),
+    }
+
+
+def list_actions() -> dict[str, Any]:
+    catalogue = _read_action_catalogue()
+    if catalogue is None:
+        return {
+            "schemaVersion": 1,
+            "version": VERSION,
+            "actions": [
+                {"id": action_id, "enabled": True} for action_id in DEFAULT_ACTIONS
+            ],
+        }
+    return catalogue
+
+
+def dispatch(action_id: str, callback: Callable[[], tuple[bool, str]]) -> bool:
+    """Run an action, converting expected errors into a boolean result."""
+    global _last_error
+    try:
+        ok, detail = callback()
+    except (ValueError, PermissionError, RuntimeError) as exc:
+        ok, detail = False, str(exc)
+    _last_error = "" if ok else detail
+    if detail and not ok:
+        print(f"cybroidos-control: {action_id}: {detail}", file=sys.stderr)
+    return bool(ok)
+
+
+def _connect_bus(bus_kind: str) -> Any | None:
+    """Return a D-Bus connection, or None if D-Bus is unavailable."""
+    try:
+        import dbus  # type: ignore[import-not-found]
+    except ImportError:
+        return None
+    try:
+        if bus_kind == "system":
+            return dbus.SystemBus()
+        return dbus.SessionBus()
+    except Exception:  # dbus.exceptions.DBusException and friends
+        return None
+
+
+def cli_status(args: argparse.Namespace) -> int:
+    bus = _connect_bus(args.bus)
+    payload: dict[str, Any] = {
+        "ok": True,
+        "bus": args.bus,
+        "busName": SERVICE_NAME,
+        "objectPath": OBJECT_PATH,
+        "serviceReachable": bus is not None,
+    }
+    if bus is None:
+        payload["note"] = "D-Bus is unavailable or the service is not running"
+    else:
+        try:
+            import dbus  # type: ignore[import-not-found]
+
+            proxy = bus.get_object(SERVICE_NAME, OBJECT_PATH)
+            interface = dbus.Interface(proxy, INTERFACE)
+            payload["deviceInfo"] = json.loads(str(interface.GetDeviceInfo()))
+            payload["serviceReachable"] = True
+        except Exception as exc:  # pragma: no cover - depends on host D-Bus
+            payload["serviceReachable"] = False
+            payload["note"] = str(exc)
+    print(json.dumps(payload, indent=2, sort_keys=True))
+    return 0
+
+
+def cli_action(args: argparse.Namespace) -> int:
+    bus = _connect_bus(args.bus)
+    if bus is None:
+        print(
+            "cybroidos-control: cannot connect to the D-Bus service; "
+            "start cybroidos-control.service or check the bus",
+            file=sys.stderr,
+        )
+        return 2
+    try:
+        import dbus  # type: ignore[import-not-found]
+
+        proxy = bus.get_object(SERVICE_NAME, OBJECT_PATH)
+        interface = dbus.Interface(proxy, INTERFACE)
+        if args.action == "device-info":
+            result: Any = json.loads(str(interface.GetDeviceInfo()))
+        elif args.action == "list-actions":
+            result = json.loads(str(interface.ListActions()))
+        elif args.action == "lock":
+            result = bool(interface.Lock())
+        elif args.action == "open-url":
+            result = bool(interface.OpenUrl(args.url))
+        elif args.action == "open-app":
+            result = bool(interface.OpenApp(args.app_id))
+        elif args.action == "notify":
+            result = bool(interface.Notify(args.summary, args.body))
+        elif args.action == "start-remote-view":
+            result = bool(interface.StartRemoteView())
+        elif args.action == "stop-remote-view":
+            result = bool(interface.StopRemoteView())
+        else:  # pragma: no cover - argparse constrains this
+            raise ValueError(f"unknown action: {args.action}")
+    except Exception as exc:  # pragma: no cover - depends on host D-Bus
+        print(f"cybroidos-control: D-Bus call failed: {exc}", file=sys.stderr)
+        return 2
+    print(json.dumps(result, indent=2, sort_keys=True) if isinstance(result, (dict, list)) else json.dumps(result))
+    return 0 if result is not False else 1
+
+
+def run_service(args: argparse.Namespace) -> int:
+    try:
+        import dbus  # type: ignore[import-not-found]
+        import dbus.service  # type: ignore[import-not-found]
+        from dbus.mainloop.glib import DBusGMainLoop  # type: ignore[import-not-found]
+        from gi.repository import GLib  # type: ignore[import-not-found]
+    except ImportError as exc:
+        print(f"cybroidos-control: service mode needs python3-dbus and python3-gi: {exc}", file=sys.stderr)
+        return 2
+
+    DBusGMainLoop(set_as_default=True)
+
+    try:
+        bus = dbus.SystemBus() if args.bus == "system" else dbus.SessionBus()
+        bus_name = dbus.service.BusName(SERVICE_NAME, bus=bus, do_not_queue=True)
+    except Exception as exc:
+        # A second instance (for example the XDG autostart entry racing the
+        # systemd unit) simply exits; the existing owner keeps the name.
+        print(f"cybroidos-control: not taking bus name: {exc}", file=sys.stderr)
+        return 0
+
+    class ControlService(dbus.service.Object):
+        def __init__(self) -> None:
+            super().__init__(bus_name, OBJECT_PATH)
+
+        @dbus.service.method(INTERFACE, out_signature="b")
+        def Lock(self) -> bool:
+            return dispatch("lock", lock_screen)
+
+        @dbus.service.method(INTERFACE, in_signature="s", out_signature="b")
+        def OpenUrl(self, url: str) -> bool:
+            return dispatch("open_url", lambda: open_url(str(url)))
+
+        @dbus.service.method(INTERFACE, in_signature="s", out_signature="b")
+        def OpenApp(self, app_id: str) -> bool:
+            return dispatch("open_app", lambda: open_app(str(app_id)))
+
+        @dbus.service.method(INTERFACE, in_signature="ss", out_signature="b")
+        def Notify(self, summary: str, body: str) -> bool:
+            return dispatch(
+                "notify", lambda: show_notification(str(summary), str(body))
+            )
+
+        @dbus.service.method(INTERFACE, out_signature="s")
+        def GetDeviceInfo(self) -> str:
+            global _last_error
+            try:
+                info: dict[str, Any] = device_info()
+            except (ValueError, PermissionError, RuntimeError) as exc:
+                _last_error = str(exc)
+                info = {"error": _last_error}
+            return json.dumps(info, sort_keys=True)
+
+        @dbus.service.method(INTERFACE, out_signature="b")
+        def StartRemoteView(self) -> bool:
+            return dispatch("fullscreen_start", remote_view_start)
+
+        @dbus.service.method(INTERFACE, out_signature="b")
+        def StopRemoteView(self) -> bool:
+            return dispatch("fullscreen_stop", remote_view_stop)
+
+        @dbus.service.method(INTERFACE, out_signature="s")
+        def ListActions(self) -> str:
+            return json.dumps(list_actions(), sort_keys=True)
+
+        @dbus.service.method(INTERFACE, out_signature="s")
+        def GetLastError(self) -> str:
+            return _last_error
+
+        @dbus.service.method(INTERFACE, out_signature="s")
+        def Status(self) -> str:
+            payload = {
+                "busName": SERVICE_NAME,
+                "objectPath": OBJECT_PATH,
+                "version": VERSION,
+                "protocolVersion": PROTOCOL_VERSION,
+                "supportedActions": sorted(enabled_actions()),
+                "remoteViewActive": _remote_view_active(),
+            }
+            return json.dumps(payload, sort_keys=True)
+
+    service = ControlService()  # noqa: F841 - keep the object alive
+    loop = GLib.MainLoop()
+    try:
+        loop.run()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        del service, bus_name
+    return 0
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="cybroidos-control",
+        description="Cybroid OS desktop control CLI and D-Bus service (v0 skeleton)",
+    )
+    parser.add_argument(
+        "--status",
+        action="store_true",
+        help="print JSON service/device status and exit",
+    )
+    parser.add_argument(
+        "--service",
+        action="store_true",
+        help="run the D-Bus service in the foreground",
+    )
+    parser.add_argument(
+        "--bus",
+        choices=("system", "session"),
+        default="system",
+        help="bus to use (default: system)",
+    )
+    actions = parser.add_subparsers(dest="action")
+
+    actions.add_parser("device-info", help="return device information as JSON")
+    actions.add_parser("list-actions", help="return the action catalogue as JSON")
+    actions.add_parser("lock", help="lock the desktop session")
+
+    open_url_parser = actions.add_parser("open-url", help="open an http(s) URL")
+    open_url_parser.add_argument("url")
+
+    open_app_parser = actions.add_parser("open-app", help="open an allowlisted app")
+    open_app_parser.add_argument("app_id")
+
+    notify_parser = actions.add_parser("notify", help="show a desktop notification")
+    notify_parser.add_argument("summary")
+    notify_parser.add_argument("body", nargs="?", default="")
+
+    actions.add_parser("start-remote-view", help="start the KRDP full-screen view")
+    actions.add_parser("stop-remote-view", help="stop the KRDP full-screen view")
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    if args.service:
+        return run_service(args)
+    if args.status:
+        return cli_status(args)
+    if not args.action:
+        parser.print_help()
+        return 2
+    return cli_action(args)
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -1,0 +1,23 @@
+# Flutter/Dart build outputs
+.dart_tool/
+.packages
+.pub-cache/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Android/Gradle
+android/.gradle/
+android/local.properties
+android/app/build/
+android/.idea/
+.gradle/
+
+# Signing material: never commit keystores or signing passwords
+android/app/*.jks
+android/app/*.keystore
+android/key.properties
+**/*.jks
+**/*.keystore
+*.pem
+*.p12

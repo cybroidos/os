@@ -13,6 +13,12 @@ the sign-in screen with the account you created.
 - **Terminal:** zsh, with suggestions from your history as you type (→ or Tab
   takes one) and Ctrl+R to search it.
 
-The firewall is on and refuses incoming connections from every network
-except Tower, your organisation's private network: over Tower, SSH and
-remote desktop reach this computer (SSH from elsewhere is refused).
+- **Your account:** your picture at the top right opens your account,
+  Lock, Sleep, Switch user, Sign out, Restart and Shut down. Lock, Restart
+  and Shut down are also at the bottom right of Launchpad.
+- **Office documents:** Word, Excel and PowerPoint files open in ONLYOFFICE.
+- **Your phone:** pair it in **Phone Link**. It reaches this computer over
+  Tower, or on a network you mark as home in **Settings → Wi-Fi**.
+
+The firewall is on and refuses incoming connections. SSH and remote desktop
+run only once this computer joins Tower, and answer only over Tower.

@@ -7,6 +7,7 @@ repository. Add an entry here before adding such a component to any build.
 | Component | Licence | In this repository | In the desktop image | Why |
 |---|---|---|---|---|
 | Device firmware and CPU microcode (`firmware-*` from Debian's `non-free-firmware`, `intel-microcode`, `amd64-microcode`) | Each vendor's redistribution licence | No | Yes | Wi-Fi, graphics and sound on real laptops need them, as on Debian's own images since Debian 12. Packaged and signed by Debian; their copyright files are in `/usr/share/doc/<package>/`. |
+| Kali's container image (Security edition's "Kali tools") | Kali's packages, each under its own licence; a few are proprietary freeware (Burp Suite Community) | No | No | Downloaded from Kali only when the person opens "Kali tools"; never on an ISO. |
 | Hangar (Cybroid's management service) | Cybroid Technologies (U) Ltd | No | No | CybroidOS can be enrolled into an organisation's Hangar; the service itself is not part of the operating system. |
 
 ## Rules

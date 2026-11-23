@@ -18,6 +18,20 @@ have.
 Requirements: a 64-bit Intel or AMD computer with 2 GB of memory (4 GB
 recommended). Installing: [docs/user/INSTALL.md](docs/user/INSTALL.md).
 
+## Editions
+
+The same CybroidOS with one package of a profession's tools added; an
+installed CybroidOS can become any of them, or several, by installing the
+package.
+
+| Edition | For | Package |
+|---|---|---|
+| Security | analysts and security teams; Kali's tools in a container | `cybroid-edition-security` |
+| Developer | engineers who build software | `cybroid-edition-developer` |
+| Network | network engineers and students | `cybroid-edition-network` |
+| Engineering | electronics, CAD and science | `cybroid-edition-engineering` |
+| Classroom | school computer rooms: Veyon, learning apps, lab accounts reset at each start | `cybroid-edition-classroom` |
+
 CybroidOS is built on Debian 13 and KDE's Frameworks and Plasma.
 
 ## What's here
@@ -43,6 +57,7 @@ On Debian 13 (or the devcontainer), with Docker for the ISO:
 tools/build-package.sh --all              # the cybroid-* packages into dist/
 tools/build-extras.sh iso                 # native apps and third-party pieces into dist/extra
 sudo EXTRA_DEBS="$PWD/dist/extra" OUT="$PWD/out" targets/desktop/build-iso.sh
+# an edition's ISO: EDITION=security (or developer, network, engineering, classroom)
 ```
 
 The ISO lands in `out/`. CI builds it on every version bump

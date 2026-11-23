@@ -18,6 +18,29 @@ SettingsPage {
     property string asking: ""     // the network whose password is asked for
     property string error: ""
     property bool scanning: false
+    property bool home: false      // the connected network is marked as home
+
+    // The connected network's zone: "home" lets KDE Connect in on it
+    // (NetworkManager's 60-cybroid-kdeconnect hook opens the firewall there).
+    function readHome() {
+        const n = page.networks.find(x => x.inUse)
+        if (!n) { page.home = false; return }
+        System.run(["nmcli", "-g", "connection.zone", "connection", "show", "id", n.ssid], (out) => {
+            page.home = /^(home|trusted)$/.test(out.trim())
+        })
+    }
+    function setHome(on) {
+        const n = page.networks.find(x => x.inUse)
+        if (!n) return
+        page.home = on
+        // Reapplied at once, so the hook sees the new zone.
+        System.run(["nmcli", "connection", "modify", "id", n.ssid, "connection.zone", on ? "home" : ""], (out, code) => {
+            if (code !== 0) { page.home = !on; return }
+            System.run(["nmcli", "device", "reapply", page.wifiDevice], () => page.readHome())
+        })
+    }
+    property string wifiDevice: ""
+    onNetworksChanged: readHome()
 
     function split(line) {
         // nmcli -t escapes ':' inside fields as '\:'
@@ -31,7 +54,11 @@ SettingsPage {
         return out
     }
     function refresh() {
-        System.run(["nmcli", "-t", "-f", "TYPE", "device"], (out) => { hasWifi = out.split("\n").indexOf("wifi") >= 0 })
+        System.run(["nmcli", "-t", "-f", "DEVICE,TYPE", "device"], (out) => {
+            const wifi = out.split("\n").map(l => page.split(l)).find(f => f[1] === "wifi")
+            hasWifi = !!wifi
+            page.wifiDevice = wifi ? wifi[0] : ""
+        })
         System.run(["nmcli", "-t", "-f", "WIFI", "radio"], (out) => { radio = out.trim() === "enabled" })
         System.run(["nmcli", "-t", "-f", "NAME,TYPE", "connection", "show"], (out) => {
             saved = out.split("\n").map(split).filter(f => f[1] === "802-11-wireless").map(f => f[0])
@@ -114,6 +141,17 @@ SettingsPage {
                 icon: page.bars(modelData.signal)
                 iconColor: Theme.ok
                 Btn { text: "Forget"; onClicked: page.forget(modelData) }
+            }
+        }
+        // A network you trust: your phone can reach this computer here (KDE
+        // Connect). Off on café, campus and other shared networks.
+        SettingRow {
+            title: "Home network"
+            subtitle: page.home ? "Your phone can connect to this computer on this network" : "Turn on for a network you trust, so your phone can connect"
+            icon: "go-home-symbolic"
+            Toggle {
+                checked: page.home
+                onToggled: (on) => page.setHome(on)
             }
         }
     }

@@ -40,6 +40,9 @@ if (trayContainment) {
 // time, which opens notifications and the Today widgets, as on macOS.
 bar.addWidget("org.cybroid.controlcentre");
 bar.addWidget("org.cybroid.today");
+// At the far right, the person: their picture opens their account, lock,
+// sleep, switch user, sign out, restart and shut down.
+bar.addWidget("org.cybroid.account");
 
 // The dock is Plank (its icons zoom as the pointer passes), started by
 // /etc/xdg/autostart/cybroid-dock.desktop; Plasma draws only the top bar.

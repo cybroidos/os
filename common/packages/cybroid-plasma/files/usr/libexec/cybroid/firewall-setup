@@ -2,15 +2,21 @@
 # CybroidOS (cybroid-plasma): the firewall, set once on the first start
 # (ufw needs the running kernel, not the image builder's chroot). Nothing
 # comes in except Remote Desktop and SSH over Tower, Cybroid's private
-# network, and KDE Connect from phones on the same network; everything goes
-# out. Also run (rules only, no reset) when cybroid-plasma is upgraded. Each person can change it in Settings > Firewall.
+# network, and KDE Connect from phones over Tower; everything goes out. On
+# a network marked as home (Settings > Wi-Fi), KDE Connect is let in on that
+# network too while it is connected (NetworkManager's 60-cybroid-kdeconnect),
+# never on café or campus networks. Also run (rules only, no reset) when
+# cybroid-plasma is upgraded. Each person can change it in Settings > Firewall.
 set -e
 command -v ufw >/dev/null || exit 0
 rules() {
 	ufw allow in on tailscale0 to any port 3389 proto tcp comment 'Remote Desktop over Tower' >/dev/null
 	ufw allow in on tailscale0 to any port 22 proto tcp comment 'SSH over Tower' >/dev/null
-	ufw allow 1714:1764/tcp comment 'KDE Connect' >/dev/null
-	ufw allow 1714:1764/udp comment 'KDE Connect' >/dev/null
+	ufw allow in on tailscale0 to any port 1714:1764 proto tcp comment 'KDE Connect over Tower' >/dev/null
+	ufw allow in on tailscale0 to any port 1714:1764 proto udp comment 'KDE Connect over Tower' >/dev/null
+	# Until 0.1.16 KDE Connect was let in from every network.
+	ufw delete allow 1714:1764/tcp >/dev/null 2>&1 || true
+	ufw delete allow 1714:1764/udp >/dev/null 2>&1 || true
 }
 # Upgrades: add rules this version brings, keep the person's own.
 if [ "${1:-}" = --add-rules ]; then

@@ -1,0 +1,15 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [{ "Name": "Cybroid Technologies (U) Ltd", "Email": "citos@cybroid.com" }],
+        "Category": "System Information",
+        "Description": "Your picture in the top bar; a click opens your account, lock, sleep, sign out, restart and shut down",
+        "Icon": "system-shutdown",
+        "Id": "org.cybroid.account",
+        "License": "GPL-3.0-or-later",
+        "Name": "CybroidOS Account",
+        "Version": "1.0",
+        "Website": "https://cybroid.com/cybroidos"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}

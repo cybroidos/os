@@ -1,0 +1,6 @@
+# CybroidOS (cybroid-plasma): the file search behind Dolphin and KRunner
+# indexes file names only, not their contents: content indexing reads every
+# document after sign-in and can hold 100+ MB on a 2 GB computer. A person
+# can turn content indexing on in System Settings > Search.
+[General]
+only basic indexing=true

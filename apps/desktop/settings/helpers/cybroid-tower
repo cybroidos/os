@@ -13,6 +13,10 @@
 # off need no password afterwards (tailscale up/down as them).
 set -eu
 
+# After joining or leaving, Remote Desktop and SSH follow (cybroid-plasma's
+# tower-services: they run only on a computer that is on Tower).
+sync() { [ -x /usr/libexec/cybroid/tower-services ] && /usr/libexec/cybroid/tower-services >/dev/null 2>&1 || true; }
+
 server=https://tower.cybroid.com
 user="$(id -un "${PKEXEC_UID:-$(id -u)}" 2>/dev/null || id -un)"
 name="$(hostname -s | tr 'A-Z' 'a-z' | tr -c 'a-z0-9-\n' '-')"
@@ -28,8 +32,9 @@ link)
 	key="${2:-}"
 	if [ -n "${key}" ]; then
 		case "${key}" in *[!A-Za-z0-9_-]*) echo "That isn't a join key" >&2; exit 2 ;; esac
-		up --reset --auth-key="${key}" --timeout=40s
-		exit $?
+		rc=0; up --reset --auth-key="${key}" --timeout=40s || rc=$?
+		sync
+		exit "${rc}"
 	fi
 	# Without a key: Tower answers with a link whose last part is the code
 	# Hangar approves; the client keeps waiting for it in the background.
@@ -37,7 +42,7 @@ link)
 	url="$(printf '%s\n' "${out}" | grep -Eo "${server}/register/[A-Za-z0-9_-]+" | head -1)"
 	[ -n "${url}" ] || url="$(tailscale status --json 2>/dev/null | sed -n 's/.*"AuthURL": *"\([^"]*\)".*/\1/p' | head -1)"
 	if [ -z "${url}" ]; then
-		tailscale status --json 2>/dev/null | grep -q '"BackendState": *"Running"' && { echo "LINKED"; exit 0; }
+		tailscale status --json 2>/dev/null | grep -q '"BackendState": *"Running"' && { sync; echo "LINKED"; exit 0; }
 		printf '%s\n' "${out}" >&2
 		exit 1
 	fi
@@ -46,6 +51,6 @@ link)
 	;;
 on) up ;;
 off) tailscale down ;;
-unlink) tailscale logout ;;
+unlink) tailscale logout; sync ;;
 *) echo "usage: $0 link [key] | on | off | unlink" >&2; exit 2 ;;
 esac

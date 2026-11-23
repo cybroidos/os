@@ -1,0 +1,128 @@
+name: Release images
+
+# Every edition's installer ISO, built on GitHub's runners from one commit:
+# on a tag v<version> (a release), or by hand ("Run workflow") to try them.
+# Each ISO gets its checksum and package manifest and is kept with the run
+# for 30 days (gh run download <run>); a tag also publishes them to
+# download.cybroid.com (Cloudflare R2, tools/downloads.sh) and attaches the
+# checksums and manifests to the GitHub Release (an ISO is over GitHub's 2 GB
+# limit for a release file).
+#
+# Secrets (optional until downloads are live): CYBROID_R2_ENDPOINT,
+# CYBROID_R2_ACCESS_KEY_ID, CYBROID_R2_SECRET_ACCESS_KEY.
+on:
+  push:
+    tags: [ 'v*' ]
+  workflow_dispatch:
+    inputs:
+      edition:
+        description: Which ISO (all builds every edition)
+        type: choice
+        options: [all, desktop, security, developer, network, engineering, classroom]
+        default: all
+
+permissions:
+  contents: write   # to attach checksums and manifests to the release
+
+concurrency:
+  group: release-images-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  DOWNLOAD_URL: https://download.cybroid.com
+
+jobs:
+  plan:
+    name: Editions to build
+    runs-on: ubuntu-24.04
+    outputs:
+      editions: ${{ steps.e.outputs.editions }}
+    steps:
+      - id: e
+        env:
+          PICK: ${{ github.event.inputs.edition || 'all' }}
+        run: |
+          if [ "$PICK" = all ]; then
+            echo 'editions=["desktop","security","developer","network","engineering","classroom"]' >> "$GITHUB_OUTPUT"
+          else
+            echo "editions=[\"$PICK\"]" >> "$GITHUB_OUTPUT"
+          fi
+
+  iso:
+    name: ${{ matrix.edition }} ISO
+    needs: plan
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      matrix:
+        edition: ${{ fromJSON(needs.plan.outputs.editions) }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: The tag matches brand.toml
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          version="$(python3 -c 'import tomllib; print(tomllib.load(open("common/branding/brand.toml","rb"))["identity"]["version"])')"
+          [ "${GITHUB_REF_NAME}" = "v${version}" ] || { echo "::error::tag ${GITHUB_REF_NAME} but brand.toml says ${version}"; exit 1; }
+
+      # Room for the live system and the ISO: the runner's preinstalled
+      # toolchains go.
+      - name: Make room
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL /usr/local/share/boost /usr/local/.ghcup
+          sudo docker image prune -af >/dev/null
+          df -h / | tail -1
+
+      - name: Install tools
+        run: sudo apt-get update -q && sudo apt-get install -y -q --no-install-recommends dpkg-dev librsvg2-bin python3-pil >/dev/null
+
+      # Our apps, the dock, icons, rounded corners, Tower's client and
+      # ONLYOFFICE (tools/build-extras.sh: each in a Debian 13 container or
+      # checked against its publisher's signing key).
+      - name: Build the packages from outside Debian
+        run: tools/build-extras.sh iso
+
+      - name: Build the ${{ matrix.edition }} ISO
+        run: |
+          sudo EXTRA_DEBS="$PWD/dist/extra" OUT="$PWD/out" EDITION="${{ matrix.edition }}" targets/desktop/build-iso.sh
+          sudo chown -R "$(id -u):$(id -g)" out dist
+          iso=$(ls out/cybroidos-*-amd64.iso)
+          (cd out && sha256sum "$(basename "$iso")" > "$(basename "$iso").sha256")
+          pk="${iso%.iso}.packages"
+          tools/release-manifest.sh --edition "${{ matrix.edition }}" $( [ -f "$pk" ] && echo --packages-file "$pk" ) out "${iso%.iso}.manifest.md"
+          ls -lh out/
+          echo "### ${{ matrix.edition }}: $(basename "$iso") ($(du -h "$iso" | cut -f1))" >> "$GITHUB_STEP_SUMMARY"
+          echo "\`$(cat "$iso.sha256")\`" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Keep the ISO with the run
+        uses: actions/upload-artifact@v4
+        with:
+          name: cybroidos-${{ matrix.edition }}-iso
+          path: |
+            out/cybroidos-*-amd64.iso
+            out/cybroidos-*-amd64.iso.sha256
+            out/cybroidos-*-amd64.manifest.md
+          retention-days: 30
+          compression-level: 0
+          if-no-files-found: error
+
+      - name: Publish to download.cybroid.com
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          R2_ENDPOINT: ${{ secrets.CYBROID_R2_ENDPOINT }}
+          R2_ACCESS_KEY_ID: ${{ secrets.CYBROID_R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.CYBROID_R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ vars.CYBROID_R2_BUCKET || 'cybroidos-downloads' }}
+        run: |
+          if [ -z "$R2_ACCESS_KEY_ID" ]; then echo "::warning::No R2 keys yet: the ISO is kept with the run, not published"; exit 0; fi
+          tools/downloads.sh publish out/cybroidos-*-amd64.iso out/cybroidos-*-amd64.manifest.md
+
+      - name: Attach the checksum and manifest to the release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # The release is made by release.yml from the same tag; wait for it.
+          for i in $(seq 1 30); do gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 && break; sleep 20; done
+          gh release upload "$GITHUB_REF_NAME" out/cybroidos-*-amd64.iso.sha256 out/cybroidos-*-amd64.manifest.md --clobber

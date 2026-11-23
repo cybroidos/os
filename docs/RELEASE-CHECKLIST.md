@@ -20,8 +20,9 @@ CybroidOS is versioned `0.MINOR.PATCH` until the first stable release
    `git tag -s v<version> -m "CybroidOS <version>" && git push origin v<version>`.
    The release workflow refuses a tag that doesn't match `brand.toml`, and
    publishes the GitHub Release with the changelog's notes. The tag also
-   builds every edition's ISO on Hangar's builders and publishes them to
-   download.cybroid.com (`.forgejo/workflows/release-images.yml`).
+   builds every edition's ISO on GitHub's runners, in parallel, and
+   publishes them to download.cybroid.com (`.github/workflows/release-images.yml`;
+   "Run workflow" there builds them without releasing, to try them).
 
 ## Downloads
 

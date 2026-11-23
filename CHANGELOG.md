@@ -7,6 +7,11 @@ version.
 
 ## [Unreleased]
 
+### Added
+- Downloads at download.cybroid.com: every edition of the newest two
+  releases, each with its checksum and package manifest; older releases on
+  the Internet Archive, linked from their GitHub Releases.
+
 ## [0.1.16] - 2026-11-23
 
 ### Added

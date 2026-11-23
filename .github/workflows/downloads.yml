@@ -1,0 +1,42 @@
+name: Downloads
+
+# Keeps download.cybroid.com (Cloudflare R2) to the newest releases: older
+# ones move to the Internet Archive (item cybroidos-<version>), are checked
+# there against our checksums, and only then leave R2; their GitHub Release
+# notes then point to the archive (tools/downloads.sh retire).
+on:
+  schedule:
+    - cron: '17 3 * * 1'   # Mondays 03:17 UTC
+  release:
+    types: [ published ]
+  workflow_dispatch:
+
+permissions:
+  contents: write   # to edit an old release's notes
+
+concurrency:
+  group: downloads
+  cancel-in-progress: false
+
+jobs:
+  retire:
+    name: Move older releases to the Internet Archive
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - name: Retire
+        env:
+          R2_ENDPOINT: ${{ secrets.CYBROID_R2_ENDPOINT }}
+          R2_ACCESS_KEY_ID: ${{ secrets.CYBROID_R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.CYBROID_R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ vars.CYBROID_R2_BUCKET || 'cybroidos-downloads' }}
+          IA_ACCESS_KEY: ${{ secrets.CYBROID_IA_ACCESS_KEY }}
+          IA_SECRET_KEY: ${{ secrets.CYBROID_IA_SECRET_KEY }}
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          if [ -z "$R2_ACCESS_KEY_ID" ] || [ -z "$IA_ACCESS_KEY" ]; then
+            echo "::warning::R2 or Internet Archive keys aren't set yet; nothing to do"
+            exit 0
+          fi
+          tools/downloads.sh retire

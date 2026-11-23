@@ -19,7 +19,24 @@ CybroidOS is versioned `0.MINOR.PATCH` until the first stable release
 3. When the checks below pass, tag the same commit and push the tag:
    `git tag -s v<version> -m "CybroidOS <version>" && git push origin v<version>`.
    The release workflow refuses a tag that doesn't match `brand.toml`, and
-   publishes the GitHub Release with the changelog's notes.
+   publishes the GitHub Release with the changelog's notes. The tag also
+   builds every edition's ISO on Hangar's builders and publishes them to
+   download.cybroid.com (`.forgejo/workflows/release-images.yml`).
+
+## Downloads
+
+- **download.cybroid.com** (Cloudflare R2, bucket `cybroidos-downloads`)
+  keeps the newest two releases: `releases/<version>/` holds each edition's
+  ISO, its `.sha256` and `.manifest.md`, and an `index.html`; `latest.json`
+  and `releases.json` list them for cybroid.com.
+- **Older releases** move to the Internet Archive (`cybroidos-<version>`)
+  every Monday (`.github/workflows/downloads.yml`, `tools/downloads.sh
+  retire`): copied, checked against the archive's own MD5, their GitHub
+  Release notes pointed at the archive, and only then removed from R2. A file
+  that no longer matches its checksum is never copied or removed, and fails
+  the run.
+- **Every version** keeps its GitHub Release: notes, and links to wherever
+  its files are.
 
 ## Build
 

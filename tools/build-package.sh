@@ -17,7 +17,6 @@
 # Usage: tools/build-package.sh <name>...      build the named packages
 #        tools/build-package.sh --all          every package that can build here
 # Env:   OUT (dist/), VERSION (brand.toml), and inputs some packages need:
-#        KIOSK_BUNDLE (cybroid-kiosk-app: a flutterpi_tool release bundle),
 #        NATIVE_ROOT (the native apps, staged by tools/build-native.sh, which
 #        runs this; "Architecture: @ARCH@" becomes this machine's).
 set -euo pipefail
@@ -127,7 +126,6 @@ build_transitional() {
 # Packages whose inputs come from another build (the Flutter bundle).
 needs_input() {
 	case "$1" in
-	cybroid-kiosk-app) [ -n "${KIOSK_BUNDLE:-}" ] ;;
 	cybroid-ui | cybroid-settings | cybroid-camera) [ -n "${NATIVE_ROOT:-}" ] ;;
 	*) true ;;
 	esac

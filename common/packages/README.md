@@ -1,7 +1,7 @@
 # CybroidOS packages
 
-Everything reusable in CybroidOS ships as Debian packages, so a Pi image, a
-desktop ISO, a server image or any Debian 13 machine gets it the same way:
+Everything reusable in CybroidOS ships as Debian packages, so a desktop ISO,
+a server image, a container or any Debian 13 machine gets it the same way:
 `apt install` from the CybroidOS APT repository ([ADR-0007](../../docs/adr/ADR-0007-shared-packages-and-apt-repo.md)).
 Images only add what is specific to one image (users, autologin, the kernel
 command line).
@@ -11,14 +11,10 @@ command line).
 | `cybroid-base` | all | `/etc/os-release` identity, login banners, logo SVGs | every target |
 | `cybroid-sources` | all | apt sources at `deb.cybroid.com` (Debian 13's archive and security updates under the CybroidOS name; Debian's own entries set aside, restored on removal) | server, desktop, container images; the desktop ISO |
 | `cybroid-plasma` | all | CybroidOS Desktop: KDE Plasma 6 in the CybroidOS Horizon look (colour scheme, top bar and floating dock, SDDM sign-in, splash), Plymouth, Firefox policy, xrdp | desktop VM image; the desktop ISO |
-| `cybroid-artwork` | all | hicolor icons, wallpapers (1080p–2160p) | desktop, server, Pi |
-| `cybroid-plymouth-theme` | all | animated boot splash; sets itself as the theme | desktop, server, Pi |
-| `python3-cybroid-robot` | all | `cybroid_robot` library: bus, config, supervisor, system service | robot services |
-| `cybroid-system` | all | robot health + power service, MQTT broker config (localhost) | robots, kiosks |
-| `cybroid-kiosk` | all | kiosk supervisor (`cybroid-kiosk`), `/etc/cybroid/kiosk.conf`, fallback page | any kiosk |
-| `cybroid-kiosk-app` | arm64 | Flora, the Flutter kiosk app (`apps/kiosk`), with its engine and flutter-pi runtime | Pi kiosks |
-| `cybroid-robot-hw` | all | robot firmware settings (SPI, I2S amp, power button) | the robot |
-| `cybroid-robot` | all | metapackage: all of the above for the CIT service robot | robot image |
+| `cybroid-artwork` | all | hicolor icons, wallpapers (1080p–2160p), Hex's drawings for every screen shape | desktop, server |
+| `cybroid-plymouth-theme` | all | animated boot splash; sets itself as the theme | desktop, server |
+| `cybroid-ui`, `cybroid-settings`, `cybroid-camera` | amd64, arm64 | our own apps (`apps/desktop`, built by `tools/build-native.sh`) | the desktop |
+| `cybroid-edition-*` | all | the editions: one profession's tools on top of the desktop (Security, Developer, Network, Engineering, Classroom) | edition ISOs; any desktop |
 
 All packages share the CybroidOS version from `common/branding/brand.toml`.
 
@@ -39,16 +35,12 @@ by every package.
 
 ```bash
 tools/build-package.sh --all                 # every package whose inputs exist -> dist/
-tools/build-package.sh cybroid-kiosk           # one package
-KIOSK_BUNDLE=apps/kiosk/build/flutter-pi/aarch64-generic tools/build-package.sh cybroid-kiosk-app
+tools/build-package.sh cybroid-plasma          # one package
 ```
 
-The builder uses plain `dpkg-deb`, so the arm64 app package builds on any
-machine without a cross-compiler. Its bundle comes from `flutterpi_tool build
---arch=arm64 --cpu=generic --release` and already contains the Flutter engine
-and the matching prebuilt flutter-pi runtime; the generic engine runs on
-Pi 4 (the robot and the dev board) as well as Pi 3 and 5.
-`cybroid-artwork` and `cybroid-plymouth-theme` need `rsvg-convert`.
+The builder uses plain `dpkg-deb`. Our native apps are built first by
+`tools/build-native.sh` (`NATIVE_ROOT`); `cybroid-artwork` and
+`cybroid-plymouth-theme` need `rsvg-convert`.
 
 ## Publishing and installing
 
@@ -57,9 +49,8 @@ repository in `apt-repo/published/` (needs the CybroidOS signing key in GnuPG).
 On a machine:
 
 ```bash
-sudo curl -fsSLo /usr/share/keyrings/cybroid-archive-keyring.gpg https://<repo-host>/cybroid-archive-keyring.gpg
-echo "deb [signed-by=/usr/share/keyrings/cybroid-archive-keyring.gpg] https://<repo-host> trixie main" \
-  | sudo tee /etc/apt/sources.list.d/cybroid.list
+sudo curl -fsSLo /tmp/cybroid-sources.deb https://deb.cybroid.com/cybroid-sources.deb
+sudo apt install /tmp/cybroid-sources.deb     # the CybroidOS sources and signing key
 sudo apt update
-sudo apt install cybroid-robot        # or just cybroid-base, cybroid-plymouth-theme, ...
+sudo apt install cybroid-plasma               # the desktop; or cybroid-base, an edition, ...
 ```

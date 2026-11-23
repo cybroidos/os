@@ -10,7 +10,6 @@ it the same way: pi-gen files/, live-build includes.chroot/, a Dockerfile
   tools/render-brand.py --target rpi --out <dir>
   tools/render-brand.py --target base --out <dir> --only identity
   tools/render-brand.py --list
-  tools/render-brand.py --emit-dart apps/kiosk/lib/src/brand.g.dart
 
 Components:
 

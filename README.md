@@ -40,11 +40,9 @@ CybroidOS is built on Debian 13 and KDE's Frameworks and Plasma.
 common/branding/   the brand: name, palette, mark, wallpapers (brand.toml)
 common/packages/   the cybroid-* packages (ADR-0007)
 apps/desktop/      our own apps: Settings, Camera, and the shared Cybroid.Ui module
-apps/kiosk/        the kiosk app for the Raspberry Pi target
 targets/desktop/   the installer ISO (live-build and Calamares)
 targets/server/    server and desktop VM images
 targets/container/ a container image (Proxmox LXC, Docker, Podman)
-targets/rpi/       the Raspberry Pi kiosk image (pi-gen)
 tools/             build, branding and publishing scripts
 docs/              user guides, ADRs and plans
 ```

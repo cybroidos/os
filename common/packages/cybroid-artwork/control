@@ -2,7 +2,7 @@ Package: cybroid-artwork
 Version: @VERSION@
 Architecture: all
 Maintainer: CybroidOS maintainers <citos@cybroid.com>
-Homepage: https://github.com/cybroidinstitute/cit-os
+Homepage: https://cybroid.com/cybroidos
 Section: graphics
 Priority: optional
 Depends: cybroid-base (>= @VERSION@)

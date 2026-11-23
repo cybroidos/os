@@ -61,6 +61,10 @@ jobs:
           sudo EXTRA_DEBS="$PWD/dist/extra" OUT="$PWD/out" targets/desktop/build-iso.sh
           sudo chown -R "$(id -u):$(id -g)" out dist
           ls -lh out/cybroidos-desktop-*-amd64.iso
+          # Checksums and every package on the ISO (tools/release-manifest.sh).
+          iso=$(ls out/cybroidos-desktop-*-amd64.iso)
+          pk="${iso%.iso}.packages"
+          tools/release-manifest.sh $( [ -f "$pk" ] && echo --packages-file "$pk" ) out "${iso%.iso}.manifest.md"
 
       # The ISO is saved first, so a failed publish can't lose it.
       - name: Upload to Hangar's storage

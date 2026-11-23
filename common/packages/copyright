@@ -1,12 +1,24 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: CybroidOS
 Upstream-Contact: CybroidOS maintainers <citos@cybroid.com>
-Source: https://github.com/cybroidinstitute/cit-os
+Source: https://github.com/cybroidtech/os
 
 Files: *
-Copyright: 2026 Cybroid Institute of Technology
-License: Proprietary
- CybroidOS software, branding assets and configuration. All rights reserved.
+Copyright: 2026 Cybroid Technologies (U) Ltd
+License: GPL-3.0-or-later
+ CybroidOS software, packaging and configuration. Full text in
+ /usr/share/common-licenses/GPL-3.
+
+Files: usr/share/backgrounds/* usr/share/icons/hicolor/*/apps/cybroid*
+ usr/share/pixmaps/cybroid* usr/share/plymouth/themes/cybroid*
+ usr/share/grub/themes/cybroidos/* usr/share/cybroid/branding/*
+Copyright: 2026 Cybroid Technologies (U) Ltd
+License: CC-BY-NC-4.0
+ The CybroidOS mark, logo, wallpapers and boot artwork. "CybroidOS",
+ "Cybroid" and the mark are trademarks of Cybroid Technologies (U) Ltd:
+ a system built from this source under another name must not use them
+ (see NOTICE.md in the source). Full text:
+ https://creativecommons.org/licenses/by-nc/4.0/legalcode
 
 Files: usr/share/cybroid/kiosk/flutter_bundle/flutter_assets/assets/fonts/*
 Copyright: 2017 The Barlow Project Authors (https://github.com/jpt/barlow)

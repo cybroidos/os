@@ -48,11 +48,12 @@ g.write_text(s)
 c = root / "grub" / "config.cfg"
 s = c.read_text()
 s = re.sub(r"\ninsmod play\nplay [^\n]*", "", s)
-# GRUB's text box once an entry is chosen ("Booting..."): the picture's
-# navy, not black (cybroid-plasma's 06_cybroid_background does the same on
-# an installed system).
-if "background_color" not in s:
-    s = s.rstrip("\n") + '\nbackground_color "#081833"\n'
+# GRUB's terminal once an entry is chosen: full screen over the same
+# picture (the theme puts it there), so no box is drawn over the mark
+# (cybroid-plasma's 06_cybroid_background does the same on an installed system).
+s = re.sub(r'\nbackground_color "[^"]*"', "", s)
+if "background_image" not in s:
+    s = s.rstrip("\n") + "\nbackground_image -m stretch /boot/grub/splash.png\n"
 if "set timeout=" not in s:
     s = s.replace("set default=0", "set default=0\nset timeout=5\nset timeout_style=menu")
 c.write_text(s)

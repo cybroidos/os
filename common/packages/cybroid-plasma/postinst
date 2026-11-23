@@ -26,7 +26,7 @@ if [ "$1" = "triggered" ]; then
 	exit 0
 fi
 if [ "$1" = "configure" ]; then
-	chmod 0755 /usr/libexec/cybroid/plasma-look /usr/libexec/cybroid/dock /usr/libexec/cybroid/app-names /usr/libexec/cybroid/osk
+	chmod 0755 /usr/libexec/cybroid/plasma-look /usr/libexec/cybroid/dock /usr/libexec/cybroid/app-names /usr/libexec/cybroid/osk /usr/libexec/cybroid/welcome-start
 	/usr/libexec/cybroid/app-names || true
 	command -v glib-compile-schemas >/dev/null && glib-compile-schemas /usr/share/glib-2.0/schemas || true
 	command -v gtk-update-icon-cache >/dev/null && gtk-update-icon-cache -q -f /usr/share/icons/hicolor || true

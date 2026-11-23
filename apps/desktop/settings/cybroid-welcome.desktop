@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Welcome
+Comment=Make this computer yours: your look, your picture, Wi-Fi
+Exec=cybroid-settings welcome
+Icon=cybroid-mark
+NoDisplay=true
+Categories=Settings;
+StartupWMClass=cybroid-welcome

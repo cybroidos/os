@@ -59,6 +59,14 @@ if [ -f "$HOME/.zshrc" ] && [ "$(md5sum < "$HOME/.zshrc" | cut -d' ' -f1)" = a87
 	cp /etc/skel/.zshrc "$HOME/.zshrc"
 fi
 
+# The welcome (0.1.16) is for new accounts: one that already has a desktop
+# (Plasma's layout file, written at its first sign-in) is marked done.
+_cy_cfg="${XDG_CONFIG_HOME:-$HOME/.config}"
+if [ ! -e "${_cy_cfg}/cybroid/welcome-done" ] && [ -f "${_cy_cfg}/plasma-org.kde.plasma.desktop-appletsrc" ]; then
+	mkdir -p "${_cy_cfg}/cybroid" && : > "${_cy_cfg}/cybroid/welcome-done"
+fi
+unset _cy_cfg
+
 # Programs that would hold memory all day for nothing (CybroidOS 0.1.16):
 # an account-level autostart entry marked Hidden keeps each from starting.
 # - Discover's update notifier: cybroid-update installs updates and

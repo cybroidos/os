@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=CybroidOS welcome
+Exec=/usr/libexec/cybroid/welcome-start
+OnlyShowIn=KDE;
+NoDisplay=true
+X-KDE-autostart-phase=2

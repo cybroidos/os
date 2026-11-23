@@ -1,0 +1,16 @@
+Package: cybroid-edition-engineering
+Version: @VERSION@
+Architecture: all
+Maintainer: CybroidOS maintainers <citos@cybroid.com>
+Homepage: https://cybroid.com/cybroidos
+Section: metapackages
+Priority: optional
+Depends: cybroid-plasma (>= @VERSION@), kicad, kicad-symbols, kicad-footprints, freecad, librecad, ngspice, octave, python3-numpy, python3-scipy, python3-matplotlib, jupyter-notebook, arduino
+Description: CybroidOS Engineering: for electronics, CAD and science
+ Design, simulation and analysis: KiCad with its symbol and footprint
+ libraries, FreeCAD, LibreCAD, ngspice, GNU Octave, Python with NumPy,
+ SciPy and Matplotlib in Jupyter, and the Arduino IDE.
+ .
+ The same CybroidOS as every edition (look, updates, Hangar), with these
+ tools added. An installed CybroidOS becomes this edition by installing this
+ package; several editions can be installed together.

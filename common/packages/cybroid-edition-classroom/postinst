@@ -1,0 +1,13 @@
+#!/bin/sh
+set -e
+if [ "$1" = configure ]; then
+	# Lab accounts (reset at each start: /usr/libexec/cybroid/lab-reset).
+	getent group lab >/dev/null || addgroup --quiet lab
+	systemctl enable cybroid-lab-reset.service >/dev/null 2>&1 || true
+	# Veyon: the teacher's computer reaches students' screens. Its own
+	# keys decide who may connect; the firewall lets it in.
+	if command -v ufw >/dev/null 2>&1; then
+		ufw allow 11100/tcp comment 'Veyon (Classroom)' >/dev/null 2>&1 || true
+	fi
+fi
+exit 0

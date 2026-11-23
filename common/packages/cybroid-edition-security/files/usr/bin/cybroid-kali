@@ -1,0 +1,21 @@
+#!/bin/sh
+# cybroid-kali (CybroidOS Security): Kali Linux's tools without leaving
+# CybroidOS. The first run makes a container named "kali" from Kali's own
+# image with its top ten tools (Distrobox on Podman, in your account, no
+# administrator needed); every run opens a shell in it. Your home folder is
+# shared with it, so files from either side are in the same place.
+#   cybroid-kali            open a Kali shell (made the first time)
+#   cybroid-kali --remove   delete the container
+set -eu
+name=kali
+image=docker.io/kalilinux/kali-rolling:latest
+exists() { podman container exists "${name}" 2>/dev/null; }
+if [ "${1:-}" = --remove ]; then
+	exists && distrobox rm --force "${name}"
+	exit 0
+fi
+if ! exists; then
+	echo "Setting up Kali's tools (once; a few GB to download)…"
+	distrobox create --yes --name "${name}" --image "${image}" --additional-packages "kali-tools-top10"
+fi
+exec distrobox enter "${name}"

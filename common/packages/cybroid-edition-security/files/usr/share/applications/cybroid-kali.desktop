@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Kali tools
+GenericName=Security toolkit
+Comment=Kali Linux's tools (Metasploit, Burp Suite, ZAP and more) in a container
+Exec=konsole --hold -e cybroid-kali
+Icon=utilities-terminal
+Categories=System;Security;
+Keywords=kali;pentest;metasploit;burp;security;

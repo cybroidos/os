@@ -40,7 +40,7 @@ fi
 s3() { for try in 1 2 3; do aws --endpoint-url "${S3_URL}" --cli-read-timeout 300 s3 "$@" && return 0; echo "upload try ${try} failed, retrying"; sleep 60; done; return 1; }
 
 case "${image}" in
-iso) f=$(ls out/cybroidos-desktop-*-amd64.iso); key=iso/cybroidos-desktop-amd64.iso ;;
+iso) f=$(ls out/cybroidos-*-amd64.iso | head -1); key="iso/$(basename "${f}" | sed -E 's/-[0-9][0-9.]*-amd64\.iso$/-amd64.iso/')" ;;
 vm) f=$(ls out/cybroid-server-*-amd64.qcow2); key=server/citos-server-amd64.qcow2 ;;
 desktop) f=$(ls out/cybroid-desktop-*-amd64.qcow2); key=desktop/citos-desktop-amd64.qcow2 ;;
 container) f=$(ls out/cybroid-server_*_amd64.tar.zst); key=server/citos-server_amd64.tar.zst ;;

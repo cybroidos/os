@@ -14,6 +14,11 @@ rules() {
 	ufw allow in on tailscale0 to any port 22 proto tcp comment 'SSH over Tower' >/dev/null
 	ufw allow in on tailscale0 to any port 1714:1764 proto tcp comment 'KDE Connect over Tower' >/dev/null
 	ufw allow in on tailscale0 to any port 1714:1764 proto udp comment 'KDE Connect over Tower' >/dev/null
+	# CybroidOS Classroom: Veyon, so the teacher's computer reaches students'
+	# screens (Veyon's own keys decide who may connect).
+	if [ -e /usr/share/cybroid/editions/classroom ]; then
+		ufw allow 11100/tcp comment 'Veyon (Classroom)' >/dev/null
+	fi
 	# Until 0.1.16 KDE Connect was let in from every network.
 	ufw delete allow 1714:1764/tcp >/dev/null 2>&1 || true
 	ufw delete allow 1714:1764/udp >/dev/null 2>&1 || true

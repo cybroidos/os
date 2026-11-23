@@ -1,0 +1,61 @@
+name: Release
+
+# A tag v<version> publishes a GitHub Release for that version: its notes
+# from CHANGELOG.md, and where to download the ISO (cybroid.com/cybroidos;
+# an ISO is over GitHub's 2 GB limit for one file). The tag must match
+# brand.toml's version. The ISO, its checksum and manifest are built from the
+# same commit by the image build (.forgejo/workflows/images.yml).
+on:
+  push:
+    tags: [ 'v*' ]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Publish the release
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: The tag matches brand.toml
+        id: version
+        run: |
+          version="$(python3 -c 'import tomllib; print(tomllib.load(open("common/branding/brand.toml","rb"))["identity"]["version"])')"
+          if [ "${GITHUB_REF_NAME}" != "v${version}" ]; then
+            echo "::error::tag ${GITHUB_REF_NAME} but brand.toml says ${version}"
+            exit 1
+          fi
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+
+      - name: Notes from the changelog
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          python3 - <<'PY'
+          import os, re, pathlib
+          v = os.environ["VERSION"]
+          text = pathlib.Path("CHANGELOG.md").read_text()
+          m = re.search(r"^## \[" + re.escape(v) + r"\][^\n]*\n(.*?)(?=^## \[|\Z)", text, re.S | re.M)
+          if not m or not m.group(1).strip():
+              raise SystemExit(f"CHANGELOG.md has no notes for {v}")
+          notes = m.group(1).strip() + f"""
+
+          ## Get CybroidOS {v}
+
+          - **Download** the installer ISO, its checksum and its package manifest from
+            [cybroid.com/cybroidos](https://cybroid.com/cybroidos).
+          - **Already on CybroidOS?** It arrives by itself; Settings > Updates checks now.
+          - **Installing:** [docs/user/INSTALL.md](https://github.com/cybroidos/os/blob/v{v}/docs/user/INSTALL.md)
+          - **Not free software in the image:** [docs/PROPRIETARY-COMPONENTS.md](https://github.com/cybroidos/os/blob/v{v}/docs/PROPRIETARY-COMPONENTS.md)
+          """
+          pathlib.Path("notes.md").write_text(re.sub(r"(?m)^          ", "", notes))
+          PY
+          cat notes.md
+
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: gh release create "${GITHUB_REF_NAME}" --verify-tag --title "CybroidOS ${VERSION}" --notes-file notes.md

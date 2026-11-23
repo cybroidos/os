@@ -5,14 +5,20 @@
 # change it in Onboard's own settings), then started.
 command -v onboard >/dev/null 2>&1 || exit 0
 mark="${XDG_CONFIG_HOME:-$HOME/.config}/cybroid/osk-set"
+# A touchscreen: an input device the kernel marks as direct (its
+# INPUT_PROP_DIRECT bit, 0x2), as touchscreens and pen displays are and
+# touchpads aren't.
+touch=false
+if sed -n 's/^B: PROP=//p' /proc/bus/input/devices 2>/dev/null | grep -qi '[2367abef]$'; then
+	touch=true
+fi
+# Without a touchscreen it isn't started with the session (it held 50 to
+# 80 MB all day); it stays in Launchpad, and ~/.config/cybroid/osk-always
+# starts it every time for someone who uses it with a mouse.
+if [ "$touch" = false ] && [ ! -e "${XDG_CONFIG_HOME:-$HOME/.config}/cybroid/osk-always" ]; then
+	exit 0
+fi
 if [ ! -e "$mark" ] && command -v gsettings >/dev/null 2>&1; then
-	touch=false
-	# A touchscreen: an input device the kernel marks as direct (its
-	# INPUT_PROP_DIRECT bit, 0x2), as touchscreens and pen displays are and
-	# touchpads aren't.
-	if sed -n 's/^B: PROP=//p' /proc/bus/input/devices 2>/dev/null | grep -qi '[2367abef]$'; then
-		touch=true
-	fi
 	gsettings set org.onboard start-minimized true
 	gsettings set org.onboard show-status-icon true
 	gsettings set org.onboard.window docking-enabled true

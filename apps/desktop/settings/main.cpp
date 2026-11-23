@@ -1,4 +1,5 @@
-// CybroidOS Settings: cybroid-settings [wifi|sound|appearance|datetime|about]
+// CybroidOS Settings: cybroid-settings [wifi|sound|appearance|datetime|about|...]
+// cybroid-settings welcome: the first-run welcome (Welcome.qml), its own window.
 #include <QGuiApplication>
 #include <QIcon>
 #include <QQmlApplicationEngine>
@@ -19,13 +20,20 @@ int main(int argc, char *argv[])
     app.setWindowIcon(QIcon::fromTheme(QStringLiteral("preferences-system")));
 
     const QString page = app.arguments().size() > 1 ? app.arguments().at(1) : QString();
-    if (cybroid::handedToRunning(QStringLiteral("cybroid-settings"), page))
+    const bool welcome = page == QStringLiteral("welcome");
+    const QString instance = welcome ? QStringLiteral("cybroid-welcome") : QStringLiteral("cybroid-settings");
+    if (welcome) {
+        app.setApplicationDisplayName(QStringLiteral("Welcome"));
+        app.setDesktopFileName(QStringLiteral("cybroid-welcome"));
+        app.setWindowIcon(QIcon::fromTheme(QStringLiteral("cybroid-mark")));
+    }
+    if (cybroid::handedToRunning(instance, page))
         return 0;
 
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty(QStringLiteral("startPage"), page.isEmpty() ? QStringLiteral("wifi") : page);
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreationFailed, &app, [] { QCoreApplication::exit(1); }, Qt::QueuedConnection);
-    engine.loadFromModule("Cybroid.Settings", "Main");
-    cybroid::listenForOthers(QStringLiteral("cybroid-settings"), &engine);
+    engine.loadFromModule("Cybroid.Settings", welcome ? "Welcome" : "Main");
+    cybroid::listenForOthers(instance, &engine);
     return app.exec();
 }

@@ -1,0 +1,13 @@
+#!/bin/sh
+# CybroidOS: the welcome (cybroid-settings welcome) at a new account's first
+# sign-in. Not in the live system (someone trying CybroidOS, or installing
+# it), not once it has been finished or closed (~/.config/cybroid/
+# welcome-done), and not for accounts that were here before it existed
+# (cybroid-migrate.sh marks those done).
+done="${XDG_CONFIG_HOME:-$HOME/.config}/cybroid/welcome-done"
+[ -e "$done" ] && exit 0
+[ -d /run/live/medium ] && exit 0
+command -v cybroid-settings >/dev/null 2>&1 || exit 0
+# After the desktop has drawn itself, so it opens over a finished screen.
+sleep 3
+exec cybroid-settings welcome

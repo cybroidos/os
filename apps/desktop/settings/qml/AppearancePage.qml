@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Dialogs
 import org.kde.kirigami as Kirigami
 import Cybroid.Ui
 
@@ -114,14 +115,39 @@ SettingsPage {
         }
     }
 
-    Section { title: "More" }
+    // The desktop's picture, for the design in use (cybroid-appearance
+    // wallpaper): in Hex it goes behind Hex's frame, dial and leaders, so the
+    // readouts stay in place; never through KDE's wallpaper page, whose plain
+    // picture would replace Hex's drawing.
+    FileDialog {
+        id: wallPicker
+        title: "Choose a picture for the desktop"
+        nameFilters: ["Pictures (*.png *.jpg *.jpeg *.webp)"]
+        currentFolder: "file://" + System.folder("pictures")
+        onAccepted: {
+            const path = decodeURIComponent(String(selectedFile).replace(/^file:\/\//, ""))
+            page.busy = "wallpaper"
+            System.run(["cybroid-appearance", "wallpaper", path], () => page.busy = "")
+        }
+    }
+    Section { title: "Desktop picture" }
     Card {
         SettingRow {
-            title: "Wallpaper"
-            subtitle: "Choose your own picture for the desktop"
-            clickable: true
-            onClicked: System.launch(["plasma-open-settings", "kcm_wallpaper"])
+            title: "Your own picture"
+            subtitle: System.design === "hex" ? "It goes behind Hex's dial and readouts, toned to Hex's colours" : "Any photo or picture, filling the screen"
+            icon: "preferences-desktop-wallpaper-symbolic"
+            Btn { text: page.busy === "wallpaper" ? "Setting…" : "Choose…"; enabled: page.busy === ""; onClicked: wallPicker.open() }
         }
+        SettingRow {
+            title: "CybroidOS's own"
+            subtitle: System.design === "hex" ? "Hex's own ground" : "The CybroidOS wallpaper"
+            icon: "edit-undo-symbolic"
+            Btn { text: "Use it"; enabled: page.busy === ""; onClicked: { page.busy = "wallpaper"; System.run(["cybroid-appearance", "wallpaper", "default"], () => page.busy = "") } }
+        }
+    }
+
+    Section { title: "More" }
+    Card {
         SettingRow {
             title: "Fonts and text size"
             clickable: true

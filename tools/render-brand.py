@@ -228,6 +228,11 @@ def wallpaper(ctx: Context) -> None:
         for w, h in HEX_SIZES:
             hsrc = ctx.write(f"usr/share/backgrounds/{ctx.id}/{ctx.id}-{name}-{w}x{h}.svg", hex_wallpaper(w, h, light))
             rasterise(hsrc, hsrc.with_name(f"{ctx.id}-{name}-{w}x{h}.png"), w, h)
+            # The interface alone (frame, dial, leaders, grid) on a clear
+            # ground: the Hex wallpaper (org.cybroid.hex) draws it over a
+            # picture the person chose, so their picture never hides Hex.
+            usrc = ctx.write(f"usr/share/backgrounds/{ctx.id}/{ctx.id}-{name}-hud-{w}x{h}.svg", hex_wallpaper(w, h, light, hud=True))
+            rasterise(usrc, usrc.with_name(f"{ctx.id}-{name}-hud-{w}x{h}.png"), w, h)
 
 
 # Hex's layout, in units of the picture's height (u = H / 1080). The desktop
@@ -253,12 +258,13 @@ HEX_SIDE = 300    # where the two level leaders leave it
 HEX_END = 440     # where every leader ends, from the centre line
 
 
-def hex_wallpaper(W: int = 1920, H: int = 1080, light: bool = False) -> str:
+def hex_wallpaper(W: int = 1920, H: int = 1080, light: bool = False, hud: bool = False) -> str:
     """CybroidOS Hex's wallpaper: a notched frame round the screen, the CIT mark
     alone in a dial, and six leaders out to where the desktop's readouts
     sit. Drawn here rather than from a template: it is all geometry, and each
     screen shape (16:9, 16:10) gets its own so nothing is cropped. Hex Light
-    is the same drawing in the light palette (HEX_LIGHT)."""
+    is the same drawing in the light palette (HEX_LIGHT). With hud, the
+    ground is left clear: the interface alone, to lay over another picture."""
     # On screens narrower than 16:10 the dial and its leaders shrink, so the
     # readout columns beside them stay wide enough to read.
     u = min(H / 1080, W / HEX_WIDTH)
@@ -279,9 +285,10 @@ def hex_wallpaper(W: int = 1920, H: int = 1080, light: bool = False) -> str:
         '<radialGradient id="floor"><stop offset="0" stop-color="#3a7cff" stop-opacity=".55"/>'
         '<stop offset=".4" stop-color="#1ccbff" stop-opacity=".12"/><stop offset="1" stop-color="#1ccbff" stop-opacity="0"/></radialGradient>',
         "</defs>",
-        f'<rect width="{W}" height="{H}" fill="url(#bg)"/>',
-        f'<rect width="{W}" height="{H}" fill="url(#grid)"/>',
     ]
+    if not hud:
+        out.append(f'<rect width="{W}" height="{H}" fill="url(#bg)"/>')
+    out.append(f'<rect width="{W}" height="{H}" fill="url(#grid)"/>')
     # The frame: notched under the top bar's tab, at both sides and above the
     # dock, with lit corners. The top bar covers the top 30 or so pixels.
     e, top, bot = 20 * u, 30 + 22 * u, H - 20 * u

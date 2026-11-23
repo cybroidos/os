@@ -12,3 +12,4 @@ model, what you expected and what happened, and the output of
 
 CybroidOS comes with no warranty, as set out in its licences (`LICENSE`,
 `LICENSE-ASSETS`). Debian's packages keep their own licences.
+

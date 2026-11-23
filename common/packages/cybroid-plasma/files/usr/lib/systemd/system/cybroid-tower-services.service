@@ -1,0 +1,8 @@
+[Unit]
+Description=CybroidOS: Remote Desktop and SSH once this computer is on Tower
+ConditionPathExists=/usr/bin/tailscale
+After=tailscaled.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/cybroid/tower-services up

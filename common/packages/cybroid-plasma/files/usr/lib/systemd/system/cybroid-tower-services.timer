@@ -1,0 +1,9 @@
+[Unit]
+Description=CybroidOS: check every few minutes whether this computer has joined Tower
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+
+[Install]
+WantedBy=timers.target

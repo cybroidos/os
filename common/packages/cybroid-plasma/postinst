@@ -90,7 +90,18 @@ if [ "$1" = "configure" ]; then
 	# Machines already set up get this version's new firewall rules (SSH over
 	# Tower, KDE Connect), keeping their own. SSH starts at boot.
 	/usr/libexec/cybroid/firewall-setup --add-rules >/dev/null 2>&1 || true
-	systemctl enable ssh.service >/dev/null 2>&1 || true
+	# Tower's client, Remote Desktop and SSH run only on a computer that has
+	# joined Tower (/usr/libexec/cybroid/tower-services; joining starts them).
+	# While the image is built (no systemd running) they are just left off.
+	chmod 0755 /usr/libexec/cybroid/tower-services
+	systemctl enable cybroid-tower-services.timer >/dev/null 2>&1 || true
+	if [ -d /run/systemd/system ]; then
+		/usr/libexec/cybroid/tower-services >/dev/null 2>&1 || true
+	else
+		for u in xrdp.service xrdp-sesman.service ssh.service tailscaled.service; do
+			systemctl disable "$u" >/dev/null 2>&1 || true
+		done
+	fi
 	# Bluetooth says this computer's name, not "BlueZ 5.82".
 	systemctl enable cybroid-bluetooth-name.service >/dev/null 2>&1 || true
 	# SSDs stay fast: a weekly trim (util-linux's timer).

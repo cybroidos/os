@@ -1,0 +1,33 @@
+#!/bin/sh
+# CybroidOS (cybroid-plasma): Tower's client (tailscaled), Remote Desktop
+# (xrdp) and SSH run on a computer that has joined Tower and are stopped on
+# one that hasn't. The firewall lets both in over Tower only, so without
+# Tower they only held memory. Run as root by cybroid-tower after link and
+# unlink, and by cybroid-plasma's upgrade.
+#
+#   tower-services [sync]   match the services to whether this computer is on Tower
+#   tower-services up       only start them, if it is (cybroid-tower-services.timer:
+#                           a join approved in Hangar after cybroid-tower exited;
+#                           never stops anything, so a join still waiting isn't cut)
+set -u
+units_on="tailscaled.service xrdp.service ssh.service"
+units_off="xrdp.service xrdp-sesman.service ssh.service tailscaled.service"
+
+linked() {
+	systemctl is-active --quiet tailscaled || return 1
+	state="$(tailscale status --json --peers=false 2>/dev/null | sed -n 's/.*"BackendState": *"\([A-Za-z]*\)".*/\1/p' | head -1)"
+	case "${state}" in Running | Stopped | Starting) return 0 ;; *) return 1 ;; esac
+}
+
+present() { systemctl list-unit-files "$1" >/dev/null 2>&1 && systemctl list-unit-files "$1" | grep -q "^$1"; }
+
+if linked; then
+	for u in ${units_on}; do present "$u" && systemctl enable --now "$u" >/dev/null 2>&1; done
+	echo "on Tower: Tower, Remote Desktop and SSH running"
+elif [ "${1:-sync}" = up ]; then
+	:
+else
+	for u in ${units_off}; do present "$u" && systemctl disable --now "$u" >/dev/null 2>&1; done
+	echo "not on Tower: Tower, Remote Desktop and SSH stopped"
+fi
+exit 0

@@ -20,7 +20,8 @@ corners() {
 	  apt-get update -q
 	  apt-get install -y -q --no-install-recommends ca-certificates git cmake g++ gettext extra-cmake-modules \
 	    qt6-base-private-dev qt6-base-dev-tools libkf6configwidgets-dev libkf6kcmutils-dev kwin-dev libdrm-dev dpkg-dev file >/dev/null
-	  git clone -q --depth 1 --branch "$VERSION" https://github.com/matinlotfali/KDE-Rounded-Corners /src
+	  for try in 1 2 3 4 5; do git clone -q --depth 1 --branch "$VERSION" https://github.com/matinlotfali/KDE-Rounded-Corners /src && break; rm -rf /src; echo "clone failed (try $try), again in 30 s"; sleep 30; done
+	  [ -d /src ]
 	  cd /src && cmake . -DCMAKE_BUILD_TYPE=Release >/dev/null && cmake --build . -j"$(nproc)" >/dev/null && cpack -G DEB >/dev/null
 	  cp kwin4_effect_shapecorners*.deb /out/cybroid-kwin-effects_amd64.deb'
 	ls -la dist/extra
@@ -69,7 +70,8 @@ icons() {
 	  apt-get update -q
 	  apt-get install -y -q --no-install-recommends ca-certificates git gtk-update-icon-cache libgtk-3-bin >/dev/null 2>&1 || apt-get install -y -q --no-install-recommends ca-certificates git >/dev/null
 	  useradd -m build
-	  su build -c "git clone -q --depth 1 --branch $REF https://github.com/vinceliuice/WhiteSur-icon-theme /home/build/src && mkdir -p /home/build/out && cd /home/build/src && ./install.sh -a -d /home/build/out -n WhiteSur >/dev/null"
+	  for try in 1 2 3 4 5; do su build -c "git clone -q --depth 1 --branch $REF https://github.com/vinceliuice/WhiteSur-icon-theme /home/build/src" && break; rm -rf /home/build/src; echo "clone failed (try $try), again in 30 s"; sleep 30; done
+	  su build -c "test -d /home/build/src && mkdir -p /home/build/out && cd /home/build/src && ./install.sh -a -d /home/build/out -n WhiteSur >/dev/null"
 	  sh /tools/icons-fixups.sh /home/build/out
 	  apt-get install -y -q --no-install-recommends python3 python3-pil librsvg2-bin >/dev/null
 	  python3 /tools/icons-dark.py /home/build/out

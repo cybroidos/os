@@ -41,7 +41,9 @@ they affect CybroidOS in a particular way.
   The live system's own account (`cybroid`/`cybroid`) exists only in memory,
   with the firewall on and remote desktop off.
 - A firewall that refuses incoming connections, AppArmor, and kernel
-  hardening settings, on from the first boot.
+  hardening settings, on from the first boot. SSH and remote desktop answer
+  only over Tower (the organisation's private network); SSH never accepts
+  a password from any other network, and never root.
 - Every CybroidOS package is signed with the CybroidOS archive key; Debian's
   are checked against Debian's keys.
 - Each release publishes SHA-256 checksums and a package manifest

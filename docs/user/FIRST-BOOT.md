@@ -13,5 +13,6 @@ the sign-in screen with the account you created.
 - **Terminal:** zsh, with suggestions from your history as you type (→ or Tab
   takes one) and Ctrl+R to search it.
 
-The firewall is on and refuses incoming connections. Remote desktop and SSH
-are off until you turn them on.
+The firewall is on and refuses incoming connections from every network
+except Tower, your organisation's private network: over Tower, SSH and
+remote desktop reach this computer (SSH from elsewhere is refused).

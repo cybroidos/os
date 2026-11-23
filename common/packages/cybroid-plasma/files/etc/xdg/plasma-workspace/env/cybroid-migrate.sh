@@ -58,3 +58,27 @@ unset _cy_cfg _cy_rc
 if [ -f "$HOME/.zshrc" ] && [ "$(md5sum < "$HOME/.zshrc" | cut -d' ' -f1)" = a87541637607018a64e8768c8e01535a ]; then
 	cp /etc/skel/.zshrc "$HOME/.zshrc"
 fi
+
+# Programs that would hold memory all day for nothing (CybroidOS 0.1.16):
+# an account-level autostart entry marked Hidden keeps each from starting.
+# - Discover's update notifier: cybroid-update installs updates and
+#   Settings > Updates shows them; the notifier only repeated it.
+# - KDE Connect until a phone is paired (Settings > Phone Link starts it on
+#   demand); once one is, it starts with the session again.
+_cy_auto="${XDG_CONFIG_HOME:-$HOME/.config}/autostart"
+_cy_hide() {
+	mkdir -p "${_cy_auto}"
+	printf '[Desktop Entry]\nType=Application\nName=%s\nHidden=true\nX-Cybroid-Hidden=1\n' "$2" > "${_cy_auto}/$1"
+}
+_cy_show() {
+	# Only an entry we wrote is removed; one the person made stays.
+	grep -q '^X-Cybroid-Hidden=1' "${_cy_auto}/$1" 2>/dev/null && rm -f "${_cy_auto}/$1"
+}
+[ -e "${_cy_auto}/org.kde.discover.notifier.desktop" ] || _cy_hide org.kde.discover.notifier.desktop Discover
+if grep -qs '^\[' "${XDG_CONFIG_HOME:-$HOME/.config}/kdeconnect/trusted_devices"; then
+	_cy_show org.kde.kdeconnect.daemon.desktop
+else
+	[ -e "${_cy_auto}/org.kde.kdeconnect.daemon.desktop" ] || _cy_hide org.kde.kdeconnect.daemon.desktop "KDE Connect"
+fi
+unset _cy_auto
+unset -f _cy_hide _cy_show

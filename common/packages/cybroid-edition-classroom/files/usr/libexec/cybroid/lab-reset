@@ -1,0 +1,26 @@
+#!/bin/sh
+# CybroidOS Classroom: accounts in the "lab" group start every class clean.
+# At each start, before the sign-in screen, each such account's home folder
+# is emptied and filled again from /etc/skel, and then from
+# /etc/cybroid/lab-skel if the school made one (its bookmarks, documents,
+# settings). Teachers' and administrators' accounts are never touched.
+#   Make a lab account:  sudo adduser student && sudo adduser student lab
+set -u
+members="$(getent group lab | cut -d: -f4 | tr ',' ' ')"
+for u in ${members}; do
+	entry="$(getent passwd "$u")" || continue
+	uid="$(echo "${entry}" | cut -d: -f3)"
+	home="$(echo "${entry}" | cut -d: -f6)"
+	gid="$(echo "${entry}" | cut -d: -f4)"
+	# Ordinary accounts with a home under /home only.
+	[ "${uid}" -ge 1000 ] && [ "${uid}" -lt 60000 ] || continue
+	case "${home}" in /home/?*) ;; *) continue ;; esac
+	id -nG "$u" | tr ' ' '\n' | grep -qx sudo && continue
+	mkdir -p "${home}"
+	find "${home}" -mindepth 1 -delete
+	cp -a /etc/skel/. "${home}/"
+	[ -d /etc/cybroid/lab-skel ] && cp -a /etc/cybroid/lab-skel/. "${home}/"
+	chown -R "${uid}:${gid}" "${home}"
+	chmod 0750 "${home}"
+done
+exit 0

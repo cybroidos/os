@@ -10,7 +10,11 @@
 #   sudo OUT=out EXTRA_DEBS=dist/extra targets/desktop/build-iso.sh
 #
 # Env: OUT (out/), EXTRA_DEBS (other .debs for the image: the dock, icons,
-# rounded corners; the same folder the VM build uses).
+# rounded corners; the same folder the VM build uses), EDITION (one of
+# brand.toml's [editions]: security, developer, network, engineering,
+# classroom; adds cybroid-edition-<id> and names the ISO
+# cybroidos-<id>-<version>-amd64.iso; without it the plain desktop,
+# cybroidos-desktop-<version>-amd64.iso).
 set -euo pipefail
 
 here="$(cd "$(dirname "$0")" && pwd)"
@@ -25,6 +29,15 @@ work="$(build_dir 15)"
 trap 'rm -rf "${work}"' EXIT
 
 CYBROID_PACKAGES="cybroid-base cybroid-sources cybroid-artwork cybroid-plymouth-theme cybroid-plasma"
+# An edition: the same system with its package of tools.
+EDITION="${EDITION:-}"
+if [ -n "${EDITION}" ] && [ "${EDITION}" != desktop ]; then
+	[ -d "${repo}/common/packages/cybroid-edition-${EDITION}" ] || die "no edition called ${EDITION} (common/packages/cybroid-edition-*)"
+	CYBROID_PACKAGES="${CYBROID_PACKAGES} cybroid-edition-${EDITION}"
+	flavour="${EDITION}"
+else
+	flavour=desktop
+fi
 build_debs ${CYBROID_PACKAGES}
 
 lb="${work}/lb"
@@ -369,10 +382,10 @@ lb config \
 	lb installer && lb binary
 } 2>&1 | tail -n 200
 iso=\$(ls /build/lb/*.iso | head -1)
-sh /build/tools/iso-brand.sh "\$iso" "/out/cybroidos-desktop-${VERSION}-amd64.iso"
+sh /build/tools/iso-brand.sh "\$iso" "/out/cybroidos-${flavour}-${VERSION}-amd64.iso"
 # Every package on the ISO with its version: the release manifest's SBOM.
 pk=\$(ls /build/lb/*.packages 2>/dev/null | head -1)
-[ -n "\$pk" ] && cp "\$pk" "/out/cybroidos-desktop-${VERSION}-amd64.packages" || true
+[ -n "\$pk" ] && cp "\$pk" "/out/cybroidos-${flavour}-${VERSION}-amd64.packages" || true
 EOF
 chmod 0755 "${work}/run.sh"
 
@@ -391,4 +404,4 @@ if [ -d "${cache}" ]; then
 fi
 trap 'mkdir -p "$(dirname "${cache}")"; [ -d "${lb}/cache" ] && mv "${lb}/cache" "${cache}"; rm -rf "${work}"' EXIT
 docker run --rm --privileged -v "${work}:/build" -v "${out}:/out" debian:trixie /build/run.sh
-ls -lh "${out}"/cybroidos-desktop-*-amd64.iso
+ls -lh "${out}"/cybroidos-${flavour}-*-amd64.iso

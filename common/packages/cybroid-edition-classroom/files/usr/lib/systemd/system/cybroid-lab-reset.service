@@ -1,0 +1,11 @@
+[Unit]
+Description=CybroidOS Classroom: lab accounts start clean
+After=local-fs.target home.mount
+Before=display-manager.service systemd-user-sessions.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/cybroid/lab-reset
+
+[Install]
+WantedBy=multi-user.target

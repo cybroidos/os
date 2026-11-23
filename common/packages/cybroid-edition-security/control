@@ -1,0 +1,18 @@
+Package: cybroid-edition-security
+Version: @VERSION@
+Architecture: all
+Maintainer: CybroidOS maintainers <citos@cybroid.com>
+Homepage: https://cybroid.com/cybroidos
+Section: metapackages
+Priority: optional
+Depends: cybroid-plasma (>= @VERSION@), nmap, tshark, wireshark, tcpdump, masscan, gobuster, sqlmap, hydra, john, hashcat, aircrack-ng, sleuthkit, autopsy, yara, binwalk, socat, netcat-openbsd, whois, bind9-dnsutils, podman, distrobox
+Description: CybroidOS Security: for analysts and security teams
+ Assessment and forensics tools from Debian: Nmap, Wireshark, tcpdump,
+ masscan, Gobuster, sqlmap, Hydra, John the Ripper, hashcat, Aircrack-ng, The
+ Sleuth Kit and Autopsy, YARA and binwalk. Kali's full toolset (Burp, ZAP,
+ Ghidra, radare2, Metasploit) runs in a container: "Kali tools" in Launchpad
+ creates it on first use (Distrobox and Podman).
+ .
+ The same CybroidOS as every edition (look, updates, Hangar), with these
+ tools added. An installed CybroidOS becomes this edition by installing this
+ package; several editions can be installed together.

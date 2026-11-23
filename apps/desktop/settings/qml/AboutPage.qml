@@ -17,6 +17,7 @@ SettingsPage {
     property string disk: ""
     property string plasma: ""
     property string kernel: ""
+    property string editions: ""   // "Security", "Developer + Network": installed editions
     property bool renaming: false
     property string error: ""
 
@@ -52,6 +53,9 @@ SettingsPage {
         })
         System.run(["plasmashell", "--version"], (o) => plasma = ((o.match(/plasmashell\s+(\S+)/) || [])[1] || ""))
         System.run(["uname", "-r"], (o) => kernel = o.trim())
+        // Editions (cybroid-edition-*): each leaves its name in /usr/share/cybroid/editions.
+        System.run(["sh", "-c", "for f in /usr/share/cybroid/editions/*; do [ -f \"$f\" ] && head -n 1 \"$f\"; done; true"],
+                   (o) => editions = o.trim().split("\n").filter(s => s).join(" + "))
     }
     Component.onCompleted: refresh()
 
@@ -75,7 +79,10 @@ SettingsPage {
                     font.weight: Theme.hex ? Font.Medium : Font.Bold
                     font.letterSpacing: Theme.hex ? 4 : -0.3
                 }
-                Label { text: "Version " + (page.os.VERSION_ID || ""); color: Theme.soft; font.pixelSize: 13 }
+                Label {
+                    text: (page.editions ? page.editions + (page.editions.indexOf("+") >= 0 ? " editions" : " edition") + " · " : "") + "Version " + (page.os.VERSION_ID || "")
+                    color: Theme.soft; font.pixelSize: 13
+                }
             }
         }
     }

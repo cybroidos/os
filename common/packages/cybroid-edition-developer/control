@@ -1,0 +1,16 @@
+Package: cybroid-edition-developer
+Version: @VERSION@
+Architecture: all
+Maintainer: CybroidOS maintainers <citos@cybroid.com>
+Homepage: https://cybroid.com/cybroidos
+Section: metapackages
+Priority: optional
+Depends: cybroid-plasma (>= @VERSION@), git, build-essential, gdb, clang, cmake, make, shellcheck, python3-venv, python3-pip, golang, rustc, cargo, nodejs, npm, sqlite3, httpie, jq, podman, distrobox
+Description: CybroidOS Developer: for engineers who build software
+ Toolchains and containers ready on first boot: Git, GCC and Clang with
+ CMake and GDB, Python, Go, Rust, Node.js, SQLite, HTTPie and jq, Podman
+ and Distrobox. Editors such as VSCodium install from the App Centre.
+ .
+ The same CybroidOS as every edition (look, updates, Hangar), with these
+ tools added. An installed CybroidOS becomes this edition by installing this
+ package; several editions can be installed together.

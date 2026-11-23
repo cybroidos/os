@@ -1,0 +1,18 @@
+Package: cybroid-edition-classroom
+Version: @VERSION@
+Architecture: all
+Maintainer: CybroidOS maintainers <citos@cybroid.com>
+Homepage: https://cybroid.com/cybroidos
+Section: metapackages
+Priority: optional
+Depends: cybroid-plasma (>= @VERSION@), veyon-service, veyon-master, gcompris-qt, kalzium, kstars, marble, kturtle, kgeography, step, kbruch, cantor, geogebra
+Description: CybroidOS Classroom: for school computer rooms
+ Every lab computer the same and ready for the next class: Veyon lets
+ the teacher see, lock and guide every screen; student accounts in the
+ "lab" group are reset to a clean state at each start; and learning apps
+ (GCompris, GeoGebra, Kalzium, KStars, Marble, KTurtle, KGeography, Step,
+ KBruch, Cantor).
+ .
+ The same CybroidOS as every edition (look, updates, Hangar), with these
+ tools added. An installed CybroidOS becomes this edition by installing this
+ package; several editions can be installed together.

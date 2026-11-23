@@ -40,3 +40,28 @@ logo           = "logo/cybroid-logo.svg"                       # app-icon tile (
 logo_animated  = "logo/cybroid-logo-animated.svg"              # tile, CSS-animated (browsers only)
 mark           = "logo/cybroid-mark.svg"                       # transparent mark, static (rasterisable)
 mark_animated  = "logo/cybroid-mark-animated-transparent.svg"  # transparent mark, CSS-animated (browsers only)
+
+# Editions: the same CybroidOS with one package of a profession's tools
+# (common/packages/cybroid-edition-<id>). targets/desktop/build-iso.sh builds
+# one with EDITION=<id> as cybroidos-<id>-<version>-amd64.iso; without it,
+# the plain desktop (cybroidos-desktop-...). An installed CybroidOS becomes
+# an edition by installing its package; Settings > About lists those present.
+[editions.security]
+name        = "Security"
+description = "For analysts and security teams"
+
+[editions.developer]
+name        = "Developer"
+description = "For engineers who build software"
+
+[editions.network]
+name        = "Network"
+description = "For network engineers and students"
+
+[editions.engineering]
+name        = "Engineering"
+description = "For electronics, CAD and science"
+
+[editions.classroom]
+name        = "Classroom"
+description = "For school computer rooms"

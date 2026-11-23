@@ -1,0 +1,17 @@
+Package: cybroid-edition-network
+Version: @VERSION@
+Architecture: all
+Maintainer: CybroidOS maintainers <citos@cybroid.com>
+Homepage: https://cybroid.com/cybroidos
+Section: metapackages
+Priority: optional
+Depends: cybroid-plasma (>= @VERSION@), wireshark, tshark, nmap, tcpdump, iperf3, mtr-tiny, traceroute, arping, ethtool, minicom, picocom, putty, snmp, ipcalc, sipcalc, ansible
+Description: CybroidOS Network: for network engineers and students
+ Capture, testing and console tools: Wireshark, Nmap, tcpdump, iperf3,
+ mtr, traceroute and arping, serial consoles (minicom, picocom, PuTTY),
+ SNMP tools, subnet calculators and Ansible. Pairs with the CIT platform's
+ network labs.
+ .
+ The same CybroidOS as every edition (look, updates, Hangar), with these
+ tools added. An installed CybroidOS becomes this edition by installing this
+ package; several editions can be installed together.

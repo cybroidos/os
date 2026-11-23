@@ -16,7 +16,6 @@ build/
 dist/
 
 # QEMU test caches (kernel/busybox/modules fetched at test time)
-tests/qemu/artifacts/
 
 # aptly / reprepro published trees & keys
 apt-repo/published/
@@ -41,4 +40,3 @@ Thumbs.db
 __pycache__/
 *.pyc
 node_modules/
-targets/rpi/stage-cybroid/00-cybroid/debs/

@@ -1,6 +1,6 @@
 # CybroidOS's installer ISO and packages, built on Hangar's Forgejo
 # (git.cybroid.com) by our own machines: any computer set up with
-# tools/setup-builder.sh registers as a runner labelled cybroid-builder
+# (set up as in our private infra repository) registers as a runner labelled cybroid-builder
 # (Docker and sudo on the machine itself; live-build runs in a container).
 # The same steps as GitHub's server-images.yml, through the same scripts
 # (tools/build-extras.sh, tools/ci-publish.sh, tools/ci-upload.sh).

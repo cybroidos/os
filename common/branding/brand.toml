@@ -19,8 +19,8 @@ version         = "0.1.16"
 default_hostname = "cybroid"
 support_url     = "https://cybroid.com"
 home_url        = "https://cybroid.com/cybroidos"
-documentation   = "https://github.com/cybroidtech/os"
-bug_report_url  = "https://github.com/cybroidtech/os/issues"
+documentation   = "https://github.com/cybroidos/os"
+bug_report_url  = "https://github.com/cybroidos/os/issues"
 
 [colors]
 # Roles. Derived from the Cybroid logo SVG; see header note.

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Live CPU and memory of this computer's CybroidOS build (tools/setup-builder.sh):
+# Live CPU and memory of this computer's CybroidOS build (a build machine):
 # the runner service and the build's containers, from the kernel's cgroup
 # figures (no sudo or Docker access needed). Ctrl-C to stop.
 #

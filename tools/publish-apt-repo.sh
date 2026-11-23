@@ -13,7 +13,7 @@
 #     https://<repo-host>/cybroid-archive-keyring.gpg
 #   echo "deb [signed-by=/usr/share/keyrings/cybroid-archive-keyring.gpg] https://<repo-host> trixie main" \
 #     | sudo tee /etc/apt/sources.list.d/cybroid.list
-#   sudo apt update && sudo apt install cybroid-robot
+#   sudo apt update && sudo apt install cybroid-plasma
 set -euo pipefail
 
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

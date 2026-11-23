@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # Shared steps for building CybroidOS images from a Debian 13 root filesystem
 # (sourced by targets/server/build.sh and targets/container/build.sh).
 

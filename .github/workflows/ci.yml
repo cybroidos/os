@@ -43,6 +43,12 @@ jobs:
           print(f"brand OK: {ident['name']} (id={ident['id']}), targets: {', '.join(targets)}")
           PY
 
+      - name: The version has a changelog entry
+        run: |
+          version="$(python3 -c 'import tomllib; print(tomllib.load(open("common/branding/brand.toml","rb"))["identity"]["version"])')"
+          grep -q "^## \[${version}\]" CHANGELOG.md || { echo "::error::CHANGELOG.md has no section for ${version} (brand.toml)"; exit 1; }
+          echo "version ${version}: in CHANGELOG.md"
+
       - name: Validate SVGs are well-formed
         run: |
           python3 - <<'PY'
@@ -75,7 +81,7 @@ jobs:
       - name: Check required files exist
         run: |
           for f in \
-            README.md LICENSE LICENSE-ASSETS NOTICE.md CONTRIBUTING.md \
+            README.md LICENSE LICENSE-ASSETS NOTICE.md CONTRIBUTING.md CHANGELOG.md CODE_OF_CONDUCT.md \
             docs/PLAN.md docs/SECURITY.md docs/LICENSING.md docs/PROPRIETARY-COMPONENTS.md \
             docs/RELEASE-CHECKLIST.md docs/user/INSTALL.md \
             docs/adr/ADR-0001-base-distribution.md \

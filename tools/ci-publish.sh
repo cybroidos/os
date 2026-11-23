@@ -35,7 +35,12 @@ tools/build-package.sh --all >/dev/null
 # rounded-corners effect: its upstream package name (kwin4_effect_shapecorners)
 # isn't a valid Debian name, and reprepro refuses it. Images install it from
 # dist/extra.
-debs="$(ls dist/*_"${version}"_all.deb; ls dist/extra/*.deb | grep -v -e kwin-effects)"
+debs=""
+for f in dist/*_"${version}"_all.deb dist/extra/*.deb; do
+	case "$f" in *kwin-effects*) continue ;; esac
+	[ -f "$f" ] && debs="${debs} ${f}"
+done
+# shellcheck disable=SC2086  # one argument per package; the names have no spaces
 tools/publish-apt-repo.sh ${debs}
 cp "dist/cybroid-sources_${version}_all.deb" apt-repo/published/cybroid-sources.deb
 rsync -rlt --delete -e "ssh -i ${keys}/publish -o IdentitiesOnly=yes -o UserKnownHostsFile=${keys}/known_hosts -o StrictHostKeyChecking=yes" \

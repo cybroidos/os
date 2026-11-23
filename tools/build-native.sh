@@ -23,6 +23,6 @@ cmake -S "${repo}/apps/desktop" -B "${build}" -DCMAKE_BUILD_TYPE=Release -DCMAKE
 cmake --build "${build}" -j"$(nproc)"
 for p in ${NATIVE_PACKAGES}; do
 	DESTDIR="${stage}/${p}" cmake --install "${build}" --component "${p}" >/dev/null
-	strip --strip-unneeded $(find "${stage}/${p}" -type f \( -name '*.so' -o -perm -u+x \) 2>/dev/null) 2>/dev/null || true
+	find "${stage}/${p}" -type f \( -name '*.so' -o -perm -u+x \) -print0 2>/dev/null | xargs -0 -r strip --strip-unneeded 2>/dev/null || true
 done
 NATIVE_ROOT="${stage}" OUT="${out}" "${repo}/tools/build-package.sh" ${NATIVE_PACKAGES}

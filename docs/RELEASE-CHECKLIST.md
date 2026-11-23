@@ -5,6 +5,22 @@ Before a CybroidOS release is announced. A release is a version bump in
 builds the ISO, its manifest and checksum, and publishes the packages to
 `deb.cybroid.com`.
 
+## Versions
+
+CybroidOS is versioned `0.MINOR.PATCH` until the first stable release
+(1.0): every package carries the version in `common/branding/brand.toml`.
+
+1. Raise `[identity] version` in `brand.toml`, and turn `## [Unreleased]` in
+   `CHANGELOG.md` into `## [<version>] - <date>` (CI fails while the version
+   has no section).
+2. Push to `main`. The image build (`.forgejo/workflows/images.yml`) builds
+   the ISO, its checksum and manifest, and publishes the packages to
+   deb.cybroid.com, from where installed computers update.
+3. When the checks below pass, tag the same commit and push the tag:
+   `git tag -s v<version> -m "CybroidOS <version>" && git push origin v<version>`.
+   The release workflow refuses a tag that doesn't match `brand.toml`, and
+   publishes the GitHub Release with the changelog's notes.
+
 ## Build
 
 - [ ] CI is green (`ci.yml`: brand, shell, package checks).

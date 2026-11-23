@@ -32,12 +32,11 @@ case "$(cat /etc/debian_version 2>/dev/null)" in 13* | trixie*) ;; *)
 	;;
 esac
 keep=/etc/apt/cybroid-replaced
-for f in /etc/apt/sources.list.d/debian.sources; do
-	if [ -f "$f" ] && grep -qE 'deb\.debian\.org|security\.debian\.org|mirror\+file:///etc/apt/mirrors/debian' "$f"; then
-		mkdir -p "$keep"
-		mv "$f" "$keep/"
-	fi
-done
+f=/etc/apt/sources.list.d/debian.sources
+if [ -f "$f" ] && grep -qE 'deb\.debian\.org|security\.debian\.org|mirror\+file:///etc/apt/mirrors/debian' "$f"; then
+	mkdir -p "$keep"
+	mv "$f" "$keep/"
+fi
 if [ -f /etc/apt/sources.list ]; then
 	sed -i -E 's@^([[:space:]]*deb(-src)?[[:space:]].*(deb\.debian\.org|security\.debian\.org).*)$@#cybroid-off# \1@' /etc/apt/sources.list
 fi

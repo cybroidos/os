@@ -30,7 +30,7 @@ Depends: cybroid-base (>= @VERSION@), cybroid-artwork (>= @VERSION@), cybroid-se
  vlc, okular, kcalc, kde-spectacle, kate, plasma-systemmonitor,
  plasma-discover, plasma-discover-backend-flatpak, flatpak, fwupd,
  gstreamer1.0-plugins-good, gstreamer1.0-plugins-bad, gstreamer1.0-libav,
- fonts-noto-color-emoji, fonts-liberation2,
+ fonts-noto-color-emoji, fonts-liberation2, fonts-crosextra-carlito, fonts-crosextra-caladea,
  zsh, zsh-autosuggestions, zsh-syntax-highlighting, fzf, bash-completion,
  cups, cups-filters, cups-browsed, print-manager, avahi-daemon, libnss-mdns, ipp-usb,
  printer-driver-hpcups, printer-driver-brlaser, printer-driver-gutenprint, printer-driver-splix,

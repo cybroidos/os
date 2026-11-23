@@ -43,12 +43,9 @@ tower() {
 	tools/fetch-tailscale.sh dist/extra
 }
 
-# Fetch ONLYOFFICE (ISO)
+# Fetch ONLYOFFICE, checked against its signing key
 office() {
-	mkdir -p dist/extra
-	curl -fsSL --http1.1 --retry 5 --retry-all-errors --retry-delay 15 -o dist/extra/onlyoffice-desktopeditors_amd64.deb \
-	  https://download.onlyoffice.com/install/desktop/editors/linux/onlyoffice-desktopeditors_amd64.deb
-	dpkg-deb -f dist/extra/onlyoffice-desktopeditors_amd64.deb Package Version
+	tools/fetch-onlyoffice.sh dist/extra
 }
 
 # Build the dock (Plank with an edge gap)

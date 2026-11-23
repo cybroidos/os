@@ -1,0 +1,21 @@
+# CybroidOS (cybroid-plasma): Word, Excel and PowerPoint files, and their
+# OpenDocument cousins, open in the Office app (ONLYOFFICE). A person's own
+# choice (~/.config/mimeapps.list) still wins.
+[Default Applications]
+application/msword=onlyoffice-desktopeditors.desktop
+application/vnd.openxmlformats-officedocument.wordprocessingml.document=onlyoffice-desktopeditors.desktop
+application/vnd.openxmlformats-officedocument.wordprocessingml.template=onlyoffice-desktopeditors.desktop
+application/vnd.ms-word.document.macroEnabled.12=onlyoffice-desktopeditors.desktop
+application/rtf=onlyoffice-desktopeditors.desktop
+application/vnd.oasis.opendocument.text=onlyoffice-desktopeditors.desktop
+application/vnd.ms-excel=onlyoffice-desktopeditors.desktop
+application/vnd.openxmlformats-officedocument.spreadsheetml.sheet=onlyoffice-desktopeditors.desktop
+application/vnd.openxmlformats-officedocument.spreadsheetml.template=onlyoffice-desktopeditors.desktop
+application/vnd.ms-excel.sheet.macroEnabled.12=onlyoffice-desktopeditors.desktop
+application/vnd.oasis.opendocument.spreadsheet=onlyoffice-desktopeditors.desktop
+text/csv=onlyoffice-desktopeditors.desktop
+application/vnd.ms-powerpoint=onlyoffice-desktopeditors.desktop
+application/vnd.openxmlformats-officedocument.presentationml.presentation=onlyoffice-desktopeditors.desktop
+application/vnd.openxmlformats-officedocument.presentationml.slideshow=onlyoffice-desktopeditors.desktop
+application/vnd.openxmlformats-officedocument.presentationml.template=onlyoffice-desktopeditors.desktop
+application/vnd.oasis.opendocument.presentation=onlyoffice-desktopeditors.desktop

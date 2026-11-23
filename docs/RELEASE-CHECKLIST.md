@@ -21,7 +21,24 @@ builds the ISO, its manifest and checksum, and publishes the packages to
       zsh (`getent passwd <name>` ends in `/usr/bin/zsh`).
 - [ ] Installed: silent boot, sign-in, updates (**Settings → Updates**),
       firewall on (`sudo nft list ruleset`), SSH and remote desktop off.
-- [ ] An earlier install upgrades through `cybroid-update` without errors.
+- [ ] An earlier install upgrades through `cybroid-update` without errors;
+      the account menu appears in its top bar, and its shell is zsh.
+- [ ] Account menu: Lock, Sleep, Sign out, Restart and Shut down each work
+      (Restart and Shut down ask first); Launchpad's power row too.
+- [ ] Office: a .docx, .xlsx and .pptx open in ONLYOFFICE; ONLYOFFICE
+      updates from deb.cybroid.com.
+- [ ] Tower: on a computer not on Tower, `systemctl is-active tailscaled xrdp ssh`
+      are inactive; joining Tower starts them; KDE Connect reaches the computer
+      over Tower and on a network marked home, not on others.
+- [ ] Idle memory, signed in and idle five minutes on the test VM
+      (`smem -tk` or `free -m`): record it here, and compare with the last release.
+
+## Editions
+
+- [ ] Each edition's ISO builds (`EDITION=<id>`), boots, and its tools start.
+- [ ] Security: "Kali tools" creates the container and opens a shell.
+- [ ] Classroom: a lab account's files are gone after a restart; a teacher's
+      are not; Veyon Master sees a student computer.
 
 ## Legal and documents
 

@@ -12,6 +12,9 @@
 #                 screens as they are now (run by cybroid-screens when a
 #                 monitor is plugged in or a resolution changes)
 #   status        prints dark, light, hex or hex-light
+#   wallpaper <picture>|default   the desktop's picture, for the design in use:
+#                 in Hex it goes behind Hex's frame, dial and leaders (the
+#                 org.cybroid.hex wallpaper); "default" gives back CybroidOS's own
 #
 # Each sets: colours, the Plasma style (top bar, popups), icons, window title
 # bars and corners, app controls (Kvantum: rounded for Horizon, cut corners for Hex), the
@@ -42,6 +45,38 @@ current() {
 	*) echo "horizon dark" ;;
 	esac
 }
+# "wallpaper <picture>|default": only the picture, for the design in use.
+if [ "${1:-}" = wallpaper ]; then
+	pic="${2:-}"
+	[ -n "$pic" ] || { echo "usage: cybroid-appearance wallpaper <picture>|default" >&2; exit 2; }
+	if [ "$pic" != default ]; then
+		[ -f "$pic" ] || { echo "no such picture: $pic" >&2; exit 1; }
+		pic="$(realpath "$pic")"
+		case "$pic" in *"'"* | *'"'* | *'\'*) echo "the picture's name has a quote in it: rename it first" >&2; exit 1 ;; esac
+	fi
+	hexnow=false
+	kreadconfig6 --file kdeglobals --group General --key ColorScheme | grep -q Hex && hexnow=true
+	light=false
+	kreadconfig6 --file kdeglobals --group General --key ColorScheme | grep -q Light && light=true
+	qdbus6 org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript "
+var pic = '$pic', hex = $hexnow, light = $light;
+var ds = desktops();
+for (var i = 0; i < ds.length; i++) {
+    var d = ds[i];
+    if (hex) {
+        if (d.wallpaperPlugin != 'org.cybroid.hex') d.wallpaperPlugin = 'org.cybroid.hex';
+        d.currentConfigGroup = ['Wallpaper', 'org.cybroid.hex', 'General'];
+        d.writeConfig('Image', pic == 'default' ? '' : pic);
+        d.writeConfig('Light', light);
+    } else {
+        if (d.wallpaperPlugin != 'org.kde.image') d.wallpaperPlugin = 'org.kde.image';
+        d.currentConfigGroup = ['Wallpaper', 'org.kde.image', 'General'];
+        d.writeConfig('Image', pic == 'default' ? 'file:///usr/share/backgrounds/cybroid/cybroid' + (light ? '-light' : '') + '-1920x1080.png' : 'file://' + pic);
+        d.writeConfig('FillMode', 2);
+    }
+}" >/dev/null 2>&1
+	exit 0
+fi
 # "refresh startup": the session has just started; the dock has too.
 startup="${2:-}"
 set -- "${1:-status}"
@@ -64,7 +99,7 @@ status)
 	exit 0
 	;;
 *)
-	echo "usage: cybroid-appearance dark|light|hex|horizon|toggle|refresh|status" >&2
+	echo "usage: cybroid-appearance dark|light|hex|horizon|toggle|refresh|status|wallpaper <picture>|default" >&2
 	exit 2
 	;;
 esac
@@ -201,7 +236,29 @@ for (var i = 0; i < ds.length; i++) {
     var g = screenGeometry(d.screen);
     var pk = hexPick(g.width, g.height), Wp = pk[0], Hp = pk[1];
     var img = hex ? 'file:///usr/share/backgrounds/cybroid/$wall-' + Wp + 'x' + Hp + '.png' : '$img';
-    if (d.wallpaperPlugin == 'org.kde.image') {
+    // Hex: its own wallpaper (org.cybroid.hex), which draws Hex's frame, dial
+    // and leaders over Hex's ground or over a picture the person chose, so
+    // their picture never takes the readouts' leaders away. A picture they
+    // had set as a plain image wallpaper becomes Hex's background.
+    if (hex) {
+        if (d.wallpaperPlugin != 'org.cybroid.hex') {
+            var mine = '';
+            if (d.wallpaperPlugin == 'org.kde.image') {
+                d.currentConfigGroup = ['Wallpaper', 'org.kde.image', 'General'];
+                var was = String(d.readConfig('Image'));
+                if (was != '' && was.indexOf('/backgrounds/cybroid/') < 0) mine = was;
+            }
+            d.wallpaperPlugin = 'org.cybroid.hex';
+            d.currentConfigGroup = ['Wallpaper', 'org.cybroid.hex', 'General'];
+            if (mine != '' && String(d.readConfig('Image')) == '') d.writeConfig('Image', mine);
+        }
+        d.currentConfigGroup = ['Wallpaper', 'org.cybroid.hex', 'General'];
+        if (String(d.readConfig('Light')) != '$([ "$tone" = light ] && echo true || echo false)') d.writeConfig('Light', $([ "$tone" = light ] && echo true || echo false));
+    } else if (d.wallpaperPlugin == 'org.cybroid.hex') {
+        // Back to Horizon: Plasma's picture wallpaper, with the picture it had.
+        d.wallpaperPlugin = 'org.kde.image';
+    }
+    if (!hex && d.wallpaperPlugin == 'org.kde.image') {
         d.currentConfigGroup = ['Wallpaper', 'org.kde.image', 'General'];
         var cur = String(d.readConfig('Image'));
         // Written only when it changes: Plasma draws the wallpaper again on

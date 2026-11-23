@@ -1,0 +1,14 @@
+{
+    "KPackageStructure": "Plasma/Wallpaper",
+    "KPlugin": {
+        "Authors": [{ "Name": "Cybroid Technologies (U) Ltd", "Email": "citos@cybroid.com" }],
+        "Description": "Hex's interface over its own ground or a picture you choose",
+        "Icon": "preferences-desktop-wallpaper",
+        "Id": "org.cybroid.hex",
+        "License": "GPL-3.0-or-later",
+        "Name": "CybroidOS Hex",
+        "Version": "1.0",
+        "Website": "https://cybroid.com/cybroidos"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}

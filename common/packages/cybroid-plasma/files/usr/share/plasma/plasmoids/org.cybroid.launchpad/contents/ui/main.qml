@@ -17,6 +17,7 @@ import org.kde.plasma.plasmoid
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.private.kicker 0.1 as Kicker
 import org.kde.plasma.plasma5support as P5Support
+import org.kde.plasma.private.sessions as Sessions
 import QtQuick.Shapes
 
 PlasmoidItem {
@@ -72,6 +73,8 @@ PlasmoidItem {
         sh.connectSource("kreadconfig6 --file kdeglobals --group General --key ColorScheme")
     }
     Component.onCompleted: readScheme()
+
+    Sessions.SessionManagement { id: sm }
 
     Kicker.RootModel {
         id: rootModel
@@ -304,6 +307,47 @@ PlasmoidItem {
                     anchors.fill: parent
                     z: -1
                     onClicked: launchpad.close()
+                }
+            }
+
+            // Lock, Restart and Shut down at the bottom right, where people
+            // coming from Windows look for them (also in the top bar's
+            // account menu). Restart and Shut down ask first (ForcePrompt, 1).
+            Row {
+                anchors.right: parent.right
+                anchors.bottom: parent.bottom
+                anchors.margins: 28
+                spacing: 12
+                Repeater {
+                    model: [
+                        { label: "Lock", icon: "system-lock-screen-symbolic", can: sm.canLock, go: () => sm.lock() },
+                        { label: "Restart…", icon: "system-reboot-symbolic", can: sm.canReboot, go: () => sm.requestReboot(1) },
+                        { label: "Shut down…", icon: "system-shutdown-symbolic", can: sm.canShutdown, go: () => sm.requestShutdown(1) }
+                    ]
+                    delegate: QQC2.AbstractButton {
+                        id: pw
+                        required property var modelData
+                        visible: modelData.can
+                        width: 44; height: 44
+                        hoverEnabled: true
+                        Accessible.name: modelData.label
+                        QQC2.ToolTip.text: modelData.label
+                        QQC2.ToolTip.visible: hovered
+                        QQC2.ToolTip.delay: 400
+                        onClicked: { launchpad.close(); modelData.go() }
+                        background: Rectangle {
+                            radius: root.hex ? 0 : width / 2
+                            color: Qt.alpha(root.ink, pw.hovered || pw.visualFocus ? 0.18 : 0.08)
+                            border.width: root.hex ? 1 : 0
+                            border.color: pw.hovered ? root.acc : Qt.alpha(root.ink, 0.25)
+                        }
+                        contentItem: Kirigami.Icon {
+                            source: pw.modelData.icon
+                            implicitWidth: 20; implicitHeight: 20
+                            color: root.ink
+                            isMask: true
+                        }
+                    }
                 }
             }
 

@@ -1,0 +1,28 @@
+#!/bin/sh
+# CybroidOS: KDE Connect (phones) is let in on a network marked as home
+# (its connection's zone is "home" or "trusted": Settings > Wi-Fi > Home
+# network), on that network's interface only and only while it is connected.
+# Elsewhere it answers over Tower alone (/usr/libexec/cybroid/firewall-setup).
+iface="$1" action="$2"
+command -v ufw >/dev/null || exit 0
+[ -n "${iface}" ] || exit 0
+rule() {
+	for proto in tcp udp; do
+		ufw "$@" in on "${iface}" to any port 1714:1764 proto "${proto}" comment 'KDE Connect on a home network' >/dev/null 2>&1 || true
+	done
+}
+case "${action}" in
+up | reapply)
+	zone="$(nmcli -g connection.zone connection show uuid "${CONNECTION_UUID:-}" 2>/dev/null)"
+	case "${zone}" in
+	home | trusted) rule allow ;;
+	*) ufw delete allow in on "${iface}" to any port 1714:1764 proto tcp >/dev/null 2>&1 || true
+	   ufw delete allow in on "${iface}" to any port 1714:1764 proto udp >/dev/null 2>&1 || true ;;
+	esac
+	;;
+down)
+	ufw delete allow in on "${iface}" to any port 1714:1764 proto tcp >/dev/null 2>&1 || true
+	ufw delete allow in on "${iface}" to any port 1714:1764 proto udp >/dev/null 2>&1 || true
+	;;
+esac
+exit 0

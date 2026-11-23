@@ -2,7 +2,7 @@ Package: cybroid-sources
 Version: @VERSION@
 Architecture: all
 Maintainer: CybroidOS maintainers <citos@cybroid.com>
-Homepage: https://github.com/cybroidinstitute/cit-os
+Homepage: https://cybroid.com/cybroidos
 Section: admin
 Priority: optional
 Depends: debian-archive-keyring

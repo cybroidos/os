@@ -1,52 +1,65 @@
 # CybroidOS
 
-Branded operating-system images for **CIT** (Cybroid Institute of Technology) and
-its customers, built from one repository and one build system.
+An operating system for engineers, analysts, security teams, schools and
+offices, made by [Cybroid](https://cybroid.com/cybroidos). Secure from the
+first boot, kept up to date on its own, and fast on the computers you already
+have.
 
-Four targets, one shared base and branding layer:
+- **Two interfaces:** Horizon, a calm desktop anyone learns in minutes, and
+  Hex, which keeps system and network status in view for operators. Each in
+  light and dark, switchable at any time.
+- **Updates by themselves:** security fixes and CybroidOS's own packages,
+  signed, from `deb.cybroid.com`.
+- **Private by default:** a firewall on from the first boot, AppArmor, no
+  advertising and no tracking.
+- **Built for organisations:** a private network (Tower) in Settings, and
+  enrolment into [Hangar](https://cybroid.com/hangar) to manage every machine.
 
-| Target | Artefact |
-|---|---|
-| Raspberry Pi | flashable `.img` → branded kiosk (develop, test and run on Pi 4) |
-| Desktop | bootable, installable ISO — CIT school computers |
-| Server | minimal cloud-init image + `qcow2` (ship to customers) |
-| Docker | base container images (amd64 + arm64) |
+Requirements: a 64-bit Intel or AMD computer with 2 GB of memory (4 GB
+recommended). Installing: [docs/user/INSTALL.md](docs/user/INSTALL.md).
 
-- **Base OS:** Debian 13 "Trixie" — see [`docs/adr/ADR-0001-base-distribution.md`](docs/adr/ADR-0001-base-distribution.md)
-- **Plan of record:** [`docs/PLAN.md`](docs/PLAN.md) (living document)
+CybroidOS is built on Debian 13 and KDE's Frameworks and Plasma.
 
-## Status
-
-Early foundation. The base-distro ADR is accepted; the repo skeleton and build
-environment are being set up. See the status dashboard in `docs/PLAN.md`.
-
-## Layout
+## What's here
 
 ```
-common/     shared branding, config, systemd units, <brand>-base packaging
-targets/    per-target builders/overlays: rpi, desktop, server, docker
-apt-repo/   signed CIT APT repository tooling
-tests/      QEMU, container and real-hardware validation
-ci/         CI helper scripts (workflows in .github/workflows)
-tools/      helper scripts
-docs/       guides + ADRs
+common/branding/   the brand: name, palette, mark, wallpapers (brand.toml)
+common/packages/   the cybroid-* packages (ADR-0007)
+apps/desktop/      our own apps: Settings, Camera, and the shared Cybroid.Ui module
+apps/kiosk/        the kiosk app for the Raspberry Pi target
+targets/desktop/   the installer ISO (live-build and Calamares)
+targets/server/    server and desktop VM images
+targets/container/ a container image (Proxmox LXC, Docker, Podman)
+targets/rpi/       the Raspberry Pi kiosk image (pi-gen)
+tools/             build, branding and publishing scripts
+docs/              user guides, ADRs and plans
 ```
 
 ## Building
 
-Build environment is the devcontainer (or any Debian 13 host). Instructions land
-with Phase 2 — see `docs/PLAN.md`.
+On Debian 13 (or the devcontainer), with Docker for the ISO:
+
+```sh
+tools/build-package.sh --all              # the cybroid-* packages into dist/
+tools/build-extras.sh iso                 # native apps and third-party pieces into dist/extra
+sudo EXTRA_DEBS="$PWD/dist/extra" OUT="$PWD/out" targets/desktop/build-iso.sh
+```
+
+The ISO lands in `out/`. CI builds it on every version bump
+(`.forgejo/workflows/images.yml`).
 
 ## Contributing
 
-This repository may be developed on a machine that can become read-only at any
-time: **commit and push small, reviewable changes often.**
+Issues and pull requests are welcome. Keep changes small and say how you
+tested them. Security problems: please follow [docs/SECURITY.md](docs/SECURITY.md)
+instead of opening an issue.
 
-## Branding
+## Licence
 
-Name `CybroidOS`, id `cybroid`, hostname `cybroid`, support `https://cybroid.com`.
-Logo, palette and templates live in [`common/branding/`](common/branding/) and
-are rendered per target (`rpi`, `desktop`, `server`, `container`, `base`) by
-`tools/render-brand.py`, so every image is branded from one place. The palette is
-derived from the logo and awaits brand-owner confirmation — see
-[`common/branding/README.md`](common/branding/README.md).
+The code, packaging and configuration are free software under the
+[GNU GPL v3 or later](LICENSE). The CybroidOS name, mark and artwork are under
+[CC BY-NC 4.0](LICENSE-ASSETS) and are trademarks of Cybroid Technologies
+(U) Ltd: a system you build from this source under another name must not use
+them. Details in [NOTICE.md](NOTICE.md) and [docs/LICENSING.md](docs/LICENSING.md);
+the few non-free pieces an image contains (device firmware) are listed in
+[docs/PROPRIETARY-COMPONENTS.md](docs/PROPRIETARY-COMPONENTS.md).

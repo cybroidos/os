@@ -255,6 +255,8 @@ dontChroot: false
 timeout: 60
 script:
     - "-sed -i s/lg_UG.UTF-8/en_GB.UTF-8/g /etc/default/locale"
+    # The new account's shell, again here in case users.conf is overridden.
+    - "-chsh -s /usr/bin/zsh ${USER}"
 EOF
 
 # After the packages: Calamares uses the CybroidOS branding; its launcher is
@@ -262,12 +264,20 @@ EOF
 cat > "${lb}/config/hooks/normal/9000-cybroid.hook.chroot" <<'EOF'
 #!/bin/sh
 set -e
-# New accounts start in zsh (cybroid-plasma's /etc/skel/.zshrc).
-if [ -f /etc/calamares/modules/users.conf ]; then
-	if grep -q '^userShell:' /etc/calamares/modules/users.conf; then
-		sed -i 's|^userShell:.*|userShell: /usr/bin/zsh|' /etc/calamares/modules/users.conf
+# New accounts start in zsh (cybroid-plasma's /etc/skel/.zshrc). Calamares
+# 3.3 reads the shell only from user.shell; the old top-level userShell key
+# is ignored (accounts got /bin/bash), so it is removed and user.shell set.
+users=/etc/calamares/modules/users.conf
+if [ -f "$users" ]; then
+	sed -i '/^userShell:/d' "$users"
+	if grep -q '^user:' "$users"; then
+		awk '/^user:/ { print; inb = 1; next }
+			inb && /^[ ]+[a-z_]+:/ && !done { match($0, /^[ ]+/); printf "%sshell: /usr/bin/zsh\n", substr($0, 1, RLENGTH); done = 1 }
+			inb && /^[^ #]/ { inb = 0 }
+			inb && /^[ ]+shell:/ { next }
+			{ print }' "$users" > "$users.new" && mv "$users.new" "$users"
 	else
-		echo 'userShell: /usr/bin/zsh' >> /etc/calamares/modules/users.conf
+		printf '\nuser:\n    shell: /usr/bin/zsh\n' >> "$users"
 	fi
 fi
 if [ -f /etc/calamares/settings.conf ]; then
@@ -360,6 +370,9 @@ lb config \
 } 2>&1 | tail -n 200
 iso=\$(ls /build/lb/*.iso | head -1)
 sh /build/tools/iso-brand.sh "\$iso" "/out/cybroidos-desktop-${VERSION}-amd64.iso"
+# Every package on the ISO with its version: the release manifest's SBOM.
+pk=\$(ls /build/lb/*.packages 2>/dev/null | head -1)
+[ -n "\$pk" ] && cp "\$pk" "/out/cybroidos-desktop-${VERSION}-amd64.packages" || true
 EOF
 chmod 0755 "${work}/run.sh"
 

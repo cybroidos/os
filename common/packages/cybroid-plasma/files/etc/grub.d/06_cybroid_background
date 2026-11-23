@@ -1,10 +1,34 @@
 #!/bin/sh
-# CybroidOS (cybroid-plasma): once an entry is chosen GRUB writes "Booting"
-# and "Loading Linux..." in a box over the boot picture, black by default.
-# Its background becomes the picture's own navy, so it reads as a quiet
-# panel on the picture, not a black box. (The picture itself behind the text
-# was drawn from the box's corner: a second, offset logo.) Debian's GRUB
-# can't be told not to print the lines (quiet_boot=0 in 10_linux).
+# CybroidOS (cybroid-plasma): once an entry is chosen GRUB prints "Loading
+# Linux..." in its terminal (Debian's GRUB always does: quiet_boot=0 in
+# 10_linux). The theme makes that terminal the whole screen with no frame;
+# here its background becomes the theme's own picture, so the mark stays where
+# it was instead of a box being drawn over it. load_video (00_header's, which
+# every 10_linux entry calls first) is defined again to also dim the lines
+# while an entry starts; the menu's editor and command line keep their colours.
 set -e
 [ -n "${GRUB_THEME:-}" ] || exit 0
-echo 'background_color "#081833"'
+picture="$(dirname "${GRUB_THEME}")/splash.png"
+[ -f "${picture}" ] || exit 0
+. /usr/share/grub/grub-mkconfig_lib
+echo "background_image -m stretch \"$(make_system_path_relative_to_its_root "${picture}")\""
+echo 'function load_video {'
+if [ -n "${GRUB_VIDEO_BACKEND:-}" ]; then
+	echo "  insmod ${GRUB_VIDEO_BACKEND}"
+else
+	cat <<'EOF'
+  if [ x$feature_all_video_module = xy ]; then
+    insmod all_video
+  else
+    insmod efi_gop
+    insmod efi_uga
+    insmod ieee1275_fb
+    insmod vbe
+    insmod vga
+    insmod video_bochs
+    insmod video_cirrus
+  fi
+EOF
+fi
+echo '  set color_normal=dark-gray/black'
+echo '}'

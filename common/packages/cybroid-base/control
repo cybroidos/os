@@ -5,7 +5,7 @@ Maintainer: CybroidOS maintainers <citos@cybroid.com>
 Section: admin
 Priority: optional
 Depends: base-files, apparmor
-Homepage: https://github.com/cybroidinstitute/cit-os
+Homepage: https://cybroid.com/cybroidos
 Replaces: citos-base (<< 0.1.2~)
 Breaks: citos-base (<< 0.1.2~)
 Description: CybroidOS identity and brand assets

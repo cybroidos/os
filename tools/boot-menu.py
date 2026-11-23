@@ -86,12 +86,18 @@ title-text: ""
 message-font: "Unifont Regular 16"
 message-color: "{MUTED}"
 terminal-font: "Unifont Regular 16"
-# GRUB's terminal ("Booting...", "Loading Linux..." once an entry is
-# chosen) with a clear frame; its background is the picture's navy
-# (background_color: the ISO's config.cfg, the installed 06_cybroid_background),
-# so it reads as a quiet panel, not a black box. Debian's GRUB can't be told
-# not to print the lines (quiet_boot=0).
+# GRUB's terminal, where "Loading Linux..." goes once an entry is chosen
+# (Debian's GRUB always prints it: quiet_boot=0), covers the whole screen with
+# no frame, and its background is this same picture (background_image: the
+# ISO's config.cfg, the installed 06_cybroid_background). Choosing an entry
+# leaves the mark where it was instead of drawing a box over it; the lines
+# are dim (load_video sets the colour as the entry starts).
 terminal-box: "clear_*.png"
+terminal-left: "0"
+terminal-top: "0"
+terminal-width: "100%"
+terminal-height: "100%"
+terminal-border: "0"
 
 + boot_menu {{
         left = 30%

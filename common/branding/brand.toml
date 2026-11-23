@@ -12,15 +12,15 @@
 [identity]
 name            = "CybroidOS"
 id              = "cybroid"                 # os-release ID, hostname, package prefix, install paths
-vendor          = "Cybroid"
+vendor          = "Cybroid Technologies (U) Ltd"
 vendor_short    = "Cybroid"
 pretty_name     = "CybroidOS"
-version         = "0.1.15"
+version         = "0.1.16"
 default_hostname = "cybroid"
 support_url     = "https://cybroid.com"
-home_url        = "https://cybroid.com"
-documentation   = "https://github.com/cybroidinstitute/cit-os"
-bug_report_url  = "https://github.com/cybroidinstitute/cit-os/issues"
+home_url        = "https://cybroid.com/cybroidos"
+documentation   = "https://github.com/cybroidtech/os"
+bug_report_url  = "https://github.com/cybroidtech/os/issues"
 
 [colors]
 # Roles. Derived from the Cybroid logo SVG; see header note.

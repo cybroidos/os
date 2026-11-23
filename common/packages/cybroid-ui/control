@@ -2,7 +2,7 @@ Package: cybroid-ui
 Version: @VERSION@
 Architecture: @ARCH@
 Maintainer: CybroidOS maintainers <citos@cybroid.com>
-Homepage: https://github.com/cybroidinstitute/cit-os
+Homepage: https://cybroid.com/cybroidos
 Section: libs
 Priority: optional
 Depends: libqt6core6t64 (>= 6.8), libqt6gui6 (>= 6.8), libqt6qml6 (>= 6.8), libqt6quick6 (>= 6.8), libqt6dbus6 (>= 6.8), libstdc++6, libc6,

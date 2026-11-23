@@ -50,4 +50,8 @@ sum=$(sha256sum "${f}" | cut -d' ' -f1)
 s3 cp --only-show-errors "${f}" "s3://${BUCKET}/${key}" --metadata "sha256=${sum},commit=${COMMIT:-}"
 echo "${sum}  $(basename "${key}")" > "${f}.sha256"
 s3 cp --only-show-errors "${f}.sha256" "s3://${BUCKET}/${key}.sha256"
+# The release manifest (checksums and the ISO's packages), when there is one.
+if [ -f "${f%.*}.manifest.md" ]; then
+	s3 cp --only-show-errors "${f%.*}.manifest.md" "s3://${BUCKET}/${key%.*}.manifest.md"
+fi
 echo "Uploaded ${key} ($(du -h "${f}" | cut -f1), sha256 ${sum})" | tee -a "${GITHUB_STEP_SUMMARY:-/dev/null}"

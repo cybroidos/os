@@ -55,6 +55,18 @@ if [ "$1" = "configure" ]; then
 				echo 'SHELL=/usr/bin/zsh' >> /etc/default/useradd
 			fi
 		fi
+		# Until 0.1.16 the installer gave new accounts /bin/bash (Calamares
+		# 3.3 ignored the setting it was given). Once, on upgrade: accounts
+		# still in bash whose ~/.zshrc is the untouched one we gave them move
+		# to zsh. Anyone who changed either keeps their choice.
+		if [ -n "$2" ] && dpkg --compare-versions "$2" lt 0.1.16; then
+			getent passwd | awk -F: '$3 >= 1000 && $3 < 60000 && $7 == "/bin/bash" { print $1 ":" $6 }' |
+			while IFS=: read -r name home; do
+				if [ -f "${home}/.zshrc" ] && cmp -s "${home}/.zshrc" /etc/skel/.zshrc; then
+					usermod -s /usr/bin/zsh "${name}" || true
+				fi
+			done
+		fi
 	fi
 	# Flathub for the App Centre (Discover), where it can be reached.
 	if command -v flatpak >/dev/null 2>&1; then

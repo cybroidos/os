@@ -51,7 +51,7 @@ def name_to_key(name):
     return f"releases/{m.group(2)}/{name}" if m else name
 
 
-def call(method, path, body=None, headers=None, raw=False, tries=6):
+def call(method, path, body=None, headers=None, raw=False, tries=10):
     h = {"X-Appwrite-Project": PROJECT, "X-Appwrite-Key": os.environ["APPWRITE_KEY"]}
     h.update(headers or {})
     if isinstance(body, dict):
@@ -107,13 +107,20 @@ def put(path, key):
     fid, name, size = key_to_id(key), os.path.basename(key), os.path.getsize(path)
     if name != os.path.basename(path) and RELEASE.match(os.path.basename(path)):
         sys.exit(f"appwrite-store: {path} would be stored as {name}")
-    if exists(fid):
-        rm(key)  # Appwrite can't overwrite: an index file replaced, or an unfinished upload
+    total = max(1, -(-size // CHUNK))
+    old, first = exists(fid), 0
+    if old and old.get("sizeOriginal") == size and old.get("chunksTotal") == total \
+            and old.get("chunksUploaded", 0) < total:
+        # The same file, left unfinished by an earlier run: carry on from where it stopped.
+        first = old["chunksUploaded"]
+        print(f"  {name}: resuming at {first * 100 // total}%", file=sys.stderr, flush=True)
+    elif old:
+        rm(key)  # Appwrite can't overwrite: an index file replaced, or a different file
     mime = {".iso": "application/x-iso9660-image", ".json": "application/json", ".md": "text/markdown",
             ".html": "text/html"}.get(os.path.splitext(name)[1], "text/plain")
-    total = max(1, -(-size // CHUNK))
     with open(path, "rb") as f:
-        for i in range(total):
+        f.seek(first * CHUNK)
+        for i in range(first, total):
             start = i * CHUNK
             data = f.read(CHUNK)
             end = start + len(data) - 1

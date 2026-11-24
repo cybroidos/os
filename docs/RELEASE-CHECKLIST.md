@@ -26,14 +26,20 @@ CybroidOS is versioned `0.MINOR.PATCH` until the first stable release
 
 ## Downloads
 
-- **download.cybroid.com** (Cloudflare R2, bucket `cybroidos-downloads`)
-  keeps the newest two releases: `releases/<version>/` holds each edition's
-  ISO, its `.sha256` and `.manifest.md`, and an `index.html`; `latest.json`
-  and `releases.json` list them for cybroid.com.
+- **The downloads store** keeps the newest two releases: each edition's ISO,
+  its `.sha256` and `.manifest.md`; `latest.json` and `releases.json` list
+  them for cybroid.com. Today that is the `downloads` bucket in Nova's Appwrite
+  (`cloud.novabusiness.one`, project `6b0569ed0033da77b1d7`, 5 GB per file;
+  `tools/appwrite-store.py`), used whenever the `CYBROID_APPWRITE_KEY` secret
+  is set. Cloudflare R2 (bucket `cybroidos-downloads`) still works the same
+  way without it, and there each release also gets an `index.html`. Once
+  download.cybroid.com is the Appwrite project's domain, set the repository
+  variable `CYBROID_APPWRITE_PUBLIC_ENDPOINT` to `https://download.cybroid.com/v1`
+  and run `tools/downloads.sh index` so the links use it.
 - **Older releases** move to the Internet Archive (`cybroidos-<version>`)
   every Monday (`.github/workflows/downloads.yml`, `tools/downloads.sh
   retire`): copied, checked against the archive's own MD5, their GitHub
-  Release notes pointed at the archive, and only then removed from R2. A file
+  Release notes pointed at the archive, and only then removed from the store. A file
   that no longer matches its checksum is never copied or removed, and fails
   the run.
 - **Every version** keeps its GitHub Release: notes, and links to wherever

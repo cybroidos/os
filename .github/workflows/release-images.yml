@@ -4,12 +4,13 @@ name: Release images
 # on a tag v<version> (a release), or by hand ("Run workflow") to try them.
 # Each ISO gets its checksum and package manifest and is kept with the run
 # for 30 days (gh run download <run>); a tag also publishes them to
-# download.cybroid.com (Cloudflare R2, tools/downloads.sh) and attaches the
+# the downloads store (Appwrite or Cloudflare R2, tools/downloads.sh) and attaches the
 # checksums and manifests to the GitHub Release (an ISO is over GitHub's 2 GB
 # limit for a release file).
 #
-# Secrets (optional until downloads are live): CYBROID_R2_ENDPOINT,
-# CYBROID_R2_ACCESS_KEY_ID, CYBROID_R2_SECRET_ACCESS_KEY.
+# Secrets (optional until downloads are live): CYBROID_APPWRITE_KEY (storage
+# scopes on Nova's Appwrite), or CYBROID_R2_ENDPOINT, CYBROID_R2_ACCESS_KEY_ID
+# and CYBROID_R2_SECRET_ACCESS_KEY.
 on:
   push:
     tags: [ 'v*' ]
@@ -110,12 +111,18 @@ jobs:
       - name: Publish to download.cybroid.com
         if: startsWith(github.ref, 'refs/tags/')
         env:
+          # The store: Appwrite (Nova's, project cybroidos) when its key is set, else R2.
+          APPWRITE_ENDPOINT: ${{ vars.CYBROID_APPWRITE_ENDPOINT || 'https://cloud.novabusiness.one/v1' }}
+          APPWRITE_PUBLIC_ENDPOINT: ${{ vars.CYBROID_APPWRITE_PUBLIC_ENDPOINT }}
+          APPWRITE_PROJECT: ${{ vars.CYBROID_APPWRITE_PROJECT || '6b0569ed0033da77b1d7' }}
+          APPWRITE_BUCKET: downloads
+          APPWRITE_KEY: ${{ secrets.CYBROID_APPWRITE_KEY }}
           R2_ENDPOINT: ${{ secrets.CYBROID_R2_ENDPOINT }}
           R2_ACCESS_KEY_ID: ${{ secrets.CYBROID_R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.CYBROID_R2_SECRET_ACCESS_KEY }}
           R2_BUCKET: ${{ vars.CYBROID_R2_BUCKET || 'cybroidos-downloads' }}
         run: |
-          if [ -z "$R2_ACCESS_KEY_ID" ]; then echo "::warning::No R2 keys yet: the ISO is kept with the run, not published"; exit 0; fi
+          if [ -z "$APPWRITE_KEY" ] && [ -z "$R2_ACCESS_KEY_ID" ]; then echo "::warning::No store keys yet: the ISO is kept with the run, not published"; exit 0; fi
           tools/downloads.sh publish out/cybroidos-*-amd64.iso out/cybroidos-*-amd64.manifest.md
 
       - name: Attach the checksum and manifest to the release

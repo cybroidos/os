@@ -2,7 +2,7 @@ name: Downloads
 
 # Keeps download.cybroid.com (Cloudflare R2) to the newest releases: older
 # ones move to the Internet Archive (item cybroidos-<version>), are checked
-# there against our checksums, and only then leave R2; their GitHub Release
+# there against our checksums, and only then leave the store; their GitHub Release
 # notes then point to the archive (tools/downloads.sh retire).
 on:
   schedule:
@@ -26,6 +26,12 @@ jobs:
       - uses: actions/checkout@v5
       - name: Retire
         env:
+          # The store: Appwrite (Nova's, project cybroidos) when its key is set, else R2.
+          APPWRITE_ENDPOINT: ${{ vars.CYBROID_APPWRITE_ENDPOINT || 'https://cloud.novabusiness.one/v1' }}
+          APPWRITE_PUBLIC_ENDPOINT: ${{ vars.CYBROID_APPWRITE_PUBLIC_ENDPOINT }}
+          APPWRITE_PROJECT: ${{ vars.CYBROID_APPWRITE_PROJECT || '6b0569ed0033da77b1d7' }}
+          APPWRITE_BUCKET: downloads
+          APPWRITE_KEY: ${{ secrets.CYBROID_APPWRITE_KEY }}
           R2_ENDPOINT: ${{ secrets.CYBROID_R2_ENDPOINT }}
           R2_ACCESS_KEY_ID: ${{ secrets.CYBROID_R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.CYBROID_R2_SECRET_ACCESS_KEY }}
@@ -35,8 +41,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
-          if [ -z "$R2_ACCESS_KEY_ID" ] || [ -z "$IA_ACCESS_KEY" ]; then
-            echo "::warning::R2 or Internet Archive keys aren't set yet; nothing to do"
+          if { [ -z "$APPWRITE_KEY" ] && [ -z "$R2_ACCESS_KEY_ID" ]; } || [ -z "$IA_ACCESS_KEY" ]; then
+            echo "::warning::Store or Internet Archive keys aren't set yet; nothing to do"
             exit 0
           fi
           tools/downloads.sh retire

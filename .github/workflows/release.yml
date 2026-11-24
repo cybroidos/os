@@ -44,9 +44,9 @@ jobs:
 
           ## Get CybroidOS {v}
 
-          - **Download** the installer ISOs (every edition), their checksums and package
-            manifests: https://download.cybroid.com/releases/{v}/index.html
-            (or from [cybroid.com/cybroidos](https://cybroid.com/cybroidos)).
+          - **Download** the installer ISOs (every edition) from
+            [cybroid.com/cybroidos](https://cybroid.com/cybroidos); each one's checksum
+            and package manifest are attached below.
           - **Already on CybroidOS?** It arrives by itself; Settings > Updates checks now.
           - **Installing:** [docs/user/INSTALL.md](https://github.com/cybroidos/os/blob/v{v}/docs/user/INSTALL.md)
           - **Not free software in the image:** [docs/PROPRIETARY-COMPONENTS.md](https://github.com/cybroidos/os/blob/v{v}/docs/PROPRIETARY-COMPONENTS.md)

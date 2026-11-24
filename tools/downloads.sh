@@ -1,36 +1,58 @@
 #!/usr/bin/env bash
-# CybroidOS downloads: the latest releases on Cloudflare R2 (download.cybroid.com),
-# every older one on the Internet Archive, every version's notes, checksums and
-# links on GitHub Releases. Nothing leaves R2 before a verified copy is on the
-# Internet Archive.
+# CybroidOS downloads: the latest releases in the downloads store (an Appwrite
+# bucket, or Cloudflare R2), every older one on the Internet Archive, every
+# version's notes, checksums and links on GitHub Releases. Nothing leaves the
+# store before a verified copy is on the Internet Archive.
 #
 #   tools/downloads.sh publish <file>...   put a release's files (ISOs with their
-#                                          .sha256 and .manifest.md) in R2 under
+#                                          .sha256 and .manifest.md) in the store under
 #                                          releases/<version>/, then rebuild the index
 #   tools/downloads.sh index               rebuild latest.json, releases.json and
-#                                          each release's index.html from R2
+#                                          each release's index.html from the store
 #   tools/downloads.sh retire              move releases beyond the newest KEEP to
 #                                          the Internet Archive (item cybroidos-<version>)
 #
-# Env: R2_ENDPOINT, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET
-#      DOWNLOAD_URL (https://download.cybroid.com), KEEP (2)
+# Env: STORE: appwrite (when APPWRITE_KEY is set) or r2.
+#      appwrite: APPWRITE_ENDPOINT, APPWRITE_PROJECT, APPWRITE_KEY, APPWRITE_BUCKET,
+#      APPWRITE_PUBLIC_ENDPOINT (see tools/appwrite-store.py).
+#      r2: R2_ENDPOINT, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET,
+#      DOWNLOAD_URL (https://download.cybroid.com).
+#      KEEP (2)
 #      retire also: IA_ACCESS_KEY, IA_SECRET_KEY (archive.org S3 keys),
 #      GH_TOKEN and GH_REPO (cybroidos/os) to point each release's notes at its
 #      new home.
-# Needs aws (or docker for the amazon/aws-cli image), python3, curl; retire
-# also gh.
+# Needs python3 and curl; r2 also aws (or docker for the amazon/aws-cli
+# image); retire also gh.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
 cmd="${1:?usage: $0 publish <file>... | index | retire}"
 shift
-: "${R2_ENDPOINT:?}" "${R2_ACCESS_KEY_ID:?}" "${R2_SECRET_ACCESS_KEY:?}" "${R2_BUCKET:?}"
+STORE="${STORE:-$([ -n "${APPWRITE_KEY:-}" ] && echo appwrite || echo r2)}"
 DOWNLOAD_URL="${DOWNLOAD_URL:-https://download.cybroid.com}"
 KEEP="${KEEP:-2}"
-export AWS_ACCESS_KEY_ID="${R2_ACCESS_KEY_ID}" AWS_SECRET_ACCESS_KEY="${R2_SECRET_ACCESS_KEY}" AWS_DEFAULT_REGION=auto
 
 work="$(mktemp -d)"
 trap 'rm -rf "${work}"' EXIT
+
+# The store: list (S3's list-objects JSON), put <file> <key> <type> <cache>,
+# get <key> <dest> ("-" for stdout), rm <key>, rm_prefix <prefix>.
+if [ "${STORE}" = appwrite ]; then
+: "${APPWRITE_PROJECT:?}" "${APPWRITE_KEY:?}"
+export APPWRITE_ENDPOINT APPWRITE_PROJECT APPWRITE_KEY APPWRITE_BUCKET APPWRITE_PUBLIC_ENDPOINT
+aw() { python3 "${PWD}/tools/appwrite-store.py" "$@"; }
+store_list() { aw list; }
+store_put() { aw put "$1" "$2"; }   # Appwrite sets its own type and caching
+store_get() {
+	if [ "$2" = - ]; then aw get "$1" "${work}/get.tmp" && cat "${work}/get.tmp"; else aw get "$1" "$2"; fi
+}
+store_rm_prefix() {
+	python3 -c "import json,sys; print('\n'.join(o['Key'] for o in json.load(sys.stdin)['Contents'] if o['Key'].startswith(sys.argv[1])))" "$1" < <(aw list) |
+		while IFS= read -r k; do [ -n "$k" ] && aw rm "$k"; done
+}
+else
+: "${R2_ENDPOINT:?}" "${R2_ACCESS_KEY_ID:?}" "${R2_SECRET_ACCESS_KEY:?}" "${R2_BUCKET:?}"
+export AWS_ACCESS_KEY_ID="${R2_ACCESS_KEY_ID}" AWS_SECRET_ACCESS_KEY="${R2_SECRET_ACCESS_KEY}" AWS_DEFAULT_REGION=auto
 export AWS_CONFIG_FILE="${work}/aws-config"
 printf '[default]\nretry_mode = standard\nmax_attempts = 10\ns3 =\n  multipart_chunksize = 64MB\n' > "${AWS_CONFIG_FILE}"
 if command -v aws >/dev/null; then
@@ -42,15 +64,19 @@ else
 	}
 fi
 s3() { aws --endpoint-url "${R2_ENDPOINT}" s3 "$@"; }
-s3api() { aws --endpoint-url "${R2_ENDPOINT}" s3api "$@"; }
+store_list() { aws --endpoint-url "${R2_ENDPOINT}" s3api list-objects-v2 --bucket "${R2_BUCKET}" --prefix "" --output json; }
+store_put() { s3 cp --quiet --content-type "$3" --cache-control "$4" "$1" "s3://${R2_BUCKET}/$2"; }
+store_get() { s3 cp --quiet "s3://${R2_BUCKET}/$1" "$2"; }
+store_rm_prefix() { s3 rm --quiet --recursive "s3://${R2_BUCKET}/$1"; }
+fi
 
 # The version in a file's name: cybroidos-<edition>-<version>-amd64.iso…
 version_of() { basename "$1" | sed -nE 's/^cybroidos-[a-z]+-([0-9]+\.[0-9]+\.[0-9]+)-amd64\..*$/\1/p'; }
 
-# Every file in R2 with its size, and the .sha256 files' contents, as JSON for
+# Every file in the store with its size, and the .sha256 files' contents, as JSON for
 # index.py.
 listing() {
-	s3api list-objects-v2 --bucket "${R2_BUCKET}" --prefix releases/ --output json > "${work}/list.json"
+	store_list > "${work}/list.json"
 	python3 - "${work}/list.json" > "${work}/sums.txt" <<'PY'
 import json, sys
 d = json.load(open(sys.argv[1]))
@@ -60,16 +86,18 @@ for o in d.get("Contents", []):
 PY
 	: > "${work}/sums.json.txt"
 	while IFS= read -r key; do
-		s3 cp --quiet "s3://${R2_BUCKET}/${key}" - | head -1 | awk -v k="${key}" '{print k "\t" $1}' >> "${work}/sums.json.txt"
+		store_get "${key}" - | head -1 | awk -v k="${key}" '{print k "\t" $1}' >> "${work}/sums.json.txt"
 	done < "${work}/sums.txt"
 }
 
 index() {
 	listing
-	python3 - "${work}/list.json" "${work}/sums.json.txt" "${DOWNLOAD_URL}" "${work}/out" <<'PY'
+	python3 - "${work}/list.json" "${work}/sums.json.txt" "${DOWNLOAD_URL}" "${work}/out" "${STORE}" <<'PY'
 import html, json, os, re, sys
-listing, sums_file, base, out = sys.argv[1:]
+listing, sums_file, base, out, store = sys.argv[1:]
 objs = json.load(open(listing)).get("Contents", [])
+# Appwrite's addresses come with the listing; R2's are the key under the domain.
+urls = {o["Key"]: o.get("Url") or f"{base}/{o['Key']}" for o in objs}
 sums = dict(l.rstrip("\n").split("\t") for l in open(sums_file) if "\t" in l)
 names = {"desktop": "CybroidOS", "security": "CybroidOS Security", "developer": "CybroidOS Developer",
          "network": "CybroidOS Network", "engineering": "CybroidOS Engineering", "classroom": "CybroidOS Classroom"}
@@ -81,9 +109,10 @@ for o in objs:
     v, f, ed = m.groups()
     releases.setdefault(v, []).append({
         "edition": ed, "name": names.get(ed, "CybroidOS " + ed.title()), "file": f,
-        "url": f"{base}/releases/{v}/{f}", "size": o["Size"],
+        "url": urls[o["Key"]], "size": o["Size"],
         "sha256": sums.get(f"releases/{v}/{f}.sha256", ""),
-        "manifest": f"{base}/releases/{v}/{f[:-4]}.manifest.md",
+        "checksum": urls.get(f"releases/{v}/{f}.sha256", ""),
+        "manifest": urls.get(f"releases/{v}/{f[:-4]}.manifest.md", ""),
         "date": o["LastModified"][:10]})
 key = lambda v: tuple(int(x) for x in v.split("."))
 order = ["desktop", "security", "developer", "network", "engineering", "classroom"]
@@ -92,11 +121,12 @@ for v in sorted(releases, key=key, reverse=True):
     files = sorted(releases[v], key=lambda f: order.index(f["edition"]) if f["edition"] in order else 99)
     versions.append({"version": v, "date": max(f["date"] for f in files), "files": files,
                      "notes": f"https://github.com/cybroidos/os/releases/tag/v{v}",
-                     "page": f"{base}/releases/{v}/index.html"})
+                     # Appwrite serves HTML as text, so there the notes are the page.
+                     "page": f"{base}/releases/{v}/index.html" if store == "r2" else f"https://github.com/cybroidos/os/releases/tag/v{v}"})
 os.makedirs(out, exist_ok=True)
 json.dump({"versions": versions, "older": "https://github.com/cybroidos/os/releases"}, open(f"{out}/releases.json", "w"), indent=1)
 json.dump(versions[0] if versions else {}, open(f"{out}/latest.json", "w"), indent=1)
-for r in versions:
+for r in versions if store == "r2" else []:
     rows = "".join(
         f'<tr><td>{html.escape(f["name"])}</td><td><a href="{html.escape(f["url"])}">{html.escape(f["file"])}</a></td>'
         f'<td>{f["size"] / 1e9:.1f} GB</td><td><code>{f["sha256"]}</code></td>'
@@ -117,11 +147,11 @@ Check a download with <code>sha256sum</code> against the value below.</p>
     open(f"{out}/releases/{r['version']}/index.html", "w").write(page)
 PY
 	# Short-lived caching for the index, so a new release shows within minutes.
-	s3 cp --quiet --content-type application/json --cache-control "public, max-age=300" "${work}/out/releases.json" "s3://${R2_BUCKET}/releases.json"
-	s3 cp --quiet --content-type application/json --cache-control "public, max-age=300" "${work}/out/latest.json" "s3://${R2_BUCKET}/latest.json"
+	store_put "${work}/out/releases.json" releases.json application/json "public, max-age=300"
+	store_put "${work}/out/latest.json" latest.json application/json "public, max-age=300"
 	for p in "${work}"/out/releases/*/index.html; do
 		[ -f "$p" ] || continue
-		s3 cp --quiet --content-type "text/html; charset=utf-8" --cache-control "public, max-age=300" "$p" "s3://${R2_BUCKET}/${p#"${work}/out/"}"
+		store_put "$p" "${p#"${work}/out/"}" "text/html; charset=utf-8" "public, max-age=300"
 	done
 	echo "index: $(python3 -c 'import json,sys; print(" ".join(v["version"] for v in json.load(open(sys.argv[1]))["versions"]) or "no releases")' "${work}/out/releases.json")"
 }
@@ -143,7 +173,7 @@ publish() {
 		[ -n "$v" ] || { echo "publish: not a CybroidOS release file: $f" >&2; exit 1; }
 		case "$f" in *.iso) type=application/x-iso9660-image ;; *.md) type="text/markdown; charset=utf-8" ;; *) type="text/plain; charset=utf-8" ;; esac
 		# Released files never change: browsers and Cloudflare may keep them.
-		s3 cp --no-progress --content-type "$type" --cache-control "public, max-age=31536000, immutable" "$f" "s3://${R2_BUCKET}/releases/${v}/$(basename "$f")"
+		store_put "$f" "releases/${v}/$(basename "$f")" "$type" "public, max-age=31536000, immutable"
 		echo "published releases/${v}/$(basename "$f")"
 	done
 	index
@@ -188,7 +218,7 @@ PY
 )
 	damaged=0
 	if [ "${#versions[@]}" -le "${KEEP}" ]; then
-		echo "retire: ${#versions[@]} release(s) on R2, keeping up to ${KEEP}: nothing to move"
+		echo "retire: ${#versions[@]} release(s) in the store, keeping up to ${KEEP}: nothing to move"
 		return 0
 	fi
 	for v in "${versions[@]:${KEEP}}"; do
@@ -199,12 +229,12 @@ PY
 import json,sys; print('\n'.join(o['Key'] for o in json.load(open(sys.argv[1])).get('Contents',[]) if o['Key'].startswith('releases/'+sys.argv[2]+'/') and not o['Key'].endswith('index.html')))" "${work}/list.json" "$v")
 		for key in "${keys[@]}"; do
 			f="${work}/$(basename "$key")"
-			s3 cp --quiet "s3://${R2_BUCKET}/${key}" "$f"
+			store_get "${key}" "$f"
 			# An ISO must still match its published checksum before it is copied.
 			if [[ "$key" == *.iso ]]; then
-				want="$(s3 cp --quiet "s3://${R2_BUCKET}/${key}.sha256" - 2>/dev/null | awk '{print $1; exit}')"
+				want="$(store_get "${key}.sha256" - 2>/dev/null | awk '{print $1; exit}')"
 				if [ -n "$want" ] && [ "$(sha256sum "$f" | cut -d' ' -f1)" != "$want" ]; then
-					echo "::error::${key} doesn't match its checksum; left on R2 (replace it from the build, or remove the release by hand)" >&2
+					echo "::error::${key} doesn't match its checksum; left in the store (replace it from the build, or remove the release by hand)" >&2
 					damaged=1; done_all=0; rm -f "$f"; continue
 				fi
 			fi
@@ -212,7 +242,7 @@ import json,sys; print('\n'.join(o['Key'] for o in json.load(open(sys.argv[1])).
 			rm -f "$f"
 		done
 		if [ "$done_all" != 1 ]; then
-			echo "  not all files are confirmed on the archive yet; ${v} stays on R2 until the next run"
+			echo "  not all files are confirmed on the archive yet; ${v} stays in the store until the next run"
 			continue
 		fi
 		# The release's notes now send people to the archive.
@@ -232,8 +262,8 @@ PY
 			gh release edit "v${v}" -R "${GH_REPO:-cybroidos/os}" --notes-file "${work}/notes.md" >/dev/null
 			echo "  release notes for v${v} point to the archive"
 		fi
-		s3 rm --quiet --recursive "s3://${R2_BUCKET}/releases/${v}/"
-		echo "  removed from R2"
+		store_rm_prefix "releases/${v}/"
+		echo "  removed from the store"
 	done
 	index
 	return "${damaged}"

@@ -29,10 +29,11 @@ import urllib.parse
 import urllib.request
 import uuid
 
-ENDPOINT = os.environ.get("APPWRITE_ENDPOINT", "https://cloud.novabusiness.one/v1").rstrip("/")
-PUBLIC = os.environ.get("APPWRITE_PUBLIC_ENDPOINT", ENDPOINT).rstrip("/")
+# Empty counts as unset: workflows pass unset repository variables as "".
+ENDPOINT = (os.environ.get("APPWRITE_ENDPOINT") or "https://cloud.novabusiness.one/v1").rstrip("/")
+PUBLIC = (os.environ.get("APPWRITE_PUBLIC_ENDPOINT") or ENDPOINT).rstrip("/")
 PROJECT = os.environ["APPWRITE_PROJECT"]
-BUCKET = os.environ.get("APPWRITE_BUCKET", "downloads")
+BUCKET = os.environ.get("APPWRITE_BUCKET") or "downloads"
 CHUNK = 5 * 1024 * 1024
 RELEASE = re.compile(r"^cybroidos-([a-z]+)-([0-9]+\.[0-9]+\.[0-9]+)-amd64\.(.+)$")
 

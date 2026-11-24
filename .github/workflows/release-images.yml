@@ -121,6 +121,7 @@ jobs:
           R2_ACCESS_KEY_ID: ${{ secrets.CYBROID_R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.CYBROID_R2_SECRET_ACCESS_KEY }}
           R2_BUCKET: ${{ vars.CYBROID_R2_BUCKET || 'cybroidos-downloads' }}
+          SKIP_INDEX: '1'   # the index job writes it once every edition is up
         run: |
           if [ -z "$APPWRITE_KEY" ] && [ -z "$R2_ACCESS_KEY_ID" ]; then echo "::warning::No store keys yet: the ISO is kept with the run, not published"; exit 0; fi
           tools/downloads.sh publish out/cybroidos-*-amd64.iso out/cybroidos-*-amd64.manifest.md
@@ -133,3 +134,25 @@ jobs:
           # The release is made by release.yml from the same tag; wait for it.
           for i in $(seq 1 30); do gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 && break; sleep 20; done
           gh release upload "$GITHUB_REF_NAME" out/cybroidos-*-amd64.iso.sha256 out/cybroidos-*-amd64.manifest.md --clobber
+
+  index:
+    name: Update the downloads index
+    needs: iso
+    if: ${{ !cancelled() && startsWith(github.ref, 'refs/tags/') }}
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - name: Rebuild latest.json and releases.json
+        env:
+          APPWRITE_ENDPOINT: ${{ vars.CYBROID_APPWRITE_ENDPOINT || 'https://cloud.novabusiness.one/v1' }}
+          APPWRITE_PUBLIC_ENDPOINT: ${{ vars.CYBROID_APPWRITE_PUBLIC_ENDPOINT }}
+          APPWRITE_PROJECT: ${{ vars.CYBROID_APPWRITE_PROJECT || '6b0569ed0033da77b1d7' }}
+          APPWRITE_BUCKET: downloads
+          APPWRITE_KEY: ${{ secrets.CYBROID_APPWRITE_KEY }}
+          R2_ENDPOINT: ${{ secrets.CYBROID_R2_ENDPOINT }}
+          R2_ACCESS_KEY_ID: ${{ secrets.CYBROID_R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.CYBROID_R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ vars.CYBROID_R2_BUCKET || 'cybroidos-downloads' }}
+        run: |
+          if [ -z "$APPWRITE_KEY" ] && [ -z "$R2_ACCESS_KEY_ID" ]; then echo "::warning::No store keys yet"; exit 0; fi
+          tools/downloads.sh index

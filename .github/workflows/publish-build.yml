@@ -1,0 +1,72 @@
+name: Publish a build
+# Puts the ISOs an earlier "Release images" run built (kept 30 days) on the
+# downloads store, without building them again: every edition at once, then
+# the index cybroid.com reads. For a build that should go out before (or
+# without) its tag; a tag's own run publishes by itself.
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: The "Release images" run whose ISOs to publish
+        required: true
+
+permissions:
+  contents: read
+  actions: read   # the other run's artifacts
+
+concurrency:
+  group: downloads
+  cancel-in-progress: false
+
+env:
+  APPWRITE_ENDPOINT: ${{ vars.CYBROID_APPWRITE_ENDPOINT || 'https://cloud.novabusiness.one/v1' }}
+  APPWRITE_PUBLIC_ENDPOINT: ${{ vars.CYBROID_APPWRITE_PUBLIC_ENDPOINT }}
+  APPWRITE_PROJECT: ${{ vars.CYBROID_APPWRITE_PROJECT || '6b0569ed0033da77b1d7' }}
+  APPWRITE_BUCKET: downloads
+  APPWRITE_KEY: ${{ secrets.CYBROID_APPWRITE_KEY }}
+
+jobs:
+  plan:
+    runs-on: ubuntu-24.04
+    outputs:
+      editions: ${{ steps.list.outputs.editions }}
+    steps:
+      - id: list
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN: ${{ inputs.run_id }}
+        run: |
+          [ -n "$APPWRITE_KEY" ] || { echo "::error::CYBROID_APPWRITE_KEY isn't set"; exit 1; }
+          eds=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RUN/artifacts" --paginate \
+            --jq '[.artifacts[] | select(.expired | not) | .name | capture("^cybroidos-(?<e>[a-z]+)-iso$").e]' | jq -sc add)
+          [ "$eds" != "[]" ] && [ "$eds" != null ] || { echo "::error::run $RUN has no ISOs left"; exit 1; }
+          echo "editions=$eds" >> "$GITHUB_OUTPUT"
+          echo "Publishing: $eds"
+
+  publish:
+    needs: plan
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        edition: ${{ fromJSON(needs.plan.outputs.editions) }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v5
+        with:
+          name: cybroidos-${{ matrix.edition }}-iso
+          path: out
+          run-id: ${{ inputs.run_id }}
+          github-token: ${{ github.token }}
+      - name: Publish
+        env:
+          SKIP_INDEX: '1'
+        run: tools/downloads.sh publish out/cybroidos-*-amd64.iso out/cybroidos-*-amd64.manifest.md
+
+  index:
+    needs: publish
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - run: tools/downloads.sh index

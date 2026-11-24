@@ -17,7 +17,7 @@
 #      APPWRITE_PUBLIC_ENDPOINT (see tools/appwrite-store.py).
 #      r2: R2_ENDPOINT, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET,
 #      DOWNLOAD_URL (https://download.cybroid.com).
-#      KEEP (2)
+#      KEEP (2); SKIP_INDEX=1 makes publish leave the index alone.
 #      retire also: IA_ACCESS_KEY, IA_SECRET_KEY (archive.org S3 keys),
 #      GH_TOKEN and GH_REPO (cybroidos/os) to point each release's notes at its
 #      new home.
@@ -176,7 +176,8 @@ publish() {
 		store_put "$f" "releases/${v}/$(basename "$f")" "$type" "public, max-age=31536000, immutable"
 		echo "published releases/${v}/$(basename "$f")"
 	done
-	index
+	# Parallel publishes (one job per edition) leave the index to one last run.
+	[ -n "${SKIP_INDEX:-}" ] || index
 }
 
 # One file to the Internet Archive, then checked there: the archive's own MD5

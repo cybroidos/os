@@ -40,6 +40,10 @@ echo "== Checking the package lists"
 apt-get update -q || fail "the package lists"
 pkgs=""
 for e in "$@"; do pkgs="${pkgs} cybroid-edition-${e}"; done
+# Visual Studio Code by name: the edition only recommends it (an offline ISO
+# with Developer built in can't reach Microsoft's repository), and CybroidOS
+# installs no recommends.
+case " $* " in *" developer "*) pkgs="${pkgs} code" ;; esac
 echo "== Installing${pkgs}"
 # shellcheck disable=SC2086  # one argument per package
 apt-get install -y -q -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold ${pkgs} || fail "installing the packages"

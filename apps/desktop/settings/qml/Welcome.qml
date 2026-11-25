@@ -33,12 +33,21 @@ Window {
     // A second start (cybroid-settings welcome) only brings this window forward.
     function showPage(p) { }
 
+    // Closing (the window's button) and finishing both come here. Qt 6's
+    // Qt.quit() first asks every window to close and gives up if one
+    // refuses, so once the welcome is done the window lets itself close:
+    // refusing then had kept it open for good.
+    property bool leaving: false
     function done() {
         const dir = System.folder("config") + "/cybroid"
         System.makeDir(dir)
-        System.run(["touch", dir + "/welcome-done"], () => Qt.quit())
+        System.run(["touch", dir + "/welcome-done"], () => { leaving = true; Qt.quit() })
     }
-    onClosing: (close) => { close.accepted = false; if (editionState !== "busy") done() }
+    onClosing: (close) => {
+        if (leaving) return
+        close.accepted = false
+        if (editionState !== "busy") done()
+    }
 
     function bus(args, then) {
         System.run(["busctl", "--system", "--json=short"].concat(args), (o, code) => {
@@ -82,7 +91,7 @@ Window {
     // Editions: chosen here, installed by cybroid-editions (pkexec), which
     // writes its progress to a log this reads every second.
     readonly property var editionList: [
-        ["developer", "utilities-terminal-symbolic", "Developer", "Visual Studio Code, Docker, Git and GitHub CLI, Python, Java, Node.js, Go, Rust, PHP, Postman and DBeaver."],
+        ["developer", "dialog-scripts-symbolic", "Developer", "Visual Studio Code, Docker, Git and GitHub CLI, Python, Java, Node.js, Go, Rust, PHP, Postman and DBeaver."],
         ["security", "security-high-symbolic", "Security", "Kali's tools (Burp Suite, Metasploit) with Nmap, Wireshark, Hydra, hashcat and forensics tools."],
         ["network", "network-wired-symbolic", "Network", "Wireshark, PuTTY, WinBox, iperf3, a TFTP server, Ansible and practice routers."],
         ["engineering", "applications-engineering-symbolic", "Engineering", "KiCad, FreeCAD, LibreCAD, Arduino IDE 2, circuit simulators, Octave and JupyterLab."],

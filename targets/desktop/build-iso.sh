@@ -274,6 +274,9 @@ script:
     # wrote Session=plasma, which in Plasma 6 is Wayland, where the dock
     # (Plank) doesn't run. Runs after displaymanager (settings.conf).
     - "-sed -i -e s/^Session=plasma$/Session=plasmax11/ -e s/^Session=plasma.desktop$/Session=plasmax11.desktop/ /etc/sddm.conf"
+    # The live system's "Install CybroidOS" launcher is a file of our own (no
+    # package owns it), so removing Calamares left it in Launchpad.
+    - "-rm -f /usr/share/applications/install-debian.desktop /etc/skel/Desktop/install-debian.desktop"
 EOF
 # Calamares' display-manager step: SDDM, and Plasma on X11 (plasmax11) as the
 # session it names for automatic sign-in. Left to itself it picked "plasma",

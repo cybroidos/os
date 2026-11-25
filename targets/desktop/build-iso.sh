@@ -270,6 +270,23 @@ script:
     - "-sed -i s/lg_UG.UTF-8/en_GB.UTF-8/g /etc/default/locale"
     # The new account's shell, again here in case users.conf is overridden.
     - "-chsh -s /usr/bin/zsh ${USER}"
+    # Automatic sign-in into Plasma on X11, as everything else: Calamares
+    # wrote Session=plasma, which in Plasma 6 is Wayland, where the dock
+    # (Plank) doesn't run. Runs after displaymanager (settings.conf).
+    - "-sed -i -e s/^Session=plasma$/Session=plasmax11/ -e s/^Session=plasma.desktop$/Session=plasmax11.desktop/ /etc/sddm.conf"
+EOF
+# Calamares' display-manager step: SDDM, and Plasma on X11 (plasmax11) as the
+# session it names for automatic sign-in. Left to itself it picked "plasma",
+# Plasma 6's Wayland session.
+cat > "${lb}/config/includes.chroot/etc/calamares/modules/displaymanager.conf" <<'EOF'
+---
+displaymanagers:
+  - sddm
+defaultDesktopEnvironment:
+    executable: "startplasma-x11"
+    desktopFile: "plasmax11"
+basicSetup: false
+sysconfigSetup: false
 EOF
 
 # After the packages: Calamares uses the CybroidOS branding; its launcher is

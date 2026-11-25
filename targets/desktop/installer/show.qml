@@ -1,6 +1,9 @@
 /* CybroidOS installer slideshow: what the new system looks like, one slide
- * every few seconds while it installs. Calamares' slideshow API 2. */
-import QtQuick 2.0
+ * every few seconds while it installs. Calamares' slideshow API 2.
+ * QtQuick without a version (Calamares 3.3 runs on Qt 6): with "2.0" the
+ * whole slideshow failed to load (Image.mipmap is newer than 2.0) and the
+ * install step showed an empty white box. */
+import QtQuick
 import calamares.slideshow 1.0
 
 Presentation {

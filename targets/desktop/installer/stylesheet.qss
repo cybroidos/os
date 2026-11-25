@@ -60,6 +60,11 @@ QRadioButton::indicator:checked { border: 5px solid #1ccbff; background: #0f1a3a
 QCheckBox::indicator { border-radius: 5px; border: 2px solid #4a5b85; background: #0f1a3a; }
 QCheckBox::indicator:checked { border: 2px solid #1ccbff; background: #1ccbff; }
 
+/* The legend under the disk bars (Partitions, Summary): Calamares paints each
+   partition's name in black and its size in grey, whatever the style says,
+   so the legend gets a light card of its own to stay readable. */
+PartitionLabelsView { background: #e9eff9; border: 1px solid #c5d5f1; border-radius: 8px; }
+
 /* Lists, trees and tables (keyboards, locales, partitions) */
 QListView, QTreeView, QTableView, QListWidget, QTreeWidget, QTableWidget {
 	background: #0b1430;

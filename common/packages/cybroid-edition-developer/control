@@ -5,17 +5,17 @@ Maintainer: CybroidOS maintainers <citos@cybroid.com>
 Homepage: https://cybroid.com/cybroidos
 Section: metapackages
 Priority: optional
-Depends: cybroid-plasma (>= @VERSION@), git, git-lfs, gh, build-essential, gdb, clang, cmake, make, ninja-build, meson, pkg-config, valgrind, strace, shellcheck, python3-venv, python3-pip, python3-dev, pipx, golang, rustc, cargo, nodejs, npm, default-jdk, maven, php-cli, composer, sqlite3, sqlitebrowser, postgresql-client, mariadb-client, redis-tools, httpie, jq, neovim, tmux, ripgrep, fd-find, meld, podman, podman-compose, podman-docker, distrobox
+Depends: cybroid-plasma (>= @VERSION@), git, git-lfs, gh, build-essential, gdb, clang, cmake, make, ninja-build, meson, pkg-config, valgrind, strace, shellcheck, python3-venv, python3-pip, python3-dev, pipx, golang, rustc, cargo, nodejs, npm, default-jdk, maven, php-cli, composer, sqlite3, postgresql-client, mariadb-client, redis-tools, jq, vim, tmux, ripgrep, docker-ce, docker-ce-cli, containerd.io, docker-buildx-plugin, docker-compose-plugin
+Recommends: code
 Description: CybroidOS Developer: for engineers who build software
- Toolchains, databases and containers ready on first boot: Git with Git LFS
- and the GitHub CLI; GCC and Clang with CMake, Meson, Ninja, GDB, Valgrind
- and strace; Python, Go, Rust, Node.js, Java (OpenJDK and Maven) and PHP
- (with Composer); SQLite with DB Browser, and PostgreSQL, MariaDB and Redis
- clients; containers with Podman (the docker and docker compose commands
- work too, without a background service or root) and Distrobox; Neovim,
- tmux, ripgrep, fd, Meld, HTTPie and jq. A code editor (VSCodium) installs
- from the App Centre.
+ The tools the industry works with: Visual Studio Code (from Microsoft's
+ own repository); Docker Engine with Buildx and Compose (from Docker); Git
+ with Git LFS and the GitHub CLI; GCC and Clang with CMake, Meson, Ninja,
+ GDB, Valgrind and strace; Python, Go, Rust, Node.js, Java (OpenJDK 21 and
+ Maven) and PHP (with Composer); PostgreSQL, MariaDB, Redis and SQLite
+ clients; Postman for APIs and DBeaver for databases; Vim, tmux, ripgrep
+ and jq.
  .
  The same CybroidOS as every edition (look, updates, Hangar), with these
- tools added. An installed CybroidOS becomes this edition by installing this
- package; several editions can be installed together.
+ tools added. Chosen in the welcome at first sign-in, or later in Settings
+ (any number of editions together), and installed from deb.cybroid.com.

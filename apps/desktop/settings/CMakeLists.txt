@@ -38,5 +38,8 @@ install(FILES cybroid-settings.desktop cybroid-welcome.desktop DESTINATION share
 # the test VM at 1280×800, shown at 640×400).
 install(DIRECTORY previews/ DESTINATION share/cybroid/settings/previews COMPONENT cybroid-settings)
 # Updates: the root helper (run through pkexec) and its polkit action.
-install(PROGRAMS helpers/cybroid-update helpers/cybroid-tower DESTINATION libexec/cybroid COMPONENT cybroid-settings)
-install(FILES helpers/org.cybroid.update.policy helpers/org.cybroid.tower.policy DESTINATION share/polkit-1/actions COMPONENT cybroid-settings)
+install(PROGRAMS helpers/cybroid-update helpers/cybroid-tower helpers/cybroid-editions DESTINATION libexec/cybroid COMPONENT cybroid-settings)
+install(FILES helpers/org.cybroid.update.policy helpers/org.cybroid.tower.policy helpers/org.cybroid.editions.policy DESTINATION share/polkit-1/actions COMPONENT cybroid-settings)
+# Microsoft's signing key for Visual Studio Code's repository (cybroid-editions;
+# fingerprint BC528686B50D79E339D3721CEB3E94ADBE1229CF, checked when added).
+install(FILES helpers/keys/microsoft.asc DESTINATION share/cybroid/keys COMPONENT cybroid-settings)

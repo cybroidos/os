@@ -1,5 +1,6 @@
 // CybroidOS Settings: cybroid-settings [wifi|sound|appearance|datetime|about|...]
-// cybroid-settings welcome: the first-run welcome (Welcome.qml), its own window.
+// cybroid-settings welcome [editions]: the first-run welcome (Welcome.qml), its own
+// window; with a step, opened there (Settings > About > Add an edition).
 #include <QGuiApplication>
 #include <QIcon>
 #include <QQmlApplicationEngine>
@@ -32,6 +33,8 @@ int main(int argc, char *argv[])
 
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty(QStringLiteral("startPage"), page.isEmpty() ? QStringLiteral("wifi") : page);
+    // cybroid-settings welcome editions: the welcome opened at a step (from Settings).
+    engine.rootContext()->setContextProperty(QStringLiteral("welcomeStep"), app.arguments().value(2));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreationFailed, &app, [] { QCoreApplication::exit(1); }, Qt::QueuedConnection);
     engine.loadFromModule("Cybroid.Settings", welcome ? "Welcome" : "Main");
     cybroid::listenForOthers(instance, &engine);

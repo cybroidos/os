@@ -5,16 +5,16 @@ Maintainer: CybroidOS maintainers <citos@cybroid.com>
 Homepage: https://cybroid.com/cybroidos
 Section: metapackages
 Priority: optional
-Depends: cybroid-plasma (>= @VERSION@), kicad, kicad-symbols, kicad-footprints, freecad, librecad, ngspice, simulide, fritzing, gtkwave, iverilog, ghdl, pulseview, sigrok, arduino, avrdude, esptool, openocd, picocom, python3-serial, octave, octave-control, octave-signal, python3-numpy, python3-scipy, python3-matplotlib, python3-sympy, python3-pandas, jupyterlab
+Depends: cybroid-plasma (>= @VERSION@), kicad, kicad-symbols, kicad-footprints, freecad, librecad, ngspice, simulide, fritzing, gtkwave, iverilog, ghdl, pulseview, sigrok, avrdude, esptool, openocd, python3-serial, octave, octave-control, octave-signal, python3-numpy, python3-scipy, python3-matplotlib, python3-sympy, python3-pandas, jupyterlab
 Description: CybroidOS Engineering: for electronics, CAD and science
  Design, simulation, hardware and analysis: KiCad with its symbol and
  footprint libraries, FreeCAD (3D) and LibreCAD (2D); ngspice, SimulIDE
  and Fritzing for circuits; Icarus Verilog, GHDL and GTKWave for digital
- logic; PulseView for logic analysers; the Arduino IDE, avrdude, esptool
- and OpenOCD for boards; GNU Octave with its control and signal packages;
- and Python with NumPy, SciPy, SymPy, pandas and Matplotlib in JupyterLab.
- Arduino IDE 2 installs from the App Centre.
+ logic; PulseView for logic analysers; Arduino IDE 2, avrdude, esptool and
+ OpenOCD for boards; GNU Octave (MATLAB's language) with its control and
+ signal packages; and Python with NumPy, SciPy, SymPy, pandas and
+ Matplotlib in JupyterLab.
  .
  The same CybroidOS as every edition (look, updates, Hangar), with these
- tools added. An installed CybroidOS becomes this edition by installing this
- package; several editions can be installed together.
+ tools added. Chosen in the welcome at first sign-in, or later in Settings
+ (any number of editions together), and installed from deb.cybroid.com.

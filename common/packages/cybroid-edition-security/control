@@ -5,18 +5,17 @@ Maintainer: CybroidOS maintainers <citos@cybroid.com>
 Homepage: https://cybroid.com/cybroidos
 Section: metapackages
 Priority: optional
-Depends: cybroid-plasma (>= @VERSION@), nmap, zenmap, tshark, wireshark, tcpdump, masscan, gobuster, ffuf, nikto, whatweb, wafw00f, sslscan, testssl.sh, sqlmap, hydra, john, hashcat, hashid, crunch, cewl, aircrack-ng, hcxtools, hcxdumptool, reaver, bettercap, python3-impacket, python3-pwntools, smbclient, onesixtyone, sleuthkit, autopsy, foremost, testdisk, gddrescue, libimage-exiftool-perl, steghide, yara, binwalk, edb-debugger, lynis, rkhunter, proxychains4, tor, macchanger, wireguard-tools, openvpn, keepassxc, socat, netcat-openbsd, whois, bind9-dnsutils, podman, distrobox
+Depends: cybroid-plasma (>= @VERSION@), nmap, zenmap, tshark, wireshark, tcpdump, masscan, gobuster, ffuf, whatweb, wafw00f, sslscan, testssl.sh, sqlmap, hydra, john, hashcat, hashid, crunch, cewl, aircrack-ng, hcxtools, hcxdumptool, reaver, bettercap, python3-impacket, python3-pwntools, smbclient, onesixtyone, sleuthkit, autopsy, foremost, testdisk, gddrescue, libimage-exiftool-perl, steghide, yara, binwalk, edb-debugger, lynis, rkhunter, proxychains4, tor, macchanger, wireguard-tools, openvpn, keepassxc, socat, netcat-openbsd, whois, bind9-dnsutils, distrobox, docker-ce, docker-ce-cli, containerd.io, docker-buildx-plugin, docker-compose-plugin
 Description: CybroidOS Security: for analysts and security teams
- Assessment, web, password, wireless and forensics tools from Debian: Nmap
- and Zenmap, Wireshark, tcpdump, masscan; Gobuster, ffuf, Nikto, WhatWeb,
- sslscan and testssl.sh; sqlmap, Hydra, John the Ripper, hashcat;
- Aircrack-ng, hcxtools, Reaver and Bettercap; Impacket and pwntools; The
- Sleuth Kit with Autopsy, TestDisk, foremost, ExifTool, YARA and binwalk;
- Lynis and rkhunter; Tor, ProxyChains, WireGuard, OpenVPN and KeePassXC.
- Kali's own tools (Metasploit, Responder, NetExec, radare2) run in a
- container: "Kali tools" in Launchpad creates it on first use (Distrobox
- and Podman). Burp Suite, ZAP and Ghidra install from the App Centre.
+ The industry's toolset: Kali Linux's own tools, Burp Suite and Metasploit
+ among them, in a Kali container ("Kali tools" in Launchpad, made on first
+ use with Docker and Distrobox); and from Debian, Nmap with Zenmap,
+ Wireshark, tcpdump, masscan; Gobuster, ffuf, WhatWeb, sslscan and
+ testssl.sh; sqlmap, Hydra, John the Ripper, hashcat; Aircrack-ng,
+ hcxtools, Reaver and Bettercap; Impacket and pwntools; The Sleuth Kit with
+ Autopsy, TestDisk, foremost, ExifTool, YARA and binwalk; Lynis and
+ rkhunter; Tor, ProxyChains, WireGuard, OpenVPN and KeePassXC.
  .
  The same CybroidOS as every edition (look, updates, Hangar), with these
- tools added. An installed CybroidOS becomes this edition by installing this
- package; several editions can be installed together.
+ tools added. Chosen in the welcome at first sign-in, or later in Settings
+ (any number of editions together), and installed from deb.cybroid.com.

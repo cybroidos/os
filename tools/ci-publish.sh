@@ -36,7 +36,8 @@ tools/build-package.sh --all >/dev/null
 # isn't a valid Debian name, and reprepro refuses it. Images install it from
 # dist/extra.
 debs=""
-for f in dist/*_"${version}"_all.deb dist/extra/*.deb; do
+# dist/vendor: packages only the editions use (Docker), never in an image.
+for f in dist/*_"${version}"_all.deb dist/extra/*.deb dist/vendor/*.deb; do
 	case "$f" in *kwin-effects*) continue ;; esac
 	[ -f "$f" ] && debs="${debs} ${f}"
 done

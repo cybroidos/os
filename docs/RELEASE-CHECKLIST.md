@@ -20,14 +20,19 @@ CybroidOS is versioned `0.MINOR.PATCH` until the first stable release
    `git tag -s v<version> -m "CybroidOS <version>" && git push origin v<version>`.
    The release workflow refuses a tag that doesn't match `brand.toml`, and
    publishes the GitHub Release with the changelog's notes. The tag also
-   builds every edition's ISO on GitHub's runners, in parallel, and
-   publishes them to download.cybroid.com (`.github/workflows/release-images.yml`;
-   "Run workflow" there builds them without releasing, to try them).
+   builds the ISO on GitHub's runners and publishes it to
+   download.cybroid.com (`.github/workflows/release-images.yml`; "Run
+   workflow" there builds it without releasing, or an ISO with one edition
+   built in, for a lab without internet).
+4. The edition packages, Docker Engine and ONLYOFFICE are on deb.cybroid.com
+   at this version (`tools/ci-publish.sh`, from the Server images workflow,
+   or `publish-by-hand.sh` in cybroidtech/cybroidos-infra): the welcome
+   installs editions from there.
 
 ## Downloads
 
-- **The downloads store** keeps the newest two releases: each edition's ISO,
-  its `.sha256` and `.manifest.md`; `latest.json` and `releases.json` list
+- **The downloads store** keeps the newest two releases: the ISO, its
+  `.sha256` and `.manifest.md`; `latest.json` and `releases.json` list
   them for cybroid.com. Today that is the `downloads` bucket in Nova's Appwrite
   (`cloud.novabusiness.one`, project `6b0569ed0033da77b1d7`, 5 GB per file;
   `tools/appwrite-store.py`), used whenever the `CYBROID_APPWRITE_KEY` secret
@@ -75,7 +80,10 @@ CybroidOS is versioned `0.MINOR.PATCH` until the first stable release
 
 ## Editions
 
-- [ ] Each edition's ISO builds (`EDITION=<id>`), boots, and its tools start.
+- [ ] The welcome's Editions step installs each edition from deb.cybroid.com
+      (and Settings > About > Add an edition opens it); its apps start,
+      Flathub's ones included; Developer: `code` opens, `docker run hello-world`
+      works after signing in again.
 - [ ] Security: "Kali tools" creates the container and opens a shell.
 - [ ] Classroom: a lab account's files are gone after a restart; a teacher's
       are not; Veyon Master sees a student computer.

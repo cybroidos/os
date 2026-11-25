@@ -1,0 +1,59 @@
+#!/bin/sh
+# CybroidOS editions (cybroid-settings), run as root through pkexec, from the
+# welcome or Settings:
+#   cybroid-editions install <edition>...   install editions: their package
+#       from deb.cybroid.com (cybroid-edition-<edition>), the apps it names
+#       from Flathub (/usr/share/cybroid/editions/<edition>.flatpaks), and
+#       for Developer Visual Studio Code from Microsoft's own repository
+#       (its licence doesn't let CybroidOS carry it). The account that asked
+#       may then use Docker without sudo, as Docker's own setup does.
+# Writes /var/log/cybroid-editions.log (fixed path: one from the caller
+# would let it write anywhere as root); its last line is "== Done" or
+# "== Failed".
+set -eu
+export DEBIAN_FRONTEND=noninteractive LC_ALL=C.UTF-8
+log=/var/log/cybroid-editions.log
+known="developer security network engineering classroom"
+
+[ "${1:-}" = install ] && [ "$#" -ge 2 ] || { echo "usage: cybroid-editions install <edition>..." >&2; exit 2; }
+shift
+for e in "$@"; do
+	case " ${known} " in *" ${e} "*) ;; *) echo "unknown edition: ${e}" >&2; exit 2 ;; esac
+done
+
+: >"$log"
+chmod 644 "$log"
+{
+	for e in "$@"; do
+		if [ "$e" = developer ] && [ ! -f /etc/apt/sources.list.d/vscode.sources ]; then
+			echo "== Adding Microsoft's repository for Visual Studio Code"
+			install -m 644 /usr/share/cybroid/keys/microsoft.asc /usr/share/keyrings/microsoft.asc
+			printf 'Types: deb\nURIs: https://packages.microsoft.com/repos/code\nSuites: stable\nComponents: main\nArchitectures: amd64\nSigned-By: /usr/share/keyrings/microsoft.asc\n' \
+				>/etc/apt/sources.list.d/vscode.sources
+		fi
+	done
+	echo "== Checking the package lists"
+	apt-get update -q
+	pkgs=""
+	for e in "$@"; do pkgs="${pkgs} cybroid-edition-${e}"; done
+	echo "== Installing${pkgs}"
+	# shellcheck disable=SC2086  # one argument per package
+	apt-get install -y -q -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold ${pkgs}
+	apps=""
+	for e in "$@"; do
+		f="/usr/share/cybroid/editions/${e}.flatpaks"
+		[ -f "$f" ] && apps="${apps} $(grep -vE '^[[:space:]]*(#|$)' "$f" | tr '\n' ' ')"
+	done
+	if [ -n "$(echo "$apps" | tr -d ' ')" ]; then
+		echo "== Installing from Flathub:${apps}"
+		# shellcheck disable=SC2086
+		flatpak install --system -y --noninteractive flathub ${apps}
+	fi
+	# Docker without sudo for the account that asked (Docker's own
+	# post-install step; the docker group is as good as root).
+	if getent group docker >/dev/null && [ -n "${PKEXEC_UID:-}" ]; then
+		user="$(getent passwd "${PKEXEC_UID}" | cut -d: -f1)"
+		[ -n "$user" ] && [ "${PKEXEC_UID}" -ge 1000 ] && adduser --quiet "$user" docker && echo "== ${user} may use Docker (from the next sign-in)"
+	fi
+	echo "== Done"
+} >"$log" 2>&1 || { echo "== Failed" >>"$log"; exit 1; }

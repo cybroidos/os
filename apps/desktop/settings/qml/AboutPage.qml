@@ -95,6 +95,16 @@ SettingsPage {
         wrapMode: Text.WordWrap
     }
 
+    Section { title: "Editions" }
+    Card {
+        SettingRow {
+            icon: "system-software-install-symbolic"
+            title: page.editions ? page.editions : "No editions yet"
+            subtitle: "Tools for your work: Developer, Security, Network, Engineering, Classroom"
+            Btn { text: "Add an edition"; onClicked: System.launch(["cybroid-settings", "welcome", "editions"]) }
+        }
+    }
+
     Section { title: "This computer" }
     Card {
         SettingRow {

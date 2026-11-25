@@ -1,7 +1,10 @@
 name: Release images
 
-# Every edition's installer ISO, built on GitHub's runners from one commit:
-# on a tag v<version> (a release), or by hand ("Run workflow") to try them.
+# CybroidOS's installer ISO, built on GitHub's runners: on a tag v<version>
+# (a release), or by hand ("Run workflow") to try it. One ISO for everyone:
+# the editions are packages, chosen in the welcome at first sign-in and
+# installed from deb.cybroid.com. An ISO with one edition already in it can
+# still be built by hand (an offline lab, for instance).
 # Each ISO gets its checksum and package manifest and is kept with the run
 # for 30 days (gh run download <run>); a tag also publishes them to
 # the downloads store (Appwrite or Cloudflare R2, tools/downloads.sh) and attaches the
@@ -17,10 +20,10 @@ on:
   workflow_dispatch:
     inputs:
       edition:
-        description: Which ISO (all builds every edition)
+        description: Which ISO (desktop is the one released; an edition built in, for offline use)
         type: choice
-        options: [all, desktop, security, developer, network, engineering, classroom]
-        default: all
+        options: [desktop, security, developer, network, engineering, classroom]
+        default: desktop
 
 permissions:
   contents: write   # to attach checksums and manifests to the release
@@ -41,13 +44,8 @@ jobs:
     steps:
       - id: e
         env:
-          PICK: ${{ github.event.inputs.edition || 'all' }}
-        run: |
-          if [ "$PICK" = all ]; then
-            echo 'editions=["desktop","security","developer","network","engineering","classroom"]' >> "$GITHUB_OUTPUT"
-          else
-            echo "editions=[\"$PICK\"]" >> "$GITHUB_OUTPUT"
-          fi
+          PICK: ${{ github.event.inputs.edition || 'desktop' }}
+        run: echo "editions=[\"$PICK\"]" >> "$GITHUB_OUTPUT"
 
   iso:
     name: ${{ matrix.edition }} ISO
@@ -83,6 +81,11 @@ jobs:
       # checked against its publisher's signing key).
       - name: Build the packages from outside Debian
         run: tools/build-extras.sh iso
+
+      # An ISO with Developer or Security built in needs Docker Engine in it.
+      - name: Fetch Docker Engine (an edition that uses it)
+        if: matrix.edition == 'developer' || matrix.edition == 'security'
+        run: tools/fetch-docker.sh dist/extra
 
       - name: Build the ${{ matrix.edition }} ISO
         run: |

@@ -6,7 +6,7 @@
 # commands for GitHub (.github/workflows/server-images.yml) and Hangar's
 # Forgejo (.forgejo/workflows/images.yml).
 #
-# Usage: tools/build-extras.sh <part>...    parts: corners apps tower office dock icons
+# Usage: tools/build-extras.sh <part>...    parts: corners apps tower office dock icons docker
 #        tools/build-extras.sh desktop      everything a desktop image needs
 #        tools/build-extras.sh iso          desktop, and ONLYOFFICE
 # Needs docker; run from anywhere (it works in the repository's root).
@@ -47,6 +47,13 @@ tower() {
 # Fetch ONLYOFFICE, checked against its signing key
 office() {
 	tools/fetch-onlyoffice.sh dist/extra
+}
+
+# Fetch Docker Engine for the Developer and Security editions, checked
+# against Docker's signing key, into dist/vendor: published to deb.cybroid.com
+# (tools/ci-publish.sh) but not put in the ISO, which carries no edition
+docker_ce() {
+	tools/fetch-docker.sh dist/vendor
 }
 
 # Build the dock (Plank with an edge gap)
@@ -92,6 +99,7 @@ for part in "$@"; do
 	desktop) corners; apps; tower; dock; icons ;;
 	iso) corners; apps; tower; office; dock; icons ;;
 	corners | apps | tower | office | dock | icons) "${part}" ;;
+	docker) docker_ce ;;
 	*) echo "unknown part: ${part}" >&2; exit 2 ;;
 	esac
 done

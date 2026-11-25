@@ -1,0 +1,10 @@
+#!/bin/sh
+set -e
+if [ "$1" = configure ]; then
+	# Docker starts the first time it's used (docker.socket), not at every
+	# boot: the same docker commands, without the daemon and containerd in
+	# memory on a computer that isn't running containers.
+	systemctl disable docker.service containerd.service >/dev/null 2>&1 || true
+	systemctl enable docker.socket >/dev/null 2>&1 || true
+fi
+exit 0

@@ -5,18 +5,17 @@ Maintainer: CybroidOS maintainers <citos@cybroid.com>
 Homepage: https://cybroid.com/cybroidos
 Section: metapackages
 Priority: optional
-Depends: cybroid-plasma (>= @VERSION@), wireshark, tshark, nmap, zenmap, tcpdump, iperf3, mtr-tiny, traceroute, arping, fping, hping3, arp-scan, iftop, nethogs, ethtool, iw, wavemon, lldpd, speedtest-cli, picocom, cutecom, telnet, sshpass, expect, tftpd-hpa, tftp-hpa, dnsmasq, filezilla, remmina, snmp, ipcalc, sipcalc, frr, vpcs, python3-scapy, python3-netmiko, python3-paramiko, ansible
+Depends: cybroid-plasma (>= @VERSION@), wireshark, tshark, nmap, zenmap, tcpdump, iperf3, mtr-tiny, traceroute, arping, fping, hping3, arp-scan, iftop, nethogs, ethtool, iw, wavemon, lldpd, speedtest-cli, putty, telnet, sshpass, expect, tftpd-hpa, tftp-hpa, dnsmasq, filezilla, remmina, snmp, ipcalc, sipcalc, frr, vpcs, python3-scapy, python3-netmiko, python3-paramiko, ansible
 Description: CybroidOS Network: for network engineers and students
- Capture, testing, console and automation tools: Wireshark, Nmap with
- Zenmap, tcpdump, iperf3, mtr, traceroute, fping, hping3, arp-scan;
- bandwidth monitors (iftop per host, nethogs per program) and Wi-Fi tools
- (iw, wavemon); serial consoles (picocom, and CuteCom with a window) and
- Telnet for older devices; a TFTP server for device configs and firmware, dnsmasq
- for lab DHCP and DNS; FileZilla and Remmina; SNMP tools, subnet
- calculators; FRRouting and VPCS for practice; and Ansible, Netmiko,
- Paramiko and Scapy for automation. MikroTik's WinBox installs from the App
- Centre. Pairs with the CIT platform's network labs.
+ The tools network engineers use: Wireshark, Nmap with Zenmap, tcpdump,
+ iperf3, mtr, traceroute, fping, hping3, arp-scan; PuTTY for serial
+ consoles, SSH and Telnet; MikroTik's WinBox; bandwidth monitors (iftop per
+ host, nethogs per program) and Wi-Fi tools (iw, wavemon); a TFTP server
+ for device configs and firmware, dnsmasq for lab DHCP and DNS; FileZilla
+ and Remmina; SNMP tools and subnet calculators; FRRouting and VPCS for
+ practice; and Ansible, Netmiko, Paramiko and Scapy for automation. Pairs
+ with the CIT platform's network labs.
  .
  The same CybroidOS as every edition (look, updates, Hangar), with these
- tools added. An installed CybroidOS becomes this edition by installing this
- package; several editions can be installed together.
+ tools added. Chosen in the welcome at first sign-in, or later in Settings
+ (any number of editions together), and installed from deb.cybroid.com.

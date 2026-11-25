@@ -98,6 +98,10 @@ jobs:
         if: matrix.image == 'iso'
         run: tools/build-extras.sh office
 
+      - name: Fetch Docker Engine (editions, for deb.cybroid.com)
+        if: matrix.image == 'iso'
+        run: tools/build-extras.sh docker
+
       # The dock floats above the screen's edge like macOS's: Debian's own
       # Plank, rebuilt with tools/plank-edge-gap.py (PLANK_EDGE_GAP), as
       # 0.11.89-6+cybroid1 so it takes Debian's place.

@@ -8,35 +8,40 @@ version.
 ## [Unreleased]
 
 ### Added
-- **Flathub in the App Centre:** VSCodium, Scratch, Arduino IDE 2, WinBox,
-  Burp Suite, Ghidra and other apps that Debian doesn't carry install from
-  the App Centre.
-- **Editions, revised:** each checked against Debian 13 and against what
-  similar systems ship (Debian's own education and science sets, Kali's
-  most-used tools, the most-used developer tools).
-  - Developer: Podman answers the docker and docker compose commands (one
-    container engine, no background service), the GitHub CLI and Git LFS, Java (OpenJDK, Maven), PHP with Composer,
-    database clients (PostgreSQL, MariaDB, Redis) and DB Browser for SQLite,
-    Meson, Ninja, Valgrind, strace, Neovim, tmux, ripgrep, fd and Meld.
-  - Security: web testing (ffuf, Nikto, WhatWeb, wafw00f, sslscan,
-    testssl.sh), Bettercap, Impacket, pwntools, Wi-Fi (hcxtools, Reaver),
-    forensics and recovery (TestDisk, foremost, ExifTool), system audits
-    (Lynis, rkhunter), Tor, WireGuard, OpenVPN and KeePassXC.
-  - Network: Zenmap, termshark, bandwidth and Wi-Fi monitors, a TFTP server
-    and dnsmasq for lab devices, CuteCom and Telnet for consoles, FileZilla,
-    Remmina, FRRouting and VPCS, and Netmiko, Paramiko and Scapy.
-  - One tool per job: overlapping tools left out (Docker beside Podman;
-    dirb and wfuzz beside Gobuster and ffuf; Medusa beside Hydra; minicom
-    and PuTTY beside picocom and CuteCom; OpenSCAD beside FreeCAD; KStars
-    beside Stellarium; Kig and KmPlot beside GeoGebra).
-  - Engineering: SimulIDE, Fritzing; Icarus Verilog, GHDL and
-    GTKWave; PulseView; avrdude, esptool and OpenOCD; Octave's control and
-    signal packages; SymPy and pandas; JupyterLab instead of the old Notebook.
-  - Classroom: Kiwix (Wikipedia and other libraries offline), OpenBoard
-    (whiteboard), Tux Paint, TuxMath, KTouch (typing), Thonny (Python),
-    Avogadro, Stellarium, Parley, Audacity.
-- Downloads from cybroid.com/cybroidos (download.cybroid.com): every edition
-  of the newest two releases, each with its checksum and package manifest,
+- **One ISO, editions chosen at first sign-in:** the welcome asks what the
+  computer is for and installs the chosen editions (Developer, Security,
+  Network, Engineering, Classroom) from deb.cybroid.com; Settings > About >
+  Add an edition does the same later. The download is the same for
+  everyone, and an edition adds nothing to it.
+- **Industry-standard tools in the editions:** Docker Engine from Docker
+  (Buildx and Compose included) for Developer and for Security's Kali
+  container; Visual Studio Code from Microsoft's repository; Postman and
+  DBeaver; PuTTY and WinBox; Arduino IDE 2; Scratch and the current
+  GeoGebra.
+- **Flathub in the App Centre:** apps that Debian doesn't carry (Ghidra,
+  Android Studio and many more) install from the App Centre.
+- **Editions, revised:** each package checked against Debian 13, one tool
+  per job.
+  - Developer: VS Code, Docker, Git with LFS and the GitHub CLI, GCC and
+    Clang with CMake, Meson, Ninja, GDB, Valgrind; Python, Go, Rust,
+    Node.js, Java (OpenJDK, Maven), PHP with Composer; PostgreSQL, MariaDB,
+    Redis and SQLite clients; Postman, DBeaver; Vim, tmux, ripgrep, jq.
+  - Security: Kali's tools in a container (Burp Suite, Metasploit), with
+    web testing (Gobuster, ffuf, WhatWeb, sslscan, testssl.sh), Bettercap,
+    Impacket, pwntools, Wi-Fi (hcxtools, Reaver), forensics (TestDisk,
+    foremost, ExifTool), audits (Lynis, rkhunter), Tor, WireGuard, OpenVPN
+    and KeePassXC.
+  - Network: PuTTY, WinBox, Zenmap, bandwidth and Wi-Fi monitors, a TFTP
+    server and dnsmasq for lab devices, FileZilla, Remmina, FRRouting and
+    VPCS, and Ansible, Netmiko, Paramiko and Scapy.
+  - Engineering: Arduino IDE 2, SimulIDE, Fritzing; Icarus Verilog, GHDL
+    and GTKWave; PulseView; avrdude, esptool and OpenOCD; Octave's control
+    and signal packages; SymPy and pandas; JupyterLab.
+  - Classroom: Scratch, GeoGebra, Kiwix (Wikipedia offline), OpenBoard
+    (whiteboard), Tux Paint, TuxMath, KTouch, Thonny, Avogadro, Stellarium,
+    Parley, Audacity.
+- Downloads from cybroid.com/cybroidos (download.cybroid.com): the ISO of
+  the newest two releases, with its checksum and package manifest,
   stored in Cybroid's Appwrite storage (or Cloudflare R2) and served with
   their sizes, so browsers show progress and can resume; older releases on
   the Internet Archive, linked from their GitHub Releases.

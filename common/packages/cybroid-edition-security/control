@@ -5,11 +5,11 @@ Maintainer: CybroidOS maintainers <citos@cybroid.com>
 Homepage: https://cybroid.com/cybroidos
 Section: metapackages
 Priority: optional
-Depends: cybroid-plasma (>= @VERSION@), nmap, zenmap, tshark, wireshark, tcpdump, masscan, gobuster, ffuf, dirb, wfuzz, nikto, whatweb, wafw00f, sslscan, testssl.sh, sqlmap, hydra, medusa, john, hashcat, hashid, crunch, cewl, aircrack-ng, hcxtools, hcxdumptool, reaver, bettercap, python3-impacket, python3-pwntools, smbclient, onesixtyone, sleuthkit, autopsy, foremost, testdisk, gddrescue, libimage-exiftool-perl, steghide, yara, binwalk, edb-debugger, lynis, rkhunter, chkrootkit, proxychains4, tor, macchanger, wireguard-tools, openvpn, keepassxc, socat, netcat-openbsd, whois, bind9-dnsutils, podman, distrobox
+Depends: cybroid-plasma (>= @VERSION@), nmap, zenmap, tshark, wireshark, tcpdump, masscan, gobuster, ffuf, nikto, whatweb, wafw00f, sslscan, testssl.sh, sqlmap, hydra, john, hashcat, hashid, crunch, cewl, aircrack-ng, hcxtools, hcxdumptool, reaver, bettercap, python3-impacket, python3-pwntools, smbclient, onesixtyone, sleuthkit, autopsy, foremost, testdisk, gddrescue, libimage-exiftool-perl, steghide, yara, binwalk, edb-debugger, lynis, rkhunter, proxychains4, tor, macchanger, wireguard-tools, openvpn, keepassxc, socat, netcat-openbsd, whois, bind9-dnsutils, podman, distrobox
 Description: CybroidOS Security: for analysts and security teams
  Assessment, web, password, wireless and forensics tools from Debian: Nmap
  and Zenmap, Wireshark, tcpdump, masscan; Gobuster, ffuf, Nikto, WhatWeb,
- sslscan and testssl.sh; sqlmap, Hydra, Medusa, John the Ripper, hashcat;
+ sslscan and testssl.sh; sqlmap, Hydra, John the Ripper, hashcat;
  Aircrack-ng, hcxtools, Reaver and Bettercap; Impacket and pwntools; The
  Sleuth Kit with Autopsy, TestDisk, foremost, ExifTool, YARA and binwalk;
  Lynis and rkhunter; Tor, ProxyChains, WireGuard, OpenVPN and KeePassXC.

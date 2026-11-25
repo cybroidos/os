@@ -5,13 +5,13 @@ Maintainer: CybroidOS maintainers <citos@cybroid.com>
 Homepage: https://cybroid.com/cybroidos
 Section: metapackages
 Priority: optional
-Depends: cybroid-plasma (>= @VERSION@), wireshark, tshark, termshark, nmap, zenmap, tcpdump, iperf3, mtr-tiny, traceroute, arping, fping, hping3, arp-scan, netdiscover, iftop, nload, nethogs, ethtool, iw, wavemon, lldpd, speedtest-cli, minicom, picocom, cutecom, putty, telnet, sshpass, expect, tftpd-hpa, tftp-hpa, dnsmasq, filezilla, remmina, snmp, ipcalc, sipcalc, frr, vpcs, python3-scapy, python3-netmiko, python3-paramiko, ansible
+Depends: cybroid-plasma (>= @VERSION@), wireshark, tshark, nmap, zenmap, tcpdump, iperf3, mtr-tiny, traceroute, arping, fping, hping3, arp-scan, iftop, nethogs, ethtool, iw, wavemon, lldpd, speedtest-cli, picocom, cutecom, telnet, sshpass, expect, tftpd-hpa, tftp-hpa, dnsmasq, filezilla, remmina, snmp, ipcalc, sipcalc, frr, vpcs, python3-scapy, python3-netmiko, python3-paramiko, ansible
 Description: CybroidOS Network: for network engineers and students
- Capture, testing, console and automation tools: Wireshark (and termshark),
- Nmap with Zenmap, tcpdump, iperf3, mtr, traceroute, fping, hping3,
- arp-scan; bandwidth monitors (iftop, nload, nethogs) and Wi-Fi tools (iw,
- wavemon); serial consoles (minicom, picocom, CuteCom, PuTTY) and Telnet
- for older devices; a TFTP server for device configs and firmware, dnsmasq
+ Capture, testing, console and automation tools: Wireshark, Nmap with
+ Zenmap, tcpdump, iperf3, mtr, traceroute, fping, hping3, arp-scan;
+ bandwidth monitors (iftop per host, nethogs per program) and Wi-Fi tools
+ (iw, wavemon); serial consoles (picocom, and CuteCom with a window) and
+ Telnet for older devices; a TFTP server for device configs and firmware, dnsmasq
  for lab DHCP and DNS; FileZilla and Remmina; SNMP tools, subnet
  calculators; FRRouting and VPCS for practice; and Ansible, Netmiko,
  Paramiko and Scapy for automation. MikroTik's WinBox installs from the App

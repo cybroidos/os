@@ -8,14 +8,14 @@ version.
 ## [Unreleased]
 
 ### Added
-- **Flathub in the App Centre:** VS Code, VSCodium, Scratch, Arduino IDE 2,
-  WinBox, Burp Suite, ZAP, Ghidra and other apps that Debian doesn't carry
-  install from the App Centre.
+- **Flathub in the App Centre:** VSCodium, Scratch, Arduino IDE 2, WinBox,
+  Burp Suite, Ghidra and other apps that Debian doesn't carry install from
+  the App Centre.
 - **Editions, revised:** each checked against Debian 13 and against what
   similar systems ship (Debian's own education and science sets, Kali's
   most-used tools, the most-used developer tools).
-  - Developer: Docker with Compose (started the first time it's used), the
-    GitHub CLI and Git LFS, Java (OpenJDK, Maven), PHP with Composer,
+  - Developer: Podman answers the docker and docker compose commands (one
+    container engine, no background service), the GitHub CLI and Git LFS, Java (OpenJDK, Maven), PHP with Composer,
     database clients (PostgreSQL, MariaDB, Redis) and DB Browser for SQLite,
     Meson, Ninja, Valgrind, strace, Neovim, tmux, ripgrep, fd and Meld.
   - Security: web testing (ffuf, Nikto, WhatWeb, wafw00f, sslscan,
@@ -25,12 +25,16 @@ version.
   - Network: Zenmap, termshark, bandwidth and Wi-Fi monitors, a TFTP server
     and dnsmasq for lab devices, CuteCom and Telnet for consoles, FileZilla,
     Remmina, FRRouting and VPCS, and Netmiko, Paramiko and Scapy.
-  - Engineering: SimulIDE, Fritzing, OpenSCAD; Icarus Verilog, GHDL and
+  - One tool per job: overlapping tools left out (Docker beside Podman;
+    dirb and wfuzz beside Gobuster and ffuf; Medusa beside Hydra; minicom
+    and PuTTY beside picocom and CuteCom; OpenSCAD beside FreeCAD; KStars
+    beside Stellarium; Kig and KmPlot beside GeoGebra).
+  - Engineering: SimulIDE, Fritzing; Icarus Verilog, GHDL and
     GTKWave; PulseView; avrdude, esptool and OpenOCD; Octave's control and
     signal packages; SymPy and pandas; JupyterLab instead of the old Notebook.
   - Classroom: Kiwix (Wikipedia and other libraries offline), OpenBoard
     (whiteboard), Tux Paint, TuxMath, KTouch (typing), Thonny (Python),
-    Avogadro, Stellarium, Parley and KWordQuiz, Audacity.
+    Avogadro, Stellarium, Parley, Audacity.
 - Downloads from cybroid.com/cybroidos (download.cybroid.com): every edition
   of the newest two releases, each with its checksum and package manifest,
   stored in Cybroid's Appwrite storage (or Cloudflare R2) and served with

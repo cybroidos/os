@@ -156,7 +156,12 @@ def get(key, dest):
 
 
 def url(key):
-    # ISOs come as a download with their own name; the rest open in the browser.
+    # DOWNLOAD_URL (download.cybroid.com) serves the store's keys as they are,
+    # with each file's size and real ranges (Appwrite alone sends a large file
+    # without its size and answers ranges with at most 10 MB): the links to
+    # publish. Without it, Appwrite's own addresses.
+    if os.environ.get("DOWNLOAD_URL"):
+        return f"{os.environ['DOWNLOAD_URL'].rstrip('/')}/{key}"
     how = "download" if key.endswith(".iso") else "view"
     return f"{PUBLIC}/storage/buckets/{BUCKET}/files/{key_to_id(key)}/{how}?project={PROJECT}"
 

@@ -16,7 +16,8 @@
 #      appwrite: APPWRITE_ENDPOINT, APPWRITE_PROJECT, APPWRITE_KEY, APPWRITE_BUCKET,
 #      APPWRITE_PUBLIC_ENDPOINT (see tools/appwrite-store.py).
 #      r2: R2_ENDPOINT, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET,
-#      DOWNLOAD_URL (https://download.cybroid.com).
+#      DOWNLOAD_URL (https://download.cybroid.com): the published links, also
+#      for appwrite (the CIT app serves the bucket there with sizes and ranges).
 #      KEEP (2); SKIP_INDEX=1 makes publish leave the index alone.
 #      retire also: IA_ACCESS_KEY, IA_SECRET_KEY (archive.org S3 keys),
 #      GH_TOKEN and GH_REPO (cybroidos/os) to point each release's notes at its
@@ -29,7 +30,7 @@ cd "$(dirname "$0")/.."
 cmd="${1:?usage: $0 publish <file>... | index | retire}"
 shift
 STORE="${STORE:-$([ -n "${APPWRITE_KEY:-}" ] && echo appwrite || echo r2)}"
-DOWNLOAD_URL="${DOWNLOAD_URL:-https://download.cybroid.com}"
+export DOWNLOAD_URL="${DOWNLOAD_URL:-https://download.cybroid.com}"
 KEEP="${KEEP:-2}"
 
 work="$(mktemp -d)"

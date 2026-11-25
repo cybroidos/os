@@ -5,11 +5,15 @@ Maintainer: CybroidOS maintainers <citos@cybroid.com>
 Homepage: https://cybroid.com/cybroidos
 Section: metapackages
 Priority: optional
-Depends: cybroid-plasma (>= @VERSION@), git, build-essential, gdb, clang, cmake, make, shellcheck, python3-venv, python3-pip, golang, rustc, cargo, nodejs, npm, sqlite3, httpie, jq, podman, distrobox
+Depends: cybroid-plasma (>= @VERSION@), git, git-lfs, gh, build-essential, gdb, clang, cmake, make, ninja-build, meson, pkg-config, valgrind, strace, shellcheck, python3-venv, python3-pip, python3-dev, pipx, golang, rustc, cargo, nodejs, npm, default-jdk, maven, php-cli, composer, sqlite3, sqlitebrowser, postgresql-client, mariadb-client, redis-tools, httpie, jq, neovim, tmux, ripgrep, fd-find, meld, docker.io, docker-compose, podman, distrobox
 Description: CybroidOS Developer: for engineers who build software
- Toolchains and containers ready on first boot: Git, GCC and Clang with
- CMake and GDB, Python, Go, Rust, Node.js, SQLite, HTTPie and jq, Podman
- and Distrobox. Editors such as VSCodium install from the App Centre.
+ Toolchains, databases and containers ready on first boot: Git with Git LFS
+ and the GitHub CLI; GCC and Clang with CMake, Meson, Ninja, GDB, Valgrind
+ and strace; Python, Go, Rust, Node.js, Java (OpenJDK and Maven) and PHP
+ (with Composer); SQLite with DB Browser, and PostgreSQL, MariaDB and Redis
+ clients; Docker with Compose, and Podman with Distrobox; Neovim, tmux,
+ ripgrep, fd, Meld, HTTPie and jq. VS Code and VSCodium install from the
+ App Centre (Flathub).
  .
  The same CybroidOS as every edition (look, updates, Hangar), with these
  tools added. An installed CybroidOS becomes this edition by installing this

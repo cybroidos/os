@@ -5,13 +5,17 @@ Maintainer: CybroidOS maintainers <citos@cybroid.com>
 Homepage: https://cybroid.com/cybroidos
 Section: metapackages
 Priority: optional
-Depends: cybroid-plasma (>= @VERSION@), nmap, tshark, wireshark, tcpdump, masscan, gobuster, sqlmap, hydra, john, hashcat, aircrack-ng, sleuthkit, autopsy, yara, binwalk, socat, netcat-openbsd, whois, bind9-dnsutils, podman, distrobox
+Depends: cybroid-plasma (>= @VERSION@), nmap, zenmap, tshark, wireshark, tcpdump, masscan, gobuster, ffuf, dirb, wfuzz, nikto, whatweb, wafw00f, sslscan, testssl.sh, sqlmap, hydra, medusa, john, hashcat, hashid, crunch, cewl, aircrack-ng, hcxtools, hcxdumptool, reaver, bettercap, python3-impacket, python3-pwntools, smbclient, onesixtyone, sleuthkit, autopsy, foremost, testdisk, gddrescue, libimage-exiftool-perl, steghide, yara, binwalk, edb-debugger, lynis, rkhunter, chkrootkit, proxychains4, tor, macchanger, wireguard-tools, openvpn, keepassxc, socat, netcat-openbsd, whois, bind9-dnsutils, podman, distrobox
 Description: CybroidOS Security: for analysts and security teams
- Assessment and forensics tools from Debian: Nmap, Wireshark, tcpdump,
- masscan, Gobuster, sqlmap, Hydra, John the Ripper, hashcat, Aircrack-ng, The
- Sleuth Kit and Autopsy, YARA and binwalk. Kali's full toolset (Burp, ZAP,
- Ghidra, radare2, Metasploit) runs in a container: "Kali tools" in Launchpad
- creates it on first use (Distrobox and Podman).
+ Assessment, web, password, wireless and forensics tools from Debian: Nmap
+ and Zenmap, Wireshark, tcpdump, masscan; Gobuster, ffuf, Nikto, WhatWeb,
+ sslscan and testssl.sh; sqlmap, Hydra, Medusa, John the Ripper, hashcat;
+ Aircrack-ng, hcxtools, Reaver and Bettercap; Impacket and pwntools; The
+ Sleuth Kit with Autopsy, TestDisk, foremost, ExifTool, YARA and binwalk;
+ Lynis and rkhunter; Tor, ProxyChains, WireGuard, OpenVPN and KeePassXC.
+ Kali's own tools (Metasploit, Responder, NetExec, radare2) run in a
+ container: "Kali tools" in Launchpad creates it on first use (Distrobox
+ and Podman). Burp Suite, ZAP and Ghidra install from the App Centre.
  .
  The same CybroidOS as every edition (look, updates, Hangar), with these
  tools added. An installed CybroidOS becomes this edition by installing this

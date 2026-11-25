@@ -42,4 +42,5 @@ install(PROGRAMS helpers/cybroid-update helpers/cybroid-tower helpers/cybroid-ed
 install(FILES helpers/org.cybroid.update.policy helpers/org.cybroid.tower.policy helpers/org.cybroid.editions.policy DESTINATION share/polkit-1/actions COMPONENT cybroid-settings)
 # Microsoft's signing key for Visual Studio Code's repository (cybroid-editions;
 # fingerprint BC528686B50D79E339D3721CEB3E94ADBE1229CF, checked when added).
-install(FILES helpers/keys/microsoft.asc DESTINATION share/cybroid/keys COMPONENT cybroid-settings)
+# Kept as .txt here: the repository ignores *.asc (no private key gets in by mistake).
+install(FILES helpers/keys/microsoft-public-key.txt DESTINATION share/cybroid/keys RENAME microsoft.asc COMPONENT cybroid-settings)
